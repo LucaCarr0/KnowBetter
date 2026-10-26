@@ -9,7 +9,7 @@ Aggiornamento di perimetro del 26 ottobre 2026: il seguito è descritto in [02-f
 
 ## 1. Obiettivo e perimetro
 
-Partire dalla home già realizzata in `pwa-homepage-design/`, organizzarne il codice in directory chiare, individuare e correggere i problemi verificati e completare successivamente i flussi di accesso alle stanze. La home esistente è la base visiva e funzionale da riutilizzare: gli interventi devono essere mirati, preservando la sua impostazione.
+Partire dalla home già realizzata in `web/`, organizzarne il codice in directory chiare, individuare e correggere i problemi verificati e completare successivamente i flussi di accesso alle stanze. La home esistente è la base visiva e funzionale da riutilizzare: gli interventi devono essere mirati, preservando la sua impostazione.
 
 Il risultato complessivo rimane permettere a un gruppo di aprire il gioco dal telefono, scegliere nickname e avatar, creare una stanza privata o entrarvi tramite codice/link e ritrovarsi nella stessa sala d'attesa.
 
@@ -35,7 +35,7 @@ Ispezione statica del 25 ottobre 2026:
 
 | Presente | Stato osservato |
 | --- | --- |
-| Home e presentazione del gioco | Già in `pwa-homepage-design/app/page.tsx` |
+| Home e presentazione del gioco | Già in `web/src/app/page.tsx` |
 | Modalità crea/entra, nickname e codice | Stato locale React, con campi già presenti |
 | Avatar | Sei avatar emoji, selezione locale e anteprima |
 | Stili, layout, icone e configurazione | Già presenti nell'applicazione Next.js |
@@ -45,22 +45,22 @@ La lettura dei file non comprende esecuzione dell'app, build, controllo dei tipi
 
 ### Organizzazione proposta delle directory
 
-Mantenere inizialmente `pwa-homepage-design/` come radice dell'applicazione, conservando manifest delle dipendenze, lockfile e configurazioni. La memoria e questo piano rimangono nella radice del progetto e in `docs/`. Il riordino avviene dentro l'app esistente, senza creare un secondo frontend o migrare il framework.
+Mantenere inizialmente `web/` come radice dell'applicazione, conservando manifest delle dipendenze, lockfile e configurazioni. La memoria e questo piano rimangono nella radice del progetto e in `docs/`. Il riordino avviene dentro l'app esistente, senza creare un secondo frontend o migrare il framework.
 
-Tutti i percorsi seguenti sono relativi a `pwa-homepage-design/`:
+Tutti i percorsi seguenti sono relativi a `web/`:
 
 | Percorso | Responsabilità proposta |
 | --- | --- |
-| `app/` | Routing Next.js, layout, metadati e stili globali; pagina iniziale come composizione dei componenti |
-| `features/home/components/` | Intestazione, presentazione, riepilogo delle tre fasi e footer estratti dalla home |
-| `features/rooms/components/` | Pannello crea/entra, selezione avatar e futura lobby |
-| `features/rooms/data/` | Catalogo degli avatar e valori di presentazione del modulo |
-| `features/rooms/lib/` | Normalizzazione e convalida degli input del modulo, senza duplicare l'autorità del server |
-| `features/rooms/hooks/` | Stato e sincronizzazione quando la loro complessità giustifica un hook separato |
-| `features/rooms/services/` | Collegamento al futuro servizio delle stanze, separato dai componenti visivi |
-| `features/rooms/types.ts` | Tipi di vista e messaggi relativi alle stanze, senza segreti del server |
-| `components/ui/` | Componenti generici riutilizzabili, tenendo conto del pulsante già presente |
-| `lib/` | Utilità realmente condivise, inclusa la funzione di composizione delle classi già presente |
+| `src/app/` | Routing Next.js, layout, metadati e stili globali; pagina iniziale come composizione dei componenti |
+| `src/features/home/components/` | Intestazione, presentazione, riepilogo delle tre fasi e footer estratti dalla home |
+| `src/features/rooms/components/` | Pannello crea/entra, selezione avatar e futura lobby |
+| `src/features/rooms/data/` | Catalogo degli avatar e valori di presentazione del modulo |
+| `src/features/rooms/lib/` | Normalizzazione e convalida degli input del modulo, senza duplicare l'autorità del server |
+| `src/features/rooms/hooks/` | Stato e sincronizzazione quando la loro complessità giustifica un hook separato |
+| `src/features/rooms/services/` | Collegamento al futuro servizio delle stanze, separato dai componenti visivi |
+| `src/features/rooms/types.ts` | Tipi di vista e messaggi relativi alle stanze, senza segreti del server |
+| `src/components/ui/` | Componenti generici riutilizzabili, tenendo conto del pulsante già presente |
+| `src/lib/` | Utilità realmente condivise, inclusa la funzione di composizione delle classi già presente |
 | `public/` | Icone e risorse statiche, conservando i percorsi già usati dai metadati |
 
 Creare ogni directory quando ospita responsabilità reali; non suddividere ogni etichetta o piccolo campo in un componente autonomo. Limitare stato e API del browser ai componenti interattivi, mantenendo separabili le parti statiche secondo le convenzioni Next.js. Il backend e i relativi dati riservati non devono essere importati nei moduli client.
@@ -73,14 +73,14 @@ I riferimenti riguardano il codice prima del riordino; le righe cambieranno con 
 
 | Tipo | Evidenza statica | Intervento futuro |
 | --- | --- | --- |
-| Difetto della copia | `app/page.tsx`, righe 22–25: se Clipboard API manca viene comunque mostrato lo stato di successo; un rifiuto della copia non è gestito | Confermare solo una copia riuscita, gestire indisponibilità/errore e offrire copia manuale; verificare anche il timer del messaggio |
+| Difetto della copia | `src/app/page.tsx`, righe 22–25: se Clipboard API manca viene comunque mostrato lo stato di successo; un rifiuto della copia non è gestito | Confermare solo una copia riuscita, gestire indisponibilità/errore e offrire copia manuale; verificare anche il timer del messaggio |
 | Controllo di qualità disattivato | `next.config.mjs`, righe 3–5: gli errori TypeScript non bloccano la build | Ripristinare il controllo e correggere gli eventuali errori effettivamente rilevati; non presumere che la build o i tipi siano già validi |
-| Accessibilità della selezione | `app/page.tsx`, righe 73–74 e 81: modalità e avatar selezionati sono comunicati solo visivamente | Esporre la selezione agli strumenti assistivi e verificare uso da tastiera e focus |
-| Navigazione incoerente | `app/page.tsx`, righe 38 e 99: «Categories» porta a un footer privo di categorie | Correggere o rimuovere quel collegamento; una nuova sezione categorie non è un requisito implicito |
-| Testo incoerente con il concept | `app/page.tsx`, riga 93: «Three rounds» descrive il gioco come tre round | Correggere il riferimento alle tre fasi, mantenendo la lingua dei contenuti scelta |
-| Funzionalità ancora dimostrativa | `app/page.tsx`, righe 83–85: pulsante crea/entra privo di invio o azione | Integrare un invio utilizzabile anche da tastiera, con convalida, attesa ed errori, quando saranno disponibili i flussi reali delle stanze |
-| Installazione ancora dimostrativa | `app/page.tsx`, righe 39 e 41: pulsanti installazione senza comportamento; non risulta un manifest nei file esaminati | Valutare la PWA separatamente; nell'interfaccia definitiva mostrare il comando soltanto quando offre un comportamento effettivo |
-| Codici dimostrativi | `app/page.tsx`, righe 23, 78 e 99: codice fisso e placeholder non allineati al formato proposto nel piano | Scegliere un formato coerente e copiare soltanto inviti reali nel flusso definitivo |
+| Accessibilità della selezione | `src/app/page.tsx`, righe 73–74 e 81: modalità e avatar selezionati sono comunicati solo visivamente | Esporre la selezione agli strumenti assistivi e verificare uso da tastiera e focus |
+| Navigazione incoerente | `src/app/page.tsx`, righe 38 e 99: «Categories» porta a un footer privo di categorie | Correggere o rimuovere quel collegamento; una nuova sezione categorie non è un requisito implicito |
+| Testo incoerente con il concept | `src/app/page.tsx`, riga 93: «Three rounds» descrive il gioco come tre round | Correggere il riferimento alle tre fasi, mantenendo la lingua dei contenuti scelta |
+| Funzionalità ancora dimostrativa | `src/app/page.tsx`, righe 83–85: pulsante crea/entra privo di invio o azione | Integrare un invio utilizzabile anche da tastiera, con convalida, attesa ed errori, quando saranno disponibili i flussi reali delle stanze |
+| Installazione ancora dimostrativa | `src/app/page.tsx`, righe 39 e 41: pulsanti installazione senza comportamento; non risulta un manifest nei file esaminati | Valutare la PWA separatamente; nell'interfaccia definitiva mostrare il comando soltanto quando offre un comportamento effettivo |
+| Codici dimostrativi | `src/app/page.tsx`, righe 23, 78 e 99: codice fisso e placeholder non allineati al formato proposto nel piano | Scegliere un formato coerente e copiare soltanto inviti reali nel flusso definitivo |
 
 L'assenza del backend era una funzionalità da completare, non una regressione della home. Lingua inglese, marchio visibile «Know Better» e sei avatar erano elementi già presenti: il piano iniziale non ne prevedeva la sostituzione automatica con proposte generiche. Il 26 ottobre 2026 l'utente ha poi scelto il pacchetto Kenney per gli avatar, sostituendo esplicitamente quel vincolo sul catalogo iniziale. L'eventuale scelta definitiva del nome e della lingua resta distinta dalla revisione tecnica.
 
@@ -272,4 +272,4 @@ Gli aspetti ancora aperti sono proposte, non requisiti approvati. Il rinvio dei 
 
 ## Riferimenti tecnici
 
-Verificati il 25 ottobre 2026: [struttura di un progetto Next.js](https://nextjs.org/docs/app/getting-started/project-structure), [separazione dei componenti server/client](https://nextjs.org/docs/app/getting-started/server-and-client-components), [controllo TypeScript durante la build](https://nextjs.org/docs/app/api-reference/config/next-config-js/typescript), [sessione distinta dalla connessione Socket.IO](https://socket.io/docs/v4/server-socket-instance/), [convalida delle connessioni](https://socket.io/docs/v4/middlewares/), [accessi simultanei in PostgreSQL](https://www.postgresql.org/docs/current/explicit-locking.html), [cookie e gestione della sessione](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Cookies). Sono riferimenti per la futura implementazione, non attività eseguite.
+Verificati il 25 ottobre 2026: [struttura di un progetto Next.js](https://nextjs.org/docs/app/getting-started/project-structure), [separazione dei componenti src/server/client](https://nextjs.org/docs/app/getting-started/server-and-client-components), [controllo TypeScript durante la build](https://nextjs.org/docs/app/api-reference/config/next-config-js/typescript), [sessione distinta dalla connessione Socket.IO](https://socket.io/docs/v4/server-socket-instance/), [convalida delle connessioni](https://socket.io/docs/v4/middlewares/), [accessi simultanei in PostgreSQL](https://www.postgresql.org/docs/current/explicit-locking.html), [cookie e gestione della sessione](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Cookies). Sono riferimenti per la futura implementazione, non attività eseguite.

@@ -4,7 +4,9 @@ Data: 26 ottobre 2026.
 Stato: piano autorizzato il 26 ottobre 2026 con «procedi col piano». Implementata la Fase 1 sul frontend e sul coordinatore esistenti; l'utente ha inoltre richiesto l'importazione nel database di cataloghi di domande da internet. Le sezioni sotto conservano la distinzione originaria fra requisiti e default proposti; questi ultimi sono stati applicati come configurazione iniziale dell'implementazione. Prove visive sui telefoni a cura dell'utente.
 Riferimenti: [memoria di progetto](../../PROJECT_MEMORY.md), [modulo home e stanze](01-menu-e-stanze.md).
 
-Aggiornamenti d'implementazione: lo stato autorevole e lo storico dei round sono salvati come JSONB in `kb_matches`, nella stessa transazione delle ricevute, usando la coda e il blocco database già esistenti. Categorie e domande sono in tabelle dedicate. La rosa della partita è indipendente dalla lista dei posti della lobby. A fine fase l'organizzatore può riportare il gruppo in lobby conservando il record concluso; il nuovo avvio crea una nuova partita. Le domande troppo lunghe per il timer vengono conservate nel database ma escluse dall'estrazione. Cataloghi, licenze e filtri sono documentati in [server/content/README.md](../../pwa-homepage-design/server/content/README.md).
+Aggiornamento del ritmo richiesto il 26 ottobre 2026: istruzioni e avvio dei round sono manuali, senza scadenza. Un pulsante da trascinare, disponibile a qualsiasi concorrente attivo, fa proseguire tutta la partita. Restano i 5 secondi della classifica e gli attuali timer di voto e domanda. Questa decisione sostituisce l'introduzione automatica di 10 secondi e il passaggio automatico dalla classifica al voto successivo.
+
+Aggiornamenti d'implementazione: lo stato autorevole e lo storico dei round sono salvati come JSONB in `kb_matches`, nella stessa transazione delle ricevute, usando la coda e il blocco database già esistenti. Categorie e domande sono in tabelle dedicate. La rosa della partita è indipendente dalla lista dei posti della lobby. A fine fase l'organizzatore può riportare il gruppo in lobby conservando il record concluso; il nuovo avvio crea una nuova partita. Le domande troppo lunghe per il timer vengono conservate nel database ma escluse dall'estrazione. Cataloghi, licenze e filtri sono documentati in [src/server/content/README.md](../../web/src/server/content/README.md).
 
 ## 1. Obiettivo e requisiti confermati
 
@@ -21,6 +23,7 @@ Sono confermati dal proprietario:
 - Categorie riconoscibili, per esempio animali, arte, sport, film e storia. Il catalogo completo rimane da definire.
 - Tre viste alternate: **plancia**, **scelta della categoria**, **risposta alla domanda**. Il proprietario ha chiarito che «votazione», nell'elenco iniziale delle schermate, indica la scelta della risposta personale; non esiste un secondo voto sulla categoria.
 - Plancia intesa anche come scena principale dello show: presentazione, regole, momenti collettivi, esiti e classifica.
+- Nessun countdown per leggere le istruzioni o aspettare l'avvio del prossimo round: basta lo swipe di un qualsiasi concorrente per proseguire tutti insieme. Mantenere classifica di 5 secondi e timer attuale delle domande.
 
 La visualizzazione dei «jolly rimanenti» è stata indicata come esempio: non sono ancora confermati disponibilità, effetti, quantità o uso nella Fase 1. Il piano riserva un punto di estensione, senza introdurre jolly funzionanti o contatori fittizi.
 
@@ -28,21 +31,21 @@ Questo modulo non comprende minisfide della Fase 2, percorso e maledizioni della
 
 ## 2. Base esistente verificata
 
-Ispezione statica del 26 ottobre 2026; percorsi dell'app relativi a `pwa-homepage-design/`.
+Ispezione statica del 26 ottobre 2026; percorsi dell'app relativi a `web/`.
 
 | File o area | Stato attuale e intervento previsto |
 | --- | --- |
-| `features/rooms/components/room-lobby.tsx` | Elenco partecipanti e organizzatore, invito, modifica identità e uscita; aggiungere comando di avvio, condizioni e attesa |
-| `features/rooms/components/room-access-panel.tsx` | Gestisce accesso e compone la lobby; delegare la scelta tra menu, lobby e partita a un contenitore della sessione |
-| `app/page.tsx` | Oggi dispone la lobby nel pannello della home accanto alla presentazione; predisporre una scena di gioco a tutta pagina, senza limitare domanda e plancia alla card da 480 px |
-| `features/rooms/types.ts` | `RoomSnapshot` conosce soltanto `waiting` e `closed`; estendere il contratto per la partita e distinguere dati pubblici e personali |
-| `features/rooms/services/room-client.ts` e `hooks/use-room-connection.ts` | Socket unico, comandi con ricevute, recupero sessione, versioni e controllo fra schede; riusare queste garanzie anche per il gioco |
-| `server/index.ts` | Custom server Next.js/Socket.IO e pubblicazione di snapshot personalizzati; registrare comandi e aggiornamenti della partita |
-| `server/lobby.ts` | Autorità sulla stanza, coda delle operazioni, rientro e scadenze; integrare avvio atomico e distinguere ciclo di vita lobby/partita |
-| `server/database.ts` | PostgreSQL/PGlite già presenti; vincolo SQL degli stati limitato a `waiting`/`closed`, da aggiornare con migrazione incrementale |
-| `server/shutdown.ts` | Arresto e drenaggio del servizio lobby già presenti; includere scheduler e operazioni della partita prima della chiusura del database |
-| `server/*.test.ts` | Test di lobby, integrazione e arresto; estenderli con il flusso di gioco e conservare le verifiche precedenti |
-| `app/globals.css` e `package.json` | Tailwind, daisyUI con prefisso `daisy-` e `tw-animate-css` già presenti; partire da questa base per scena e animazioni |
+| `src/features/rooms/components/room-lobby.tsx` | Elenco partecipanti e organizzatore, invito, modifica identità e uscita; aggiungere comando di avvio, condizioni e attesa |
+| `src/features/rooms/components/room-access-panel.tsx` | Gestisce accesso e compone la lobby; delegare la scelta tra menu, lobby e partita a un contenitore della sessione |
+| `src/app/page.tsx` | Oggi dispone la lobby nel pannello della home accanto alla presentazione; predisporre una scena di gioco a tutta pagina, senza limitare domanda e plancia alla card da 480 px |
+| `src/features/rooms/types.ts` | `RoomSnapshot` conosce soltanto `waiting` e `closed`; estendere il contratto per la partita e distinguere dati pubblici e personali |
+| `src/features/rooms/services/room-client.ts` e `hooks/use-room-connection.ts` | Socket unico, comandi con ricevute, recupero sessione, versioni e controllo fra schede; riusare queste garanzie anche per il gioco |
+| `src/server/index.ts` | Custom server Next.js/Socket.IO e pubblicazione di snapshot personalizzati; registrare comandi e aggiornamenti della partita |
+| `src/server/lobby.ts` | Autorità sulla stanza, coda delle operazioni, rientro e scadenze; integrare avvio atomico e distinguere ciclo di vita lobby/partita |
+| `src/server/database.ts` | PostgreSQL/PGlite già presenti; vincolo SQL degli stati limitato a `waiting`/`closed`, da aggiornare con migrazione incrementale |
+| `src/server/shutdown.ts` | Arresto e drenaggio del servizio lobby già presenti; includere scheduler e operazioni della partita prima della chiusura del database |
+| `src/server/*.test.ts` | Test di lobby, integrazione e arresto; estenderli con il flusso di gioco e conservare le verifiche precedenti |
+| `src/app/globals.css` e `package.json` | Tailwind, daisyUI con prefisso `daisy-` e `tw-animate-css` già presenti; partire da questa base per scena e animazioni |
 
 **Risorsa del conduttore verificata:** il file effettivo è [`Gerry.png`](../../Gerry.png), nella radice del progetto, mentre il nome richiesto per il personaggio è Jerry. È un PNG RGB di 1215 × 1295 px, circa 2,38 MB, con sfondo arancione incorporato e senza trasparenza. Per la prima versione proporre un riquadro scenico che includa lo sfondo; non assumere uno scontorno già disponibile. In implementazione conservare l'originale e preparare una copia web ottimizzata, per esempio in `public/hosts/jerry/`, verificando leggibilità e tempi di caricamento.
 
@@ -72,12 +75,13 @@ Prevedere precaricamento del conduttore durante la lobby, fallback testuale se l
 flowchart TD
   L[Lobby: almeno 2 giocatori] --> C[Countdown: 5 secondi]
   C --> I[Plancia: Jerry e regole]
-  I --> V[Voto della categoria del round]
+  I -->|Swipe di un concorrente| V[Voto della categoria del round]
   V --> A[Plancia: annuncio della categoria]
   A --> D[Domanda e risposte personali]
   D --> E[Plancia: soluzione e punti]
   E --> R[Classifica aggiornata]
-  R -->|Round 1–4| V
+  R -->|Dopo 5 secondi, round 1–4| P[Plancia: pausa senza countdown]
+  P -->|Swipe di un concorrente| V
   R -->|Round 5| F[Riepilogo della Fase 1]
 ```
 
@@ -102,15 +106,15 @@ Il countdown usa una scadenza comune di 5 secondi. Se, prima della sua conclusio
 3. Seleziona una domanda valida non ancora usata nella partita. Prepara una finestra di risposta comune successiva all'annuncio e alla transizione.
 4. Pubblica testo e opzioni; ciascun giocatore invia la propria risposta. Il server conferma l'accettazione senza anticipare correttezza o punti.
 5. Alla chiusura, rivela la soluzione, attribuisce i punti e salva il risultato una sola volta.
-6. La plancia mostra punti guadagnati e classifica. Dopo il quinto round passa al riepilogo; altrimenti apre il voto del round successivo.
+6. La plancia mostra punti guadagnati e classifica per 5 secondi. Dopo il quinto round passa al riepilogo; altrimenti resta in pausa senza scadenza, e lo swipe di un concorrente apre il voto del round successivo per tutti.
 
 ## 5. Regole proposte per rendere il piano eseguibile
 
-Questi valori sono **default di progetto da confermare o modificare**, non richieste già approvate. Vanno raccolti in una configurazione versionata e fissata all'inizio della partita.
+Questi valori sono i **default iniziali del piano**, successivamente applicati e modificati. L'aggiornamento manuale di istruzioni e avvio dei round, i 5 secondi della classifica e il mantenimento del timer delle domande sono ora confermati dal proprietario. Gli altri valori restano scelte operative da bilanciare.
 
 | Aspetto aperto | Proposta per la prima versione |
 | --- | --- |
-| Introduzione di Jerry | 10 secondi, durante i quali Jerry spiega le regole essenziali conversando amichevolmente con l'utente, con battute leggere e tono simpatico; avanzamento comune automatico |
+| Introduzione di Jerry | Jerry spiega le regole essenziali senza countdown; qualsiasi concorrente può trascinare il pulsante per saltare le istruzioni e aprire il voto del primo round |
 | Categorie per votazione | 3 candidate, estratte tra quelle con domande ancora disponibili |
 | Durata del voto | 12 secondi; chiusura anticipata se tutti i partecipanti ancora in gara hanno confermato |
 | Modifica del voto | Selezione locale modificabile fino alla conferma; primo voto confermato definitivo |
@@ -121,7 +125,7 @@ Questi valori sono **default di progetto da confermare o modificare**, non richi
 | Durata della domanda | 15 secondi dal comune istante di apertura; chiusura anticipata se tutti i partecipanti ancora in gara hanno risposto |
 | Risposta errata o assente | 0 punti, senza sottrazioni |
 | Risposta corretta | 500 punti base + bonus velocità da 0 a 500, calcolato sul tempo di arrivo al server |
-| Soluzione e classifica | 5 secondi per soluzione/esito e 5 per classifica, con avanzamento automatico |
+| Soluzione e classifica | 5 secondi per soluzione/esito e 5 per classifica; poi pausa senza scadenza prima del prossimo round, aperto con swipe di un concorrente |
 | Pari punti in classifica | Stessa posizione; ordine visivo stabile di ingresso, senza spareggio implicito |
 | Fine Fase 1 | Riepilogo fermo con punti conservati, senza avviare Fase 2 e senza proclamare il vincitore finale |
 
@@ -141,7 +145,7 @@ Il seed deve coprire cinque round senza ripetizioni anche se viene scelta ripetu
 
 **Architettura proposta:** estendere il coordinatore esistente con una macchina a stati della partita, mantenendo un solo processo autorevole. Tempi, categorie, domande, punteggi e progressione sono decisi dal server. Il telefono invia intenzioni e rappresenta lo stato ricevuto.
 
-Separare lo stato della stanza (`waiting`, `starting`, `playing`, `closed`) dallo stato dettagliato della partita. Gli stati indicativi di gioco sono `countdown`, `intro`, `category_vote`, `category_reveal`, `question`, `round_reveal`, `scoreboard`, `phase_complete`, oltre agli eventuali stati tecnici `suspended`/`aborted`. I nomi sono una proposta tecnica, non schermate aggiuntive richieste al giocatore.
+Separare lo stato della stanza (`waiting`, `starting`, `playing`, `closed`) dallo stato dettagliato della partita. Gli stati di gioco sono `countdown`, `intro`, `round_ready`, `category_vote`, `category_reveal`, `question`, `round_reveal`, `scoreboard`, `phase_complete`, oltre agli stati tecnici `suspended`/`aborted`. `intro` e `round_ready` non hanno scadenza. I nomi sono scelte tecniche, non schermate principali aggiuntive richieste al giocatore.
 
 | Dato proposto | Responsabilità |
 | --- | --- |
@@ -155,7 +159,7 @@ Separare lo stato della stanza (`waiting`, `starting`, `playing`, `closed`) dall
 
 Introdurre migrazioni SQL versionate applicabili anche a database PGlite già popolati: il solo `CREATE TABLE IF NOT EXISTS` attuale non modifica il vincolo degli stati. Conservare stanze e sessioni esistenti e verificare la migrazione anche sul percorso PostgreSQL esterno.
 
-**Comandi indicativi:** `game:start`, `game:vote-category`, `game:answer`, `game:resume`; eventuale `game:leave` se conviene distinguere l'abbandono dall'uscita lobby. Ogni azione mutante porta `requestId` e gli identificativi pertinenti: l'avvio si riferisce alla stanza, mentre partita e round sono assegnati dal server. Il voto si riferisce a partita e round; la risposta include anche `questionInstanceId`, così un reinvio non può colpire una domanda sostitutiva. Dove serve aggiungere versione/stato atteso. Il server ricava il giocatore dalla sessione già autenticata e controlla anche il possesso della scheda attiva. Separare la convalida di questi comandi da quella delle operazioni lobby che richiedono nickname/avatar. La versione va usata per rilevare azioni obsolete senza rifiutare un voto valido solo perché un altro giocatore ha appena aggiornato lo stato.
+**Comandi:** `game:start`, `game:continue`, `game:vote-category`, `game:answer`, `game:resume`, `game:return-lobby`; l'abbandono riusa `room:leave`. Ogni azione mutante porta `requestId` e gli identificativi pertinenti: l'avvio si riferisce alla stanza, mentre partita e round sono assegnati dal server. `game:continue` include partita, round e fase attesa (`intro` o `round_ready`); è ammesso a qualsiasi concorrente attivo e connesso con controllo della scheda, con almeno due connessi. Due swipe simultanei o un comando obsoleto non possono saltare scene. Il voto si riferisce a partita e round; la risposta include anche `questionInstanceId`, così un reinvio non può colpire una domanda sostitutiva. Il server ricava il giocatore dalla sessione già autenticata e controlla anche il possesso della scheda attiva. Separare la convalida di questi comandi da quella delle operazioni lobby che richiedono nickname/avatar. La versione va usata per rilevare azioni obsolete senza rifiutare un voto valido solo perché un altro giocatore ha appena aggiornato lo stato.
 
 **Snapshot indicativo:** partita e stanza, fase, round, istanza della domanda, versione, `serverNow`, apertura/scadenza, scena di Jerry, classifica, informazioni pubbliche del round e dati del solo destinatario (`selfVote`, `selfAnswer`, conferme ed esito personale quando rivelabile). Riusare il socket esistente e una pubblicazione personalizzata, senza avviare una connessione indipendente per ogni schermata.
 
@@ -177,8 +181,8 @@ Il comportamento attuale della lobby scade i posti offline dopo 90 secondi e res
 - Vietare nuovi ingressi dopo l'inizio del countdown; ammettere soltanto il rientro dei giocatori fissati nella rosa. Distinguere il messaggio «partita già iniziata» da «stanza inesistente».
 - Una disconnessione temporanea dopo l'avvio non ferma il timer di voto o domanda; il giocatore resta atteso fino alla scadenza. Le risposte già accettate rimangono valide. Senza risposta entro il termine, il round assegna 0 punti.
 - L'uscita esplicita marca un abbandono e disabilita le azioni successive; conserva il punteggio e la riga in classifica. Non consente il reinserimento tardivo nella stessa partita come nuovo concorrente.
-- La partita avanza senza ulteriori comandi dell'organizzatore. Alla fine del round ricontrollare i concorrenti della rosa **connessi e non ritirati**: se sono meno di due, sospendere prima del successivo, senza dichiarare un vincitore. Gli offline temporanei conservano il posto nella rosa ma non soddisfano questa soglia. Proposta: attesa massima 90 secondi; ripresa quando rientrano almeno due concorrenti non ritirati, altrimenti chiusura come interrotta.
-- Se tutti sono offline, completare la finestra già aperta e sospendere al successivo punto di controllo; non consumare cinque round senza nessuno presente. Il limite di inattività della lobby non deve chiudere una partita in modo accidentale.
+- Nelle finestre temporizzate la partita avanza automaticamente. Prima del round successivo resta in pausa manuale: per il nuovo swipe servono almeno due concorrenti della rosa **connessi e non ritirati**. Gli offline temporanei conservano il posto ma non soddisfano la soglia. La pausa non scade e il rientro del secondo concorrente non apre automaticamente il round. Per la sospensione tecnica delle altre fasi rimane il limite operativo di 90 secondi.
+- Se tutti sono offline, completare la finestra già aperta e raggiungere la pausa manuale prima del prossimo round; non consumare cinque round senza nessuno presente. Il limite di inattività della lobby non deve chiudere una partita in modo accidentale.
 
 **Proposta per il riavvio del server:** caricare prima le migrazioni, poi lo stato salvato, riconfermare le presenze e riprendere una sola volta ogni transizione. Una domanda con esito già salvato mantiene esito e punti; un conteggio o annuncio non ancora concluso può essere riprogrammato. Una domanda aperta al momento dell'arresto non deve ripartire con lo stesso testo già visto e un nuovo bonus tempo: proporre l'annullamento dell'istanza, senza assegnarle punti e conservando le ricevute per l'audit, e una nuova domanda della stessa categoria dopo il rientro di almeno due giocatori. L'indice del round resta uguale, ma cambia `questionInstanceId`: un vecchio reinvio viene riconosciuto come relativo all'istanza annullata, non accettato nella sostitutiva. Il voto di categoria già concluso resta valido; se era ancora aperto, conservare i voti accettati e riproporre una scadenza comune dopo il rientro. Questa politica richiede una riserva di contenuti e test specifici; se manca una domanda sostitutiva, mostrare uno stato di interruzione esplicito anziché inventare risultati.
 
@@ -186,18 +190,18 @@ La politica di riavvio, le finestre di attesa e il trattamento degli abbandoni s
 
 ## 8. Suddivisione del lavoro futuro
 
-I seguenti percorsi sono proposti e relativi a `pwa-homepage-design/`; crearli solo quando ospitano responsabilità effettive.
+I seguenti percorsi sono proposti e relativi a `web/`; crearli solo quando ospitano responsabilità effettive.
 
 | Area | Responsabilità |
 | --- | --- |
-| `features/session/` | Contenitore client comune per menu, lobby e scena di partita; unico proprietario della connessione |
-| `features/game/types.ts` | Contratti pubblici, snapshot personali e comandi tipizzati |
-| `features/game/components/` | Scena di gioco, countdown, Jerry, plancia/classifica, voto categoria, domanda ed esiti |
-| `features/game/hooks/` | Derivazione delle viste dallo snapshot e tempo sincronizzato, senza calcolo autorevole dei punti |
-| `features/game/styles/` | Transizioni della scena, adattamento mobile e movimento ridotto, se serve un foglio dedicato |
-| `server/game/` | Regole pure, macchina a stati, scheduler, servizio/repository e selezione dei contenuti |
-| `server/content/` | Catalogo iniziale privato, validazione e seed delle domande |
-| `server/migrations/` | Evoluzione incrementale del database esistente |
+| `src/features/session/` | Contenitore client comune per menu, lobby e scena di partita; unico proprietario della connessione |
+| `src/features/game/types.ts` | Contratti pubblici, snapshot personali e comandi tipizzati |
+| `src/features/game/components/` | Scena di gioco, countdown, Jerry, plancia/classifica, voto categoria, domanda ed esiti |
+| `src/features/game/hooks/` | Derivazione delle viste dallo snapshot e tempo sincronizzato, senza calcolo autorevole dei punti |
+| `src/features/game/styles/` | Transizioni della scena, adattamento mobile e movimento ridotto, se serve un foglio dedicato |
+| `src/server/game/` | Regole pure, macchina a stati, scheduler, servizio/repository e selezione dei contenuti |
+| `src/server/content/` | Catalogo iniziale privato, validazione e seed delle domande |
+| `src/server/migrations/` | Evoluzione incrementale del database esistente |
 | `public/hosts/jerry/` | Copia web del PNG del conduttore, originale conservato nella radice |
 
 ### Ordine di implementazione
@@ -217,7 +221,7 @@ Le attività 2–5 hanno dipendenze sequenziali sul modello autorevole. La prepa
 
 **Avvio e sincronizzazione:** con 1 giocatore non si parte; con 2 si può avviare, fino a 10. Comando di un non autorizzato, doppio tocco, ingresso simultaneo all'avvio, disconnessione nel countdown e perdita della conferma hanno esito unico e coerente. Il countdown dura 5 secondi secondo il server e non si riavvia su refresh.
 
-**Round e voto:** esattamente cinque round e cinque votazioni iniziali, compreso il primo. Verificare parità, nessun voto, disconnessi, categoria esaurita, doppio invio, voto per round precedente e chiusura anticipata. Tutti ricevono la stessa categoria, domanda e sequenza delle opzioni. Dopo il quinto round non parte un sesto voto.
+**Round e voto:** esattamente cinque round e cinque votazioni iniziali, compreso il primo. Istruzioni e pause prima del round non avanzano col tempo; lo swipe di un concorrente diverso dall'organizzatore fa proseguire tutti, mentre swipe simultanei, ripetuti o vecchi non saltano scene. Verificare ripresa delle pause dopo riavvio, perdita/rientro del secondo concorrente, parità, nessun voto, categoria esaurita, doppio invio, voto per round precedente e chiusura anticipata. Tutti ricevono la stessa categoria, domanda e sequenza delle opzioni. Dopo il quinto round non parte un sesto voto.
 
 **Risposte e punti:** verificare correttezza e bonus con orologio controllato; rifiutare invii anticipati, tardivi, opzioni inesistenti e tentativi successivi. Due richieste o la ripetizione di una ricevuta non assegnano punti due volte. La chiusura anticipata non cambia la formula. Totali, posizioni e parità sono uguali sui client.
 

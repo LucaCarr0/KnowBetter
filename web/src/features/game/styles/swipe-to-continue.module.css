@@ -1,0 +1,118 @@
+.swipe {
+  width: 100%;
+  margin-top: 1.25rem;
+  color: var(--color-base-content);
+}
+
+.track {
+  padding: .3rem;
+  border: 2px solid var(--color-base-content);
+  border-radius: 1rem;
+  background: var(--color-base-200);
+  box-shadow: 0 .2rem 0 color-mix(in srgb, var(--color-base-content) 25%, transparent);
+}
+
+.rail {
+  position: relative;
+  min-width: 3.25rem;
+  min-height: 3.25rem;
+}
+
+.fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  max-width: 100%;
+  border-radius: .65rem;
+  background: color-mix(in srgb, var(--color-primary) 25%, transparent);
+  pointer-events: none;
+  transition: width 180ms ease-out;
+}
+
+.label {
+  display: grid;
+  min-height: 3.25rem;
+  padding: .4rem .6rem .4rem 3.8rem;
+  align-items: center;
+  text-align: center;
+  font-size: .85rem;
+  font-weight: 850;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+
+.handle {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 3.25rem;
+  min-width: 3.25rem;
+  height: 3.25rem;
+  min-height: 3.25rem;
+  padding: 0;
+  border: 2px solid var(--color-base-content);
+  border-radius: .65rem;
+  background: var(--color-primary);
+  color: var(--color-primary-content);
+  box-shadow: 0 .15rem 0 var(--color-base-content);
+  touch-action: pan-y;
+  user-select: none;
+  cursor: grab;
+  transition: transform 180ms ease-out;
+}
+
+.handle:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-primary) 85%, var(--color-base-100));
+}
+
+.handle:active:not(:disabled) {
+  cursor: grabbing;
+  translate: 0;
+}
+
+.handle:focus-visible {
+  outline: 3px solid var(--color-info);
+  outline-offset: 3px;
+}
+
+.handle:disabled {
+  cursor: default;
+  opacity: 1;
+  background: var(--color-base-300);
+  color: color-mix(in srgb, var(--color-base-content) 60%, var(--color-base-300));
+}
+
+.dragging .handle,
+.dragging .fill {
+  transition: none;
+}
+
+.blocked .label {
+  opacity: .65;
+}
+
+.instructions,
+.status {
+  margin-top: .65rem;
+  font-size: .72rem;
+  line-height: 1.5;
+}
+
+.instructions {
+  color: color-mix(in srgb, var(--color-base-content) 75%, var(--color-base-100));
+}
+
+.status:empty {
+  display: none;
+}
+
+.error {
+  color: var(--color-error);
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .handle,
+  .fill {
+    transition: none;
+  }
+}

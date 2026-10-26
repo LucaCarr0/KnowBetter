@@ -3,7 +3,7 @@
 Apri un terminale nella directory dell’app:
 
 ```bash
-cd /home/lucacarraturo/KnowBetter/pwa-homepage-design
+cd /home/lucacarraturo/KnowBetter/web
 ```
 
 Se usi il database locale, prima arresta `pnpm dev` o `pnpm start` con `Ctrl+C` e
