@@ -1,0 +1,9 @@
+pmOnFail: ignore
+
+allowBuilds:
+  esbuild: true
+
+minimumReleaseAgeExclude:
+  - '@next/*'
+  - next
+

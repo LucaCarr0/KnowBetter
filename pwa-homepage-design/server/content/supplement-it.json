@@ -1,0 +1,1173 @@
+{
+  "categories": [
+    {
+      "id": "animals",
+      "name": "Animali",
+      "icon": "🐾"
+    },
+    {
+      "id": "movies",
+      "name": "Cinema",
+      "icon": "🎬"
+    },
+    {
+      "id": "sports",
+      "name": "Sport",
+      "icon": "🏆"
+    }
+  ],
+  "questions": [
+    {
+      "id": "otqa-it-animals-L16",
+      "categoryId": "animals",
+      "prompt": "Quale di questi nomi scientifici indica un gatto domestico, anziché un orso?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Melursus ursinus"
+        },
+        {
+          "id": "B",
+          "text": "Helarctos malayanus"
+        },
+        {
+          "id": "C",
+          "text": "Ursus minimus"
+        },
+        {
+          "id": "D",
+          "text": "Felis silvestris catus"
+        }
+      ],
+      "correctOptionId": "D",
+      "difficulty": "medium",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/animals#L16",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:animals:L16",
+      "sourceCategory": "animals",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-animals-L23",
+      "categoryId": "animals",
+      "prompt": "Quale di questi animali non è originario dell'Australia?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ornitorinco"
+        },
+        {
+          "id": "B",
+          "text": "Dingo"
+        },
+        {
+          "id": "C",
+          "text": "Echidna"
+        },
+        {
+          "id": "D",
+          "text": "Bradipo"
+        }
+      ],
+      "correctOptionId": "D",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/animals#L23",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:animals:L23",
+      "sourceCategory": "animals",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-animals-L63",
+      "categoryId": "animals",
+      "prompt": "Dal punto di vista dell'alimentazione, i serpenti sono animali...",
+      "options": [
+        {
+          "id": "A",
+          "text": "Erbivori"
+        },
+        {
+          "id": "B",
+          "text": "Onnivori"
+        },
+        {
+          "id": "C",
+          "text": "Carnivori"
+        },
+        {
+          "id": "D",
+          "text": "Vegetariani"
+        }
+      ],
+      "correctOptionId": "C",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/animals#L63",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:animals:L63",
+      "sourceCategory": "animals",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-animals-L70",
+      "categoryId": "animals",
+      "prompt": "In che modo i serpenti ingeriscono le loro prede?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Respirandole"
+        },
+        {
+          "id": "B",
+          "text": "Assorbendole attraverso la pelle"
+        },
+        {
+          "id": "C",
+          "text": "Inghiottendole"
+        },
+        {
+          "id": "D",
+          "text": "Masticandole"
+        }
+      ],
+      "correctOptionId": "C",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/animals#L70",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:animals:L70",
+      "sourceCategory": "animals",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-animals-L92",
+      "categoryId": "animals",
+      "prompt": "A quale gruppo di vertebrati appartengono i serpenti?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Invertebrati"
+        },
+        {
+          "id": "B",
+          "text": "Lucertole"
+        },
+        {
+          "id": "C",
+          "text": "Rettili"
+        },
+        {
+          "id": "D",
+          "text": "Mammiferi"
+        }
+      ],
+      "correctOptionId": "C",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/animals#L92",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:animals:L92",
+      "sourceCategory": "animals",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-animals-L125",
+      "categoryId": "animals",
+      "prompt": "A cosa serve soprattutto il caratteristico cappuccio che un cobra può allargare?",
+      "options": [
+        {
+          "id": "A",
+          "text": "A mantenere l'equilibrio"
+        },
+        {
+          "id": "B",
+          "text": "A raccogliere il calore del sole"
+        },
+        {
+          "id": "C",
+          "text": "A mimetizzarsi"
+        },
+        {
+          "id": "D",
+          "text": "Ad apparire più minaccioso"
+        }
+      ],
+      "correctOptionId": "D",
+      "difficulty": "medium",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/animals#L125",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:animals:L125",
+      "sourceCategory": "animals",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-animals-L184",
+      "categoryId": "animals",
+      "prompt": "Quale razza canina è particolarmente associata alla regina Elisabetta II?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Border collie"
+        },
+        {
+          "id": "B",
+          "text": "Bobtail"
+        },
+        {
+          "id": "C",
+          "text": "Welsh corgi"
+        },
+        {
+          "id": "D",
+          "text": "Australian cattle dog"
+        }
+      ],
+      "correctOptionId": "C",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/animals#L184",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:animals:L184",
+      "sourceCategory": "animals",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-animals-L205",
+      "categoryId": "animals",
+      "prompt": "Qual è la specie di tartaruga vivente più grande?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Tartaruga liuto"
+        },
+        {
+          "id": "B",
+          "text": "Tartaruga di Kemp"
+        },
+        {
+          "id": "C",
+          "text": "Tartaruga embricata"
+        },
+        {
+          "id": "D",
+          "text": "Tartaruga fluviale centroamericana"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "medium",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/animals#L205",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:animals:L205",
+      "sourceCategory": "animals",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-animals-L224",
+      "categoryId": "animals",
+      "prompt": "Quale di queste grandi scimmie è riconoscibile per il pelo rossiccio e le braccia molto lunghe?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Gorilla"
+        },
+        {
+          "id": "B",
+          "text": "Babbuino"
+        },
+        {
+          "id": "C",
+          "text": "Orango"
+        },
+        {
+          "id": "D",
+          "text": "Scimpanzé"
+        }
+      ],
+      "correctOptionId": "C",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/animals#L224",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:animals:L224",
+      "sourceCategory": "animals",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-animals-L231",
+      "categoryId": "animals",
+      "prompt": "In quale regione si trova l'habitat naturale del leopardo delle nevi?",
+      "options": [
+        {
+          "id": "A",
+          "text": "America settentrionale"
+        },
+        {
+          "id": "B",
+          "text": "Asia centrale e America settentrionale"
+        },
+        {
+          "id": "C",
+          "text": "Asia centrale"
+        },
+        {
+          "id": "D",
+          "text": "Europa e America settentrionale"
+        }
+      ],
+      "correctOptionId": "C",
+      "difficulty": "medium",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/animals#L231",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:animals:L231",
+      "sourceCategory": "animals",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-animals-L250",
+      "categoryId": "animals",
+      "prompt": "Quale piccola volpe notturna vive nei deserti dell'Africa settentrionale?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Volpe del Capo"
+        },
+        {
+          "id": "B",
+          "text": "Volpe rossa"
+        },
+        {
+          "id": "C",
+          "text": "Volpe del Bengala"
+        },
+        {
+          "id": "D",
+          "text": "Fennec"
+        }
+      ],
+      "correctOptionId": "D",
+      "difficulty": "medium",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/animals#L250",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:animals:L250",
+      "sourceCategory": "animals",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-animals-L257",
+      "categoryId": "animals",
+      "prompt": "In quale continente si trovano le formiche dette jack jumper, note per i loro salti?",
+      "options": [
+        {
+          "id": "A",
+          "text": "America settentrionale"
+        },
+        {
+          "id": "B",
+          "text": "Australia"
+        },
+        {
+          "id": "C",
+          "text": "Africa"
+        },
+        {
+          "id": "D",
+          "text": "Asia"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "hard",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/animals#L257",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:animals:L257",
+      "sourceCategory": "animals",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-movies-L73",
+      "categoryId": "movies",
+      "prompt": "Quale di questi film di James Bond non è uscito negli anni Ottanta?",
+      "options": [
+        {
+          "id": "A",
+          "text": "007 - Bersaglio mobile"
+        },
+        {
+          "id": "B",
+          "text": "Octopussy - Operazione piovra"
+        },
+        {
+          "id": "C",
+          "text": "Moonraker - Operazione spazio"
+        },
+        {
+          "id": "D",
+          "text": "Solo per i tuoi occhi"
+        }
+      ],
+      "correctOptionId": "C",
+      "difficulty": "medium",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/movies#L73",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:movies:L73",
+      "sourceCategory": "movies",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-movies-L95",
+      "categoryId": "movies",
+      "prompt": "Qual è il vero nome di Baby, protagonista di Dirty Dancing (1987)?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Barbara"
+        },
+        {
+          "id": "B",
+          "text": "Frances"
+        },
+        {
+          "id": "C",
+          "text": "Susan"
+        },
+        {
+          "id": "D",
+          "text": "Jennifer"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "medium",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/movies#L95",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:movies:L95",
+      "sourceCategory": "movies",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-movies-L102",
+      "categoryId": "movies",
+      "prompt": "In quale città immaginaria dell'Ohio è ambientato Nightmare - Dal profondo della notte?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Derry"
+        },
+        {
+          "id": "B",
+          "text": "Ambervale"
+        },
+        {
+          "id": "C",
+          "text": "Springwood"
+        },
+        {
+          "id": "D",
+          "text": "Blackwood County"
+        }
+      ],
+      "correctOptionId": "C",
+      "difficulty": "hard",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/movies#L102",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:movies:L102",
+      "sourceCategory": "movies",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-movies-L123",
+      "categoryId": "movies",
+      "prompt": "Da quale città proviene il poliziotto Axel Foley di Beverly Hills Cop?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Detroit"
+        },
+        {
+          "id": "B",
+          "text": "Chicago"
+        },
+        {
+          "id": "C",
+          "text": "Denver"
+        },
+        {
+          "id": "D",
+          "text": "San Francisco"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "medium",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/movies#L123",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:movies:L123",
+      "sourceCategory": "movies",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-movies-L137",
+      "categoryId": "movies",
+      "prompt": "In quale film un gruppo di bambini aiuta un alieno rimasto sulla Terra a tornare a casa?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Il ritorno dello Jedi"
+        },
+        {
+          "id": "B",
+          "text": "Guida galattica per autostoppisti"
+        },
+        {
+          "id": "C",
+          "text": "Cyborg"
+        },
+        {
+          "id": "D",
+          "text": "E.T. l'extra-terrestre"
+        }
+      ],
+      "correctOptionId": "D",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/movies#L137",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:movies:L137",
+      "sourceCategory": "movies",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-movies-L144",
+      "categoryId": "movies",
+      "prompt": "In quale anno è uscito negli Stati Uniti Le ali della libertà (The Shawshank Redemption)?",
+      "options": [
+        {
+          "id": "A",
+          "text": "1992"
+        },
+        {
+          "id": "B",
+          "text": "1994"
+        },
+        {
+          "id": "C",
+          "text": "1990"
+        },
+        {
+          "id": "D",
+          "text": "1996"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "medium",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/movies#L144",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:movies:L144",
+      "sourceCategory": "movies",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-movies-L151",
+      "categoryId": "movies",
+      "prompt": "Come si chiama il direttore del carcere nel film Le ali della libertà?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Byron Hadley"
+        },
+        {
+          "id": "B",
+          "text": "Samuel Norton"
+        },
+        {
+          "id": "C",
+          "text": "Ellis Redding"
+        },
+        {
+          "id": "D",
+          "text": "Spencer Heywood"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "hard",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/movies#L151",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:movies:L151",
+      "sourceCategory": "movies",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-movies-L158",
+      "categoryId": "movies",
+      "prompt": "In quale decennio Andy Dufresne viene rinchiuso a Shawshank nel film Le ali della libertà?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Anni Quaranta"
+        },
+        {
+          "id": "B",
+          "text": "Anni Venti"
+        },
+        {
+          "id": "C",
+          "text": "Anni Trenta"
+        },
+        {
+          "id": "D",
+          "text": "Anni Cinquanta"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "medium",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/movies#L158",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:movies:L158",
+      "sourceCategory": "movies",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-movies-L203",
+      "categoryId": "movies",
+      "prompt": "Chi ha diretto Le ali della libertà?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ron Howard"
+        },
+        {
+          "id": "B",
+          "text": "Rob Reiner"
+        },
+        {
+          "id": "C",
+          "text": "Frank Darabont"
+        },
+        {
+          "id": "D",
+          "text": "Shimon Bentzvi"
+        }
+      ],
+      "correctOptionId": "C",
+      "difficulty": "medium",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/movies#L203",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:movies:L203",
+      "sourceCategory": "movies",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-movies-L217",
+      "categoryId": "movies",
+      "prompt": "Quale film con Rita Hayworth viene proiettato ai detenuti in Le ali della libertà?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Gilda"
+        },
+        {
+          "id": "B",
+          "text": "Questo pazzo, pazzo, pazzo, pazzo mondo"
+        },
+        {
+          "id": "C",
+          "text": "Happy Girl 1223 Strikes Again"
+        },
+        {
+          "id": "D",
+          "text": "I tre marmittoni"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "hard",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/movies#L217",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:movies:L217",
+      "sourceCategory": "movies",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-movies-L224",
+      "categoryId": "movies",
+      "prompt": "Chi ha diretto Forrest Gump?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Steven Soderbergh"
+        },
+        {
+          "id": "B",
+          "text": "Robert Zemeckis"
+        },
+        {
+          "id": "C",
+          "text": "Tony Scott"
+        },
+        {
+          "id": "D",
+          "text": "John Hughes"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "medium",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/movies#L224",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:movies:L224",
+      "sourceCategory": "movies",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-movies-L245",
+      "categoryId": "movies",
+      "prompt": "In Forrest Gump, quale celebre cantante impara a ballare osservando Forrest da bambino?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Fred Astaire"
+        },
+        {
+          "id": "B",
+          "text": "Elvis Presley"
+        },
+        {
+          "id": "C",
+          "text": "Dick Van Dyke"
+        },
+        {
+          "id": "D",
+          "text": "Gene Kelly"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "medium",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/movies#L245",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:movies:L245",
+      "sourceCategory": "movies",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-sports-L100",
+      "categoryId": "sports",
+      "prompt": "Quanti punti segnò Wilt Chamberlain nella sua celebre partita NBA del 1962 contro New York?",
+      "options": [
+        {
+          "id": "A",
+          "text": "71"
+        },
+        {
+          "id": "B",
+          "text": "100"
+        },
+        {
+          "id": "C",
+          "text": "82"
+        },
+        {
+          "id": "D",
+          "text": "99"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "medium",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/sports#L100",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:sports:L100",
+      "sourceCategory": "sports",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-sports-L128",
+      "categoryId": "sports",
+      "prompt": "Per quale squadra giocava Karl Malone quando vinse il premio NBA di MVP della stagione 1996-97?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Sacramento Kings"
+        },
+        {
+          "id": "B",
+          "text": "Miami Heat"
+        },
+        {
+          "id": "C",
+          "text": "Los Angeles Lakers"
+        },
+        {
+          "id": "D",
+          "text": "Utah Jazz"
+        }
+      ],
+      "correctOptionId": "D",
+      "difficulty": "medium",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/sports#L128",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:sports:L128",
+      "sourceCategory": "sports",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-sports-L142",
+      "categoryId": "sports",
+      "prompt": "Quanti rimbalzi conquistò Wilt Chamberlain nella sua partita da record contro Boston nel 1960?",
+      "options": [
+        {
+          "id": "A",
+          "text": "16"
+        },
+        {
+          "id": "B",
+          "text": "57"
+        },
+        {
+          "id": "C",
+          "text": "55"
+        },
+        {
+          "id": "D",
+          "text": "31"
+        }
+      ],
+      "correctOptionId": "C",
+      "difficulty": "hard",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/sports#L142",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:sports:L142",
+      "sourceCategory": "sports",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-sports-L149",
+      "categoryId": "sports",
+      "prompt": "Chi fu il primo giocatore NBA a superare i 20.000 punti in carriera?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Bob Pettit"
+        },
+        {
+          "id": "B",
+          "text": "Spud Webb"
+        },
+        {
+          "id": "C",
+          "text": "Clyde Drexler"
+        },
+        {
+          "id": "D",
+          "text": "Wilt Chamberlain"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "hard",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/sports#L149",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:sports:L149",
+      "sourceCategory": "sports",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-sports-L163",
+      "categoryId": "sports",
+      "prompt": "Quale di questi giocatori NBA era noto per la sua statura di circa 1,60 metri?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Tyrone Muggsy Bogues"
+        },
+        {
+          "id": "B",
+          "text": "Spud Webb"
+        },
+        {
+          "id": "C",
+          "text": "Larry Bird"
+        },
+        {
+          "id": "D",
+          "text": "Eddie Griffin"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "medium",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/sports#L163",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:sports:L163",
+      "sourceCategory": "sports",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-sports-L240",
+      "categoryId": "sports",
+      "prompt": "In quale anno i Miami Heat disputarono la loro prima stagione NBA?",
+      "options": [
+        {
+          "id": "A",
+          "text": "1988"
+        },
+        {
+          "id": "B",
+          "text": "1974"
+        },
+        {
+          "id": "C",
+          "text": "1963"
+        },
+        {
+          "id": "D",
+          "text": "1958"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "hard",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/sports#L240",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:sports:L240",
+      "sourceCategory": "sports",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-sports-L275",
+      "categoryId": "sports",
+      "prompt": "Con quale squadra Michael Jordan vinse sei titoli NBA?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Miami Heat"
+        },
+        {
+          "id": "B",
+          "text": "Utah Jazz"
+        },
+        {
+          "id": "C",
+          "text": "Sacramento Kings"
+        },
+        {
+          "id": "D",
+          "text": "Chicago Bulls"
+        }
+      ],
+      "correctOptionId": "D",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/sports#L275",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:sports:L275",
+      "sourceCategory": "sports",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-sports-L1359",
+      "categoryId": "sports",
+      "prompt": "In onore di quale dio si disputavano gli antichi Giochi olimpici a Olimpia?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Poseidone"
+        },
+        {
+          "id": "B",
+          "text": "Ermes"
+        },
+        {
+          "id": "C",
+          "text": "Zeus"
+        },
+        {
+          "id": "D",
+          "text": "Apollo"
+        }
+      ],
+      "correctOptionId": "C",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/sports#L1359",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:sports:L1359",
+      "sourceCategory": "sports",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-sports-L1366",
+      "categoryId": "sports",
+      "prompt": "Chi è considerato il principale promotore della rinascita dei Giochi olimpici moderni?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Henri Martin Didon"
+        },
+        {
+          "id": "B",
+          "text": "Harold Abrahams"
+        },
+        {
+          "id": "C",
+          "text": "Gaston Doumergue"
+        },
+        {
+          "id": "D",
+          "text": "Pierre de Coubertin"
+        }
+      ],
+      "correctOptionId": "D",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/sports#L1366",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:sports:L1366",
+      "sourceCategory": "sports",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-sports-L1373",
+      "categoryId": "sports",
+      "prompt": "Quale delegazione apre tradizionalmente la sfilata degli atleti ai Giochi olimpici?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Il primo Paese in ordine alfabetico"
+        },
+        {
+          "id": "B",
+          "text": "La Grecia"
+        },
+        {
+          "id": "C",
+          "text": "Il Paese con più medaglie nell'edizione precedente"
+        },
+        {
+          "id": "D",
+          "text": "Il Paese ospitante"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/sports#L1373",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:sports:L1373",
+      "sourceCategory": "sports",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-sports-L1415",
+      "categoryId": "sports",
+      "prompt": "In quale località si svolsero nel 1924 i primi Giochi olimpici invernali?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Bormio"
+        },
+        {
+          "id": "B",
+          "text": "Chamonix"
+        },
+        {
+          "id": "C",
+          "text": "Davos"
+        },
+        {
+          "id": "D",
+          "text": "Kitzbühel"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "medium",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/sports#L1415",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:sports:L1415",
+      "sourceCategory": "sports",
+      "playable": true
+    },
+    {
+      "id": "otqa-it-sports-L1422",
+      "categoryId": "sports",
+      "prompt": "In quale città svizzera ha sede il Comitato Olimpico Internazionale?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Losanna"
+        },
+        {
+          "id": "B",
+          "text": "Ginevra"
+        },
+        {
+          "id": "C",
+          "text": "Davos"
+        },
+        {
+          "id": "D",
+          "text": "Parigi"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "medium",
+      "language": "it",
+      "sourceUrl": "https://github.com/uberspot/OpenTriviaQA/blob/dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9/categories/sports#L1422",
+      "sourceName": "OpenTriviaQA — uberspot e contributori; adattamento italiano Know Better",
+      "license": "CC-BY-SA-4.0",
+      "sourceId": "dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9:sports:L1422",
+      "sourceCategory": "sports",
+      "playable": true
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+# Dependencies and generated output
+node_modules/
+.next/
+out/
+dist/
+coverage/
+*.tsbuildinfo
+*.log
+
+# Local configuration and credentials; keep documented examples
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local databases, backups and tooling state
+.data/
+.cache/
+.pnpm-store/
+.vercel/
+.codex/
+.agents/
+.aws/
+
+# Operating system files
+.DS_Store
+Thumbs.db
