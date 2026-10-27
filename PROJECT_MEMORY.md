@@ -1,6 +1,6 @@
 # Memoria di progetto — party game trivia multiplayer
 
-Ultimo aggiornamento: 26 ottobre 2026.
+Ultimo aggiornamento: 27 ottobre 2026.
 Stato: home/lobby e Fase 1 trivia implementate in `web/`, con avatar Kenney, Jerry e cinque round sincronizzati; cataloghi di domande importati da fonti internet e conservati nel database. Istruzioni e avvio dei round passano al controllo manuale con swipe su richiesta del proprietario. Piano di riferimento: [docs/plans/02-fase-1-trivia.md](docs/plans/02-fase-1-trivia.md). Verifica visiva sui telefoni a cura dell'utente. Accesso HMR di Next.js configurato per rilevare automaticamente gli indirizzi IPv4 locali a ogni avvio in sviluppo.
 Nome nel frontend esistente: Know Better; il nome definitivo non è stato confermato separatamente.
 
@@ -164,7 +164,13 @@ Prima di fissare queste meccaniche vanno chiariti:
 
 **Proposta di esperienza.** Ogni giocatore potrebbe essere riconoscibile tramite nome, avatar e colore o simbolo. L'identità scelta dovrebbe accompagnarlo dalla preparazione della partita alla classifica e alla pedina sul tabellone.
 
-**Confermato per il primo modulo.** Partire dalla home già scritta dall'utente, organizzarne il codice in directory chiare, individuare i problemi e pianificare le relative correzioni. Completare poi creazione e ingresso nelle stanze con nickname e avatar. Le stanze sono private, accessibili tramite codice o link di invito. QR code e impostazioni secondarie restano possibilità da valutare.
+**Confermato per il primo modulo.** Partire dalla home già scritta dall'utente, organizzarne il codice in directory chiare, individuare i problemi e pianificare le relative correzioni. Completare poi creazione e ingresso nelle stanze con nickname e avatar. Le stanze sono private, accessibili tramite codice o link di invito. Le impostazioni secondarie restano possibilità da valutare.
+
+**Confermato il 27 ottobre 2026.** Alla creazione della stanza viene generato un QR code da mostrare nella lobby insieme al codice e al link di invito. La scansione con la fotocamera del telefono apre il link e la pagina di ingresso con il codice stanza già compilato; il giocatore sceglie soltanto nickname e avatar e conferma, senza account. Il QR rappresenta lo stesso invito della stanza; non è richiesto uno scanner interno al gioco. Questa richiesta aggiorna il primo modulo e non introduce nuove fasi di gioco.
+
+**Integrazione QR.** La lobby genera un SVG locale con `qrcode.react` 4.2.0, senza servizi esterni. QR e copia del link condividono l'URL `/?room=CODICE#room-access`, che riusa l'ingresso esistente e porta al modulo. Il link mantiene l'origine con cui è aperto il gioco; usando localhost compare l'indicazione di aprire prima la pagina tramite l'indirizzo Wi-Fi del computer. Il QR contiene soltanto la destinazione della stanza, senza credenziali personali.
+
+**Verifiche QR.** Superati controllo TypeScript e 76 test senza listener di rete. Tre QR a 192 px, con origini HTTP LAN e HTTPS, sono stati renderizzati e decodificati con la libreria indipendente ZBar, verificando codice e destinazione. La build Webpack nella sandbox si ferma con `Could not parse output from TypeScript's --showConfig.`; l'esecuzione fuori sandbox non è stata autorizzata, quindi la build completa non è verificata. Nessun server applicativo o browser avviato dall'agente. Il proprietario ha provato il QR su Nothing Phone (3a) tramite indirizzo LAN e conferma che va bene così com'è, ritirando la segnalazione sull'apertura del link. Nessuna ulteriore modifica al flusso di scansione richiesta; autorizzati commit e push.
 
 **Punto di partenza prima dell'implementazione.** La home fornita dall'utente comprendeva presentazione, pannello crea/entra, nickname, campo codice e sei avatar emoji con interazioni locali. Ora la pagina compone le sezioni in `src/features/home/components/` e il pannello collegato alla lobby in `src/features/rooms/`. Conservare la presentazione esistente e intervenire in modo mirato.
 
@@ -385,3 +391,4 @@ Riferimenti tecnici verificati il 25 ottobre 2026: [TypeScript](https://www.type
 | 26 ottobre 2026 | Pubblicare il progetto su GitHub per il versionamento in un repository privato | «pubblicami il progetto in una directory su github che mi serve versioning», seguito da «repo privata chiaramente» |
 | 26 ottobre 2026 | Togliere l'avanzamento automatico dalle istruzioni e dall'avvio dei round: swipe di qualsiasi concorrente per far proseguire tutti; mantenere classifica di 5 secondi e timer attuale delle domande | Richiesta del proprietario di ridurre l'ansia da countdown, con proposta di trascinare un pulsante anziché tenerlo premuto |
 | 26 ottobre 2026 | Riordinare le directory del progetto per rendere più chiari i nomi e la struttura; server spento dall'utente prima dello spostamento | «poi i nomi delle directory sono confusionari, vuoi fare un refactoring», seguito da «te l'ho spento io» |
+| 27 ottobre 2026 | Generare un QR code alla creazione della stanza, oltre al codice/link; la scansione con la fotocamera apre l'ingresso con codice già compilato, poi nickname/avatar e conferma senza account | Richiesta del proprietario di semplificare l'accesso alla stanza dal telefono |

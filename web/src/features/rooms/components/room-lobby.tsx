@@ -1,6 +1,7 @@
 'use client'
 
 import { Crown, LogOut, Pencil, Play, Users } from 'lucide-react'
+import { QRCodeSVG } from 'qrcode.react'
 import { useEffect, useState, type FormEvent } from 'react'
 import { DEFAULT_AVATAR_ID } from '../data/avatars'
 import type { PlayerIdentity, RoomResponse, RoomSnapshot } from '../types'
@@ -25,7 +26,7 @@ export function RoomLobby({ room, connected, onLeave, onUpdate, onStart }: {
   const [invite, setInvite] = useState('')
   const connectedPlayers = room.members.filter(member => member.connected).length
   const isHost = room.hostId === room.selfId
-  useEffect(() => { setInvite(`${window.location.origin}/?room=${room.code}`) }, [room.code])
+  useEffect(() => { setInvite(`${window.location.origin}/?room=${room.code}#room-access`) }, [room.code])
 
   async function save(event: FormEvent) {
     event.preventDefault()
@@ -63,6 +64,18 @@ export function RoomLobby({ room, connected, onLeave, onUpdate, onStart }: {
         <p className="break-all font-mono text-3xl font-black tracking-[0.14em]" aria-label={`Room code ${room.code.split('').join(' ')}`}>{room.code}</p>
       </div>
       <div className="mb-6 grid grid-cols-2 gap-2"><CopyInvite value={room.code} label="Copy code" />{invite && <CopyInvite value={invite} label="Copy invite link" />}</div>
+      {invite && (
+        <div className="daisy-card mb-6 bg-base-200 text-base-content">
+          <div className="daisy-card-body items-center gap-3 p-4 text-center">
+            <QRCodeSVG value={invite} size={192} level="M" marginSize={4} title={`Join room ${room.code}`} role="img" className="h-auto max-w-full rounded-lg" />
+            <p className="text-sm font-black">Scan to join</p>
+            <p className="text-xs leading-relaxed">Open your phone&apos;s camera and scan the QR code. Choose your nickname and avatar: the room code is already filled in.</p>
+            {['localhost', '127.0.0.1', '[::1]', '0.0.0.0'].includes(new URL(invite).hostname) && (
+              <p className="text-xs font-bold leading-relaxed">To invite other phones, first open this page using the computer&apos;s Wi-Fi address instead of localhost.</p>
+            )}
+          </div>
+        </div>
+      )}
       <p className="mb-3 text-xs font-bold text-[#515570]">{room.members.length} / 10 places occupied{room.members.some((member) => !member.connected) ? ' · includes reconnecting players' : ''}</p>
       <ul className="space-y-2" aria-label="Players in the room" aria-live="polite" aria-relevant="all">
         {room.members.map((member) => (

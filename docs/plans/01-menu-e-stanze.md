@@ -2,10 +2,13 @@
 
 Data: 25 ottobre 2026.
 Aggiornamento avatar: 26 ottobre 2026.
+Aggiornamento inviti QR: 27 ottobre 2026.
 Stato: piano originario a partire dalla home già realizzata dall'utente, successivamente autorizzato per l'implementazione. Home, lobby e avatar Kenney sono implementati; controllo TypeScript, 15 test della lobby e build Webpack superati. La verifica visiva sui telefoni resta all'utente. I rilievi iniziali e la sequenza sotto documentano il piano di partenza, non lo stato corrente delle verifiche.
 Riferimento: [memoria di progetto](../../PROJECT_MEMORY.md).
 
 Aggiornamento di perimetro del 26 ottobre 2026: il seguito è descritto in [02-fase-1-trivia.md](02-fase-1-trivia.md). Sono ora confermati minimo di due giocatori, pulsante «Inizia partita!» e countdown di cinque secondi; queste decisioni superano i punti ancora aperti sull'avvio nel piano originario. Il nuovo modulo è stato successivamente autorizzato e implementato, con caricamento di cataloghi di domande nel database.
+
+Aggiornamento del 27 ottobre 2026: richiesto un QR code generato alla creazione della stanza e mostrato nella lobby insieme al codice/link. La fotocamera del telefono apre il link di invito con il codice già compilato; restano scelta di nickname/avatar e conferma, senza account. Il QR estende l'accesso alle stanze; non richiede uno scanner interno al gioco o nuove fasi trivia.
 
 ## 1. Obiettivo e perimetro
 
@@ -23,6 +26,7 @@ Il risultato del modulo è una lobby funzionante fino a dieci giocatori, con ide
 - Pacchetto Kenney Animal Pack Remastered scelto il 26 ottobre 2026 per sostituire il catalogo iniziale di sei emoji.
 - Prima versione senza profili, registrazione o login; il profilo sarà un'aggiunta successiva.
 - Stanze private, accessibili tramite codice o link di invito.
+- QR code generato alla creazione della stanza, scansionabile dalla fotocamera del telefono per aprire l'ingresso con codice già compilato.
 - Massimo dieci giocatori per stanza.
 - Esperienza completa sui telefoni personali, nella stessa stanza o a distanza.
 - Durante la redazione iniziale si scriveva esclusivamente il piano; l'utente ha successivamente autorizzato implementazione e dipendenze con «procedi con il piano».
@@ -92,7 +96,7 @@ Prima di rimuovere dipendenze verificare gli usi effettivi: il pulsante generico
 | --- | --- | --- |
 | Menu → Crea stanza | Nickname, scelta avatar, conferma | Stanza creata e creatore presente nella lobby |
 | Menu → Entra in una stanza | Codice, verifica della destinazione, nickname/avatar, conferma | Ingresso nella lobby se c'è posto |
-| Link di invito | Verifica della stanza, nickname/avatar, conferma | Stesso ingresso, senza digitare il codice |
+| Link di invito o scansione del QR con la fotocamera | Apertura della pagina con codice già compilato, verifica della stanza, nickname/avatar, conferma | Stesso ingresso, senza digitare il codice |
 | Ritorno con partecipazione valida | «Rientra nella stanza» oppure ripristino della lobby già aperta | Stesso partecipante, senza occupare un altro posto |
 
 La selezione crea/entra e i campi d'identità sono già riuniti nel pannello della home. Questi percorsi descrivono il comportamento da completare e non richiedono di sostituirlo con nuove schermate separate.
@@ -130,12 +134,13 @@ Usare presentazione, palette e impaginazione esistenti come riferimento durante 
 - Verifica preliminare della destinazione prima della conferma del giocatore.
 - Ricontrollo della capienza all'ingresso: la verifica preliminare non prenota il posto.
 - Link contenente la sola destinazione della stanza, senza credenziali personali.
+- QR code dello stesso link di invito, generato alla creazione della stanza e leggibile dalla fotocamera del telefono.
 
 **Formato proposto:** codice casuale di sei caratteri, escludendo simboli facilmente confondibili. Il server garantisce l'unicità e lo rigenera in caso di collisione. Il codice è condiviso tra gli invitati e non identifica il singolo giocatore.
 
 ### Sala d'attesa
 
-- Codice stanza e azioni per copiare codice e link di invito.
+- Codice stanza, QR code dell'invito e azioni per copiare codice e link.
 - Partecipanti con nickname, avatar, indicazione «Tu» e organizzatore.
 - Conteggio dei posti occupati su dieci, distinguendo quelli temporaneamente riservati a chi si sta riconnettendo.
 - Stato della connessione e aggiornamento automatico di ingressi, uscite e rientri.
@@ -236,7 +241,8 @@ La revisione della home è verificata separatamente dall'integrazione delle stan
 
 Il modulo delle stanze è completo quando sono verificati anche i seguenti punti:
 
-- Creazione e ingresso da altri telefoni tramite codice e link, scegliendo nickname e avatar.
+- Creazione e ingresso da altri telefoni tramite codice, link e QR, scegliendo nickname e avatar.
+- QR generato nella lobby alla creazione; la scansione con la fotocamera apre il codice corretto già compilato e non assegna un posto prima della conferma.
 - Dieci partecipanti supportati; undicesimo ingresso respinto con un esito comprensibile.
 - A nove partecipanti, due ingressi simultanei assegnano un solo posto.
 - Due nickname equivalenti simultanei non vengono accettati entrambi, se si adotta l'unicità proposta.
@@ -268,7 +274,7 @@ Il successivo piano della Fase 1 recepisce minimo di due giocatori e countdown d
 - Stato «Pronto», permessi di avvio e conteggio degli offline per il modulo successivo; minimo di due giocatori e countdown di cinque secondi sono ora confermati.
 - Eventuali aggiustamenti mirati alla presentazione esistente, lingua e nome definitivo; il riordino prende come riferimento la home già realizzata.
 
-Gli aspetti ancora aperti sono proposte, non requisiti approvati. Il rinvio dei profili, le stanze private tramite codice/link, la scelta del pacchetto Kenney e, per il seguito, minimo di due giocatori e countdown di cinque secondi sono invece confermati.
+Gli aspetti ancora aperti sono proposte, non requisiti approvati. Il rinvio dei profili, le stanze private tramite codice/link e QR, la scelta del pacchetto Kenney e, per il seguito, minimo di due giocatori e countdown di cinque secondi sono invece confermati.
 
 ## Riferimenti tecnici
 
