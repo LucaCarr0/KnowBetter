@@ -1,7 +1,7 @@
 # Memoria di progetto — party game trivia multiplayer
 
 Ultimo aggiornamento: 27 ottobre 2026.
-Stato: home/lobby e Fase 1 trivia implementate in `web/`, con avatar Kenney, Jerry e cinque round sincronizzati; cataloghi di domande importati da fonti internet e conservati nel database. Istruzioni e avvio dei round passano al controllo manuale con swipe su richiesta del proprietario. Piano di riferimento: [docs/plans/02-fase-1-trivia.md](docs/plans/02-fase-1-trivia.md). Verifica visiva sui telefoni a cura dell'utente. Accesso HMR di Next.js configurato per rilevare automaticamente gli indirizzi IPv4 locali a ogni avvio in sviluppo.
+Stato: home/lobby e Fase 1 trivia implementate in `web/`, con avatar Kenney, Jerry e cinque round sincronizzati; cataloghi di domande importati da fonti internet e conservati nel database. Istruzioni e avvio dei round sono manuali con swipe. Il 27 ottobre 2026 sono stati implementati commenti personali di Jerry, quattro poteri per ostacolare gli avversari e un'attesa con rotellina nella lobby al posto del countdown visibile. Piano di riferimento: [docs/plans/02-fase-1-trivia.md](docs/plans/02-fase-1-trivia.md). Verifica visiva sui telefoni a cura dell'utente. Accesso HMR di Next.js configurato per rilevare automaticamente gli indirizzi IPv4 locali a ogni avvio in sviluppo.
 Nome nel frontend esistente: Know Better; il nome definitivo non è stato confermato separatamente.
 
 ## Scopo e uso del documento
@@ -43,6 +43,8 @@ Sono confermate entrambe le modalità di partecipazione:
 
 **Confermato il 26 ottobre 2026.** La partita è avviabile dalla stanza con almeno **2 giocatori**, tramite il pulsante «Inizia partita!», seguito da un countdown di **5 secondi**.
 
+**Aggiornamento confermato il 27 ottobre 2026.** Durante quei cinque secondi tutti rimangono nella stessa schermata della lobby, con una semplice rotellina e senza numeri del countdown. Alla scadenza comune del server compare «Benvenuti nello studio». Non cambia la durata dell'attesa né l'annullamento se vengono meno i due connessi; modifica identità e nuovo avvio restano bloccati durante la preparazione, con uscita e recupero della connessione disponibili.
+
 **Configurazione iniziale applicata dopo l'autorizzazione del piano.** Avvio riservato all'organizzatore, almeno due partecipanti connessi, rosa fissata all'avvio e nuovi ingressi chiusi; chi era già concorrente può rientrare. Nessuno stato «Pronto» obbligatorio. La perdita della soglia di due durante il countdown annulla l'avvio. Questi dettagli sono i default proposti nel piano e poi applicati all'implementazione, non nuove richieste indipendenti del proprietario. Dispositivi/sistemi operativi da supportare rimangono da consolidare. Uno schermo condiviso facoltativo non è stato richiesto.
 
 ## Struttura complessiva della partita
@@ -66,9 +68,9 @@ I punti delle prime due fasi determinano il vantaggio iniziale nel finale. Esser
 - La scelta della sottocategoria avviene a maggioranza.
 - **Aggiornamento del 26 ottobre 2026:** le istruzioni non avanzano più dopo dieci secondi. Qualsiasi concorrente attivo può trascinare un pulsante per saltarle e iniziare il primo round; lo stesso gesto avvia il round successivo dopo la classifica. Nessuna scadenza nelle pause manuali e nessuna conferma obbligatoria di tutti i giocatori. Il proprietario ha proposto lo swipe al posto della pressione prolungata.
 
-La sequenza aggiornata è: voto della sottocategoria, annuncio, domanda e risposte personali, esito e punti, classifica di cinque secondi, pausa senza countdown prima del prossimo round. Lo swipe di un solo concorrente fa proseguire tutti al voto successivo. All'avvio della partita la lobby passa per un countdown di 5 secondi e una presentazione con Jerry, ferma fino allo swipe che apre il primo voto. Dopo il quinto round si conclude questa fase; non viene assegnata la vittoria dell'intera partita.
+La sequenza aggiornata è: voto della sottocategoria, annuncio e preparazione con uso facoltativo dei poteri, domanda e risposte personali, esito e punti, classifica di cinque secondi, pausa senza countdown prima del prossimo round. Lo swipe di un solo concorrente fa proseguire tutti al voto successivo. All'avvio tutti restano in lobby con una rotellina per i 5 secondi del countdown server, poi compare la presentazione con Jerry, ferma fino allo swipe che apre il primo voto. Dopo il quinto round si conclude questa fase; non viene assegnata la vittoria dell'intera partita.
 
-**Interfaccia confermata il 26 ottobre 2026.** Ogni client alterna tre viste: plancia, scelta della categoria e risposta alla domanda. Il proprietario ha chiarito che «votazione», nell'elenco iniziale delle tre schermate, indica la scelta della risposta personale, non un secondo voto sulla categoria. La plancia contiene classifica e punti e ospita anche il conduttore, la spiegazione delle regole e i momenti di gioco collettivi. I «jolly rimanenti» sono stati citati come esempio: effetti, quantità, disponibilità e uso dei jolly non sono confermati per questa fase.
+**Interfaccia confermata il 26 ottobre 2026.** Ogni client alterna tre viste: plancia, scelta della categoria e risposta alla domanda. Il proprietario ha chiarito che «votazione», nell'elenco iniziale delle tre schermate, indica la scelta della risposta personale, non un secondo voto sulla categoria. La plancia contiene classifica e punti e ospita anche il conduttore, la spiegazione delle regole e i momenti di gioco collettivi. I «jolly rimanenti», inizialmente citati solo come esempio, sono stati sostituiti dalla richiesta esplicita di poteri per la Fase 1 del 27 ottobre, descritta sotto.
 
 ### Configurazione iniziale e aspetti ancora aperti
 
@@ -78,7 +80,38 @@ La sequenza aggiornata è: voto della sottocategoria, annuncio, domanda e rispos
 - Quattro risposte, una corretta e 15 secondi; selezione locale modificabile prima della conferma, primo invio accettato definitivo. La stessa regola vale per il voto. Chiusura anticipata se tutti i concorrenti ancora in gara hanno confermato.
 - Risposta corretta: 500 punti base e bonus fino a 500 proporzionale al tempo residuo misurato dal server. Errore o assenza: zero punti, nessuna penalità. Pari punti: stessa posizione, ordine visivo di ingresso.
 
-Sono default applicati dal piano autorizzato, da bilanciare con le prove del gioco. Annuncio categoria di 3 secondi e soluzione di 5 secondi. Il proprietario ha confermato il mantenimento del timer attuale delle domande (15 secondi) e dei 5 secondi della classifica, sostituendo l'introduzione automatica di 10 secondi e l'apertura automatica del round successivo con lo swipe. Il voto resta di 12 secondi. Il riepilogo della fase conserva i risultati; l'organizzatore può riportare il gruppo in lobby e un nuovo avvio crea una nuova partita. Jolly e fasi successive rimangono da definire.
+Sono default applicati dal piano autorizzato, da bilanciare con le prove del gioco. L'annuncio categoria passa dai 3 secondi iniziali a una preparazione di massimo 15 secondi per i poteri; la soluzione resta di 5 secondi. Il proprietario ha confermato il mantenimento del timer attuale delle domande (15 secondi) e dei 5 secondi della classifica, sostituendo l'introduzione automatica di 10 secondi e l'apertura automatica del round successivo con lo swipe. Il voto resta di 12 secondi. Il riepilogo della fase conserva i risultati; l'organizzatore può riportare il gruppo in lobby e un nuovo avvio crea una nuova partita. Le fasi successive rimangono da definire.
+
+### Poteri della Fase 1
+
+**Confermato il 27 ottobre 2026.** Ogni giocatore riceve all'inizio della gara un potere casuale consumabile una sola volta. Prima di ciascuna domanda può usarlo per ostacolare un avversario. Servono quattro poteri diversi e bilanciati; l'effetto richiesto come esempio inverte le lettere interne delle parole delle risposte, mantenendo prima e ultima lettera. Ogni round prevede una possibilità di ottenere un altro potere con probabilità `p × k`, dove `k` cresce scendendo in classifica.
+
+**Taratura espressamente accettata dal proprietario.** Un solo avversario per uso, al massimo un effetto subito per domanda, probabilità di ottenere un potere dal **20% per il primo al 60% per l'ultimo**. Si tratta della prima taratura, da valutare giocando.
+
+**Scelte operative per l'implementazione, non ulteriori requisiti del proprietario:**
+
+- **Lettere ribelli:** inversione delle lettere interne di ogni parola nelle risposte, con prima e ultima ferme.
+- **Nebbia:** ogni alternativa va toccata per rivelarla prima di poterla scegliere.
+- **Shuffle:** scambia le posizioni delle quattro risposte ogni secondo soltanto sul telefono del bersaglio, per tutta la domanda. Sostituisce il precedente potere Lucchetti su richiesta del proprietario.
+- **Riflettore:** una sola alternativa visibile alla volta, con comandi per navigare fra le quattro.
+- Inventario massimo di due carte e al massimo un potere giocato per round. Gli effetti valgono soltanto per la domanda corrente e non modificano correttezza, punti o timer comune.
+- La preparazione riusa `category_reveal`, allungata da 3 a un massimo di 15 secondi; si conclude prima se tutti i concorrenti ancora in gara usano un potere o passano. Non viene aggiunta una schermata principale.
+- Dopo la carta iniziale, estrazioni all'inizio dei round 2–5, con `p = 0,2` e `k = 1 + 2 × (rango − 1) / (N − 1)`, dove `N` comprende i concorrenti non ritirati. Pari punti danno stesso rango e stessa probabilità; i ritirati sono esclusi. L'inventario deve avere spazio per ricevere una carta.
+- Estrazione ed effetti sono governati e salvati dal server: una riconnessione non ripete il sorteggio. I nuovi match attivano i poteri; i vecchi salvataggi senza inventario continuano senza assegnazioni retroattive a metà gara. I campi opzionali nello stato JSONB non richiedono una nuova migrazione SQL.
+
+**Richiesta successiva del 27 ottobre 2026.** Il proprietario ha chiesto più tempo per scegliere potere e bersaglio e gli avatar dei possibili bersagli nel menu a tendina. La nuova durata predefinita scelta per l’implementazione è di 15 secondi, rispetto agli 8 iniziali; resta la chiusura anticipata quando tutti hanno concluso. Il selettore usa Base UI già installato e mostra avatar Kenney, nickname e posizione anche per il concorrente selezionato. Gli avversari già colpiti sono disabilitati; sé stessi, ritirati e disconnessi restano esclusi. Nessuna nuova dipendenza. Superati controllo TypeScript, 9 test dei poteri e una verifica senza browser dei limiti temporali e dell’etichetta/stato disabilitato del selettore; apertura del menu e resa degli avatar sul telefono restano alla prova UI del proprietario.
+
+**Sostituzione confermata il 27 ottobre 2026.** Il proprietario ha richiesto Shuffle al posto di Lucchetti, per rendere più difficile leggere le risposte e scegliere la posizione corretta. L’effetto riusa l’orologio della domanda: a ogni intervallo di 1.000 ms tutte e quattro le risposte cambiano posizione. Testo, identificativi, selezione confermata e valutazione server non cambiano; soltanto l’ordine visivo del destinatario è alterato. L’ordine è ricostruibile al rientro dalla stessa istanza della domanda e dal tempo trascorso. Al riavvio del coordinatore le carte e gli effetti `locks` già salvati vengono convertiti in `shuffle`, mantenendo proprietari, bersagli e identificativi delle carte. Non servono nuove dipendenze o migrazioni SQL; il campo legacy `powerStep` resta solo per riconoscere le vecchie ricevute e non abilita nuovi sblocchi. Verificati controllo TypeScript e 100 test senza listener di rete, inclusi confini temporali, spostamento di tutte le opzioni, integrità degli ID, effetto personale e conversione dei vecchi salvataggi. Nessun server applicativo o browser avviato; prova visiva e taratura restano al proprietario. Build completa non ripetuta.
+
+**Taratura successiva confermata il 27 ottobre 2026.** Dopo la prova, il proprietario ha chiesto di rallentare Shuffle da 0,5 a 1 secondo, giudicando troppo difficile l’intervallo iniziale. Il valore corrente è `SHUFFLE_INTERVAL_MS = 1_000`; descrizione visibile e verifiche temporali sono allineate. Controllo TypeScript e tutti i 100 test senza listener di rete superati dopo la modifica.
+
+### Personalità e commenti di Jerry
+
+**Confermato il 27 ottobre 2026.** Alla fine di ogni round Jerry commenta gli eventi notevoli insieme alla classifica: il primo viene spodestato, nessuno indovina, tutti indovinano o chi era ultimo sbaglia ancora. Quando menziona un concorrente usa il nickname. Il tono deve essere sbruffone, anche nelle prese in giro per gli errori.
+
+**Scelta operativa.** Battute originali selezionate da regole pure sul server, al massimo due per round, condivise fra i client e conservate nell'esito, nella classifica e nella pausa successiva. Confronto dei punteggi prima e dopo il round, gestione delle parità e distinzione fra risposta errata e assenza evitano commenti su eventi non avvenuti. Non sono richiesti servizi AI, voce o doppiaggio. Bilanciamento dei quattro effetti e lettura delle battute sui telefoni restano da verificare giocando; le prove visive spettano al proprietario.
+
+**Verifiche delle aggiunte del 27 ottobre.** Superati 98 test senza listener di rete e controllo TypeScript. Coperti eventi e parità nei commenti, probabilità e limiti delle carte, inventari personali, bersagli concorrenti, consumo unico, ricevute, ostacoli convalidati dal server, persistenza JSONB e domanda sostitutiva dopo riavvio. La nuova domanda conserva carte consumate e bersagli del round, ma azzera sblocchi e preparazione personale; la UI permette a chi ha già giocato soltanto di confermare di essere pronto. Nessuna nuova dipendenza o migrazione SQL; database locale attivo non aperto. Build completa non ripetuta dopo il limite della sandbox già documentato. Nessun server applicativo o browser avviato: prove UI e taratura sul campo al proprietario. Per provare i nuovi poteri occorre riavviare il coordinatore e avviare una nuova partita.
 
 ## Fase 2 — Cinque round con sblocco individuale
 
@@ -192,7 +225,9 @@ Il requisito confermato di giocare interamente dal telefono comporta che ogni pa
 
 **Confermato per la Fase 1 il 26 ottobre 2026:** classifica dei punti sul client di ogni giocatore; viste alternate di plancia, voto categoria e domanda con possibili risposte. Sulla plancia sono disponibili Jerry, regole e momenti collettivi.
 
-**Altri contenuti proposti:** fase e round correnti, categoria, domanda o minisfida personale, tempo residuo quando previsto, posizione sul percorso ed effetti delle maledizioni nelle fasi pertinenti. La consultazione deve essere compatibile con l'attività in corso e con le informazioni che devono restare private. I jolly rimangono un esempio da definire, senza obbligo di mostrarne un contatore nella prima versione.
+**Aggiornamento confermato il 27 ottobre 2026:** poteri della Fase 1 disponibili nella preparazione della domanda, con inventario personale ed effetto ricevuto consultabili dal proprio telefono. Questo sostituisce il precedente riferimento ai jolly come semplice esempio.
+
+**Altri contenuti proposti:** fase e round correnti, categoria, domanda o minisfida personale, tempo residuo quando previsto, posizione sul percorso ed effetti delle maledizioni nelle fasi pertinenti. La consultazione deve essere compatibile con l'attività in corso e con le informazioni che devono restare private.
 
 **Criteri proposti da discutere:**
 
@@ -392,3 +427,10 @@ Riferimenti tecnici verificati il 25 ottobre 2026: [TypeScript](https://www.type
 | 26 ottobre 2026 | Togliere l'avanzamento automatico dalle istruzioni e dall'avvio dei round: swipe di qualsiasi concorrente per far proseguire tutti; mantenere classifica di 5 secondi e timer attuale delle domande | Richiesta del proprietario di ridurre l'ansia da countdown, con proposta di trascinare un pulsante anziché tenerlo premuto |
 | 26 ottobre 2026 | Riordinare le directory del progetto per rendere più chiari i nomi e la struttura; server spento dall'utente prima dello spostamento | «poi i nomi delle directory sono confusionari, vuoi fare un refactoring», seguito da «te l'ho spento io» |
 | 27 ottobre 2026 | Generare un QR code alla creazione della stanza, oltre al codice/link; la scansione con la fotocamera apre l'ingresso con codice già compilato, poi nickname/avatar e conferma senza account | Richiesta del proprietario di semplificare l'accesso alla stanza dal telefono |
+| 27 ottobre 2026 | Dare personalità a Jerry con commenti di fine round sugli eventi notevoli, nickname dei concorrenti e tono sbruffone nelle prese in giro per gli errori | Richiesta del proprietario di migliorare la Fase 1 |
+| 27 ottobre 2026 | Introdurre quattro poteri nella preparazione di ogni domanda della Fase 1, una carta casuale iniziale consumabile e possibilità di ottenere altre carte secondo probabilità `p × k` crescente dal primo all'ultimo; includere inversione delle lettere interne delle risposte | Richiesta del proprietario di migliorare la Fase 1 |
+| 27 ottobre 2026 | Prima taratura dei poteri: un avversario per uso, massimo un effetto subito per domanda, probabilità dal 20% per il primo al 60% per l'ultimo | Risposta del proprietario: «Sì, usa questa taratura» |
+| 27 ottobre 2026 | Durante l'avvio mantenere tutti nella lobby con una rotellina; alla scadenza dei cinque secondi server mostrare «Benvenuti nello studio», senza countdown numerico | Richiesta del proprietario di migliorare l'avvio della partita |
+| 27 ottobre 2026 | Allungare il tempo per scegliere potere e bersaglio e mostrare gli avatar dei possibili bersagli nel menu a tendina | Richiesta successiva del proprietario; durata di 15 secondi scelta come nuovo default d’implementazione |
+| 27 ottobre 2026 | Sostituire Lucchetti con Shuffle: le quattro risposte cambiano posizione ogni 0,5 secondi per il giocatore colpito | Richiesta successiva del proprietario |
+| 27 ottobre 2026 | Rallentare Shuffle da 0,5 a 1 secondo tra gli scambi di posizione, per ridurne la difficoltà | Richiesta successiva del proprietario dopo la prova |

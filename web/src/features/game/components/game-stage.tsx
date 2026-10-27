@@ -1,16 +1,19 @@
 'use client'
 
-import { Check, CheckCircle2, Clock3, LogOut, Radio, Send, Sparkles, Trophy, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, CheckCircle2, Clock3, EyeOff, LogOut, Radio, Send, Trophy, WandSparkles, X } from 'lucide-react'
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { ScoreBurst } from '../../../components/originkit/score-burst'
 import type { RoomResponse } from '../../rooms/types'
 import { PlayerAvatar } from '../../rooms/components/player-avatar'
 import { useGameClock } from '../hooks/use-game-clock'
+import { POWERS, shuffleAnswerOptions } from '../powers'
 import type { GameAction, GameCommandFields, GameSnapshot } from '../types'
 import { GameLeaderboard } from './game-leaderboard'
 import { JerryPresenter } from './jerry-presenter'
+import { PowerPreparation } from './power-preparation'
 import { SwipeToContinue } from './swipe-to-continue'
 import styles from '../styles/game-stage.module.css'
+import powerStyles from '../styles/powers.module.css'
 
 export interface GameStageProps {
   game: GameSnapshot
@@ -29,10 +32,11 @@ const numberFormatter = new Intl.NumberFormat('it-IT')
 
 export function GameStage({ game, selfId, roomCode, isHost, connected, controlConflict = false, serverClockOffsetMs, onCommand, onLeave, onTakeControl }: GameStageProps) {
   const self = game.players.find((player) => player.id === selfId)
-  const sceneKey = `${game.id}:${game.round}:${game.phase}:${game.question?.instanceId ?? ''}`
+  const sceneKey = `${game.id}:${game.round}:${game.phase}:${game.question?.instanceId ?? game.powers.preparationId ?? ''}`
   const currentScene = useRef(sceneKey)
   currentScene.current = sceneKey
   const [selection, setSelection] = useState<string | null>(null)
+  const [spotlightIndex, setSpotlightIndex] = useState(0)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
   const heading = useRef<HTMLHeadingElement>(null)
@@ -44,6 +48,7 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
 
   useEffect(() => {
     setSelection(null)
+    setSpotlightIndex(0)
     setError('')
     setPending(false)
     scoreboard.current?.close()
@@ -106,17 +111,26 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
 
   const isVoting = game.phase === 'category_vote'
   const isQuestion = game.phase === 'question'
+  const effect = isQuestion ? game.powers.effect : null
+  const power = POWERS.find(item => item.kind === effect?.kind)
+  const powerFrom = game.players.find(player => player.id === effect?.fromId)
+  const showCommentary = ['scoreboard', 'round_ready', 'phase_complete'].includes(game.phase) && game.commentary.length > 0
   const isReveal = game.phase === 'round_reveal'
   const manualPhase = game.phase === 'intro' || game.phase === 'round_ready' ? game.phase : null
   const enoughPlayers = game.players.filter((player) => player.connected && !player.retired).length >= 2
   const isInteractive = isVoting || isQuestion
   const confirmed = isVoting ? game.selfVote : game.selfAnswer
   const disabled = pending || !connected || controlConflict || !clock.isOpen || Boolean(confirmed) || !self || self.retired
+  const options = isVoting ? game.candidates.map(category => ({ id: category.id, text: category.name, icon: category.icon })) : game.question?.options ?? []
+  const displayedOptions = effect?.kind === 'shuffle' && game.question
+    ? shuffleAnswerOptions(options, Math.min(clock.now, game.deadline ?? clock.now) - game.opensAt, `${game.question.instanceId}:${selfId}`)
+    : options
+  const selectedOption = options.find(option => option.id === (confirmed ?? selection))
   const sceneTitle = isVoting ? 'Il prossimo argomento?'
     : isQuestion ? 'È la tua risposta definitiva?'
       : game.phase === 'countdown' ? 'Ciak, si gioca!'
         : game.phase === 'intro' ? 'Benvenuti nello studio!'
-          : game.phase === 'category_reveal' ? 'Il pubblico ha scelto!'
+          : game.phase === 'category_reveal' ? 'Preparate i colpi di scena!'
             : isReveal ? 'E la risposta giusta è…'
               : game.phase === 'scoreboard' ? 'Facciamo il punto.'
                 : game.phase === 'round_ready' ? `Pronti per il round ${game.round + 1}?`
@@ -126,12 +140,12 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
   function panelMessage(): ReactNode {
     switch (game.phase) {
       case 'countdown': return <p>Telefoni pronti, cervelli accesi. Stiamo per andare in onda!</p>
-      case 'intro': return <><p>Io sono Jerry. Voi siete quelli che sanno tutto… giusto?</p><ol className={styles.rules}><li>Votate la categoria prima di ogni round.</li><li>Scegliete e confermate una delle quattro risposte.</li><li>Risposta giusta: 500 punti, più un bonus fino a 500 se siete rapidi!</li></ol><p className={styles.smallCopy}>Cinque round. Nessuna penalità per gli errori. Scaldate i pollici!</p></>
-      case 'category_reveal': return <><p>Si gioca con <strong>{game.category?.name ?? 'la categoria scelta'}</strong>!</p><p className={styles.smallCopy}>{game.selectionReason === 'tie' ? 'Parità di voti: il sorteggio ha deciso.' : game.selectionReason === 'abstention' ? 'Nessun voto: ci ha pensato il sorteggio.' : 'La categoria che ha raccolto più voti.'} Tra un attimo arriva la domanda.</p></>
+      case 'intro': return <><p>Io sono Jerry. Voi siete quelli che sanno tutto… giusto?</p><ol className={styles.rules}><li>Votate la categoria prima di ogni round.</li><li>Prima della domanda, lanciate un potere su un avversario o conservatelo.</li><li>Scegliete e confermate una delle quattro risposte in 15 secondi.</li><li>Risposta giusta: 500 punti, più un bonus fino a 500 se siete rapidi!</li></ol><p className={styles.smallCopy}>Partite con un potere monouso. Un solo attacco per domanda, un solo effetto per bersaglio.</p><p className={styles.smallCopy}>Ogni round potete ricevere un’altra carta, fino a due in tasca: dal 20% per il primo al 60% per l’ultimo.</p><p className={styles.smallCopy}>Cinque round. Nessuna penalità per gli errori. Scaldate i pollici!</p></>
+      case 'category_reveal': return <><p>Si gioca con <strong>{game.category?.name ?? 'la categoria scelta'}</strong>!</p><p className={styles.smallCopy}>{game.selectionReason === 'tie' ? 'Parità di voti: il sorteggio ha deciso.' : game.selectionReason === 'abstention' ? 'Nessun voto: ci ha pensato il sorteggio.' : 'La categoria che ha raccolto più voti.'} Avete un momento per mettere i bastoni tra le ruote agli altri!</p></>
       case 'round_reveal': return <><p>{self?.roundPoints ? 'Lo sapevi! Mi sa che qui c’è della stoffa.' : 'Una domanda in più, una curiosità in più. E si riparte!'}</p><p className={styles.smallCopy}>La classifica si aggiorna con i punti di questo round.</p></>
-      case 'scoreboard': return <><p>{game.round < game.totalRounds ? 'Occhio alla classifica: c’è ancora spazio per la rimonta!' : 'Cinque domande dopo, guardate quanti punti avete portato a casa.'}</p><p className={styles.smallCopy}>{game.round < game.totalRounds ? 'Poi sarete voi a scegliere quando iniziare il prossimo round.' : 'Tra poco il riepilogo della prima fase.'}</p></>
-      case 'round_ready': return <><p>Riprendete fiato, confrontate i punti. Il prossimo round parte quando volete voi!</p><p className={styles.smallCopy}>Un giocatore trascina il pulsante e tutto il gruppo passa al voto della categoria.</p></>
-      case 'phase_complete': return <><p>Bel lavoro, squadra! Ecco i punti accumulati nei {game.totalRounds} round.</p><p className={styles.smallCopy}>Questa è la classifica della Fase 1. La vittoria della partita si deciderà nelle fasi successive, che arriveranno con un prossimo aggiornamento.</p></>
+      case 'scoreboard': return <>{showCommentary ? game.commentary.slice(0, 2).map((line, index) => <p key={index}>{line}</p>) : <p>{game.round < game.totalRounds ? 'Occhio alla classifica: c’è ancora spazio per la rimonta!' : 'Cinque domande dopo, guardate quanti punti avete portato a casa.'}</p>}<p className={styles.smallCopy}>{game.round < game.totalRounds ? 'Poi sarete voi a scegliere quando iniziare il prossimo round.' : 'Tra poco il riepilogo della prima fase.'}</p></>
+      case 'round_ready': return <>{showCommentary ? game.commentary.slice(0, 2).map((line, index) => <p key={index}>{line}</p>) : <p>Riprendete fiato, confrontate i punti. Il prossimo round parte quando volete voi!</p>}<p className={styles.smallCopy}>Un giocatore trascina il pulsante e tutto il gruppo passa al voto della categoria.</p></>
+      case 'phase_complete': return <>{showCommentary ? game.commentary.slice(0, 2).map((line, index) => <p key={index}>{line}</p>) : <p>Bel lavoro, squadra! Ecco i punti accumulati nei {game.totalRounds} round.</p>}<p className={styles.smallCopy}>Questa è la classifica della Fase 1. La vittoria della partita si deciderà nelle fasi successive, che arriveranno con un prossimo aggiornamento.</p></>
       case 'suspended': return <><p>Ci servono almeno due concorrenti connessi per continuare.</p><p className={styles.smallCopy}>I punti sono conservati. Aspettiamo chi sta rientrando.</p></>
       case 'aborted': return <><p>Questa fase è stata interrotta. Nessuna vittoria assegnata.</p><p className={styles.smallCopy}>I risultati già confermati restano nel riepilogo.</p></>
       default: return null
@@ -157,18 +171,26 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
           <div className={styles.sceneMeta}><span className={`daisy-badge ${styles.phaseBadge}`}>{game.phase === 'round_ready' ? `PROSSIMO ROUND ${game.round + 1} / ${game.totalRounds}` : game.round ? `ROUND ${game.round} / ${game.totalRounds}` : 'FASE 1 · TRIVIA'}</span><span className={styles.onAir}><Radio size={13} aria-hidden="true" /> {connected ? 'IN ONDA' : 'OFFLINE'}</span></div>
           <h1 id="game-scene-title" ref={heading} tabIndex={-1} aria-describedby={isQuestion && game.question ? 'current-question-prompt' : undefined} className={styles.title}>{sceneTitle}</h1>
 
-          {game.deadline !== null && <div className={styles.timerBlock}><div className={styles.timerLabel}><span>{isVoting ? 'Tempo per votare' : isQuestion ? 'Tempo per rispondere' : game.phase === 'suspended' ? 'Attesa di riconnessione' : 'Tra poco…'}</span><span className={styles.timerNumber}><Clock3 size={15} aria-hidden="true" /><span role="timer" aria-label={`${clock.seconds} secondi rimanenti`} aria-live="off">{clock.seconds}<small>s</small></span></span></div><progress className={`daisy-progress ${styles.timerProgress}`} value={clock.remainingPercent} max={100} aria-label="Tempo residuo" /></div>}
+          {game.deadline !== null && game.phase !== 'countdown' && <div className={styles.timerBlock}><div className={styles.timerLabel}><span>{isVoting ? 'Tempo per votare' : isQuestion ? 'Tempo per rispondere' : game.phase === 'category_reveal' ? 'Tempo per giocare un potere' : game.phase === 'suspended' ? 'Attesa di riconnessione' : 'Tra poco…'}</span><span className={styles.timerNumber}><Clock3 size={15} aria-hidden="true" /><span role="timer" aria-label={`${clock.seconds} secondi rimanenti`} aria-live="off">{clock.seconds}<small>s</small></span></span></div><progress className={`daisy-progress ${styles.timerProgress}`} value={clock.remainingPercent} max={100} aria-label="Tempo residuo" /></div>}
 
           {isInteractive ? (
             <form onSubmit={submitSelection} className={styles.selectionForm}>
               <p className={styles.instructions}>{isVoting ? 'Scegli la tua categoria e conferma il voto. Vince la più votata!' : 'Scegli una risposta, poi confermala. Prima rispondi bene, più punti guadagni.'}</p>
+              {power && <div role="status" className={`daisy-alert ${powerStyles.effect}`}><WandSparkles size={22} aria-hidden="true" /><div><strong>{powerFrom?.nickname ?? 'Un avversario'} ti ha lanciato {power.name}!</strong><p>{power.description} Il tempo resta di 15 secondi.</p></div></div>}
               {isQuestion && game.question && <div className={styles.questionBox}><span className={styles.eyebrow}>{game.category?.name ?? 'Cultura generale'}{game.question.language !== 'it' && game.question.language !== 'it-IT' ? ` · ${game.question.language.toUpperCase()}` : ''}</span><h2 id="current-question-prompt" className={styles.questionText}>{game.question.prompt}</h2></div>}
               <div className={isVoting ? styles.categoryChoices : styles.answerChoices} role="group" aria-label={isVoting ? 'Categorie disponibili' : 'Risposte disponibili'}>
-                {(isVoting ? game.candidates.map((category) => ({ id: category.id, text: category.name, icon: category.icon })) : game.question?.options ?? []).map((option, index) => {
+                {displayedOptions.map(option => {
+                  const index = options.findIndex(original => original.id === option.id)
+                  if (effect?.kind === 'spotlight' && index !== spotlightIndex) return null
                   const chosen = (confirmed ?? selection) === option.id
-                  return <button type="button" key={option.id} disabled={disabled} aria-pressed={chosen} className={`daisy-btn ${styles.choice} ${chosen ? styles.selectedChoice : ''}`} onClick={() => { setSelection(option.id); setError('') }}><span className={styles.optionLetter}>{isVoting && 'icon' in option && option.icon ? option.icon as string : String.fromCharCode(65 + index)}</span><span className={styles.optionText}>{option.text}</span>{chosen && <Check size={21} className={styles.choiceCheck} aria-hidden="true" />}</button>
+                  const hiddenByFog = effect?.kind === 'fog' && !effect.revealedOptionIds.includes(option.id)
+                  return <button type="button" key={option.id} disabled={disabled} aria-pressed={hiddenByFog ? undefined : chosen} aria-label={hiddenByFog ? `Scopri la risposta ${String.fromCharCode(65 + index)}` : undefined} className={`daisy-btn ${styles.choice} ${chosen ? styles.selectedChoice : ''} ${effect?.kind === 'spotlight' ? powerStyles.spotlight : ''}`} onClick={() => {
+                    if (hiddenByFog && game.question) { void send('game:clear-power', { questionInstanceId: game.question.instanceId, optionId: option.id }); return }
+                    setSelection(option.id); setError('')
+                  }}><span className={styles.optionLetter}>{isVoting && 'icon' in option && option.icon ? option.icon as string : String.fromCharCode(65 + index)}</span><span className={styles.optionText}>{hiddenByFog ? 'Tocca per scoprire' : option.text}</span>{hiddenByFog ? <EyeOff size={21} aria-hidden="true" /> : chosen && <Check size={21} className={styles.choiceCheck} aria-hidden="true" />}</button>
                 })}
               </div>
+              {effect?.kind === 'spotlight' && <><div className={powerStyles.spotlightControls}><button type="button" disabled={disabled || spotlightIndex === 0} className={`daisy-btn ${powerStyles.navigation}`} aria-label="Mostra la risposta precedente" onClick={() => setSpotlightIndex(index => index - 1)}><ArrowLeft size={20} aria-hidden="true" /></button><span role="status" aria-live="polite">Risposta {spotlightIndex + 1} di {options.length}</span><button type="button" disabled={disabled || spotlightIndex === options.length - 1} className={`daisy-btn ${powerStyles.navigation}`} aria-label="Mostra la risposta successiva" onClick={() => setSpotlightIndex(index => index + 1)}><ArrowRight size={20} aria-hidden="true" /></button></div>{selectedOption && <p role="status" className={styles.smallCopy}>Hai scelto la risposta {String.fromCharCode(65 + options.indexOf(selectedOption))}.</p>}</>}
               <div className={styles.confirmation} aria-live="polite">
                 {confirmed ? <p className={styles.confirmedMessage}><CheckCircle2 size={21} aria-hidden="true" />{isVoting ? 'Voto confermato. Aspettiamo il gruppo!' : 'Risposta confermata. Tra poco la soluzione!'}</p>
                   : <button type="submit" disabled={disabled || !selection} className={`daisy-btn ${styles.confirmButton}`}>{pending ? <><span className="daisy-loading daisy-loading-spinner daisy-loading-sm" aria-hidden="true" /> Invio in corso…</> : <><Send size={18} aria-hidden="true" />{isVoting ? 'Conferma il voto' : 'Conferma la risposta'}</>}</button>}
@@ -178,7 +200,7 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
             </form>
           ) : (
             <>
-              {game.phase === 'countdown' && <div className={styles.countdown} role="status" aria-label={clock.seconds ? `La partita inizia tra ${clock.seconds} secondi` : 'La partita sta per iniziare'}><span key={clock.seconds}>{clock.seconds || 'VIA!'}</span><p>Il tuo posto è in prima fila.</p></div>}
+              {game.phase === 'countdown' && <p role="status"><span className="daisy-loading daisy-loading-spinner daisy-loading-md" aria-hidden="true" /> Lo studio si sta preparando…</p>}
               <JerryPresenter compact={game.phase !== 'intro'}>{panelMessage()}</JerryPresenter>
               {manualPhase && <div className="my-6">
                 <SwipeToContinue label={manualPhase === 'intro' ? 'Scorri per iniziare' : 'Scorri per il prossimo round'}
@@ -186,9 +208,10 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
                   onContinue={() => send('game:continue', { expectedPhase: manualPhase })} />
                 <p className={styles.smallCopy} role="status">{enoughPlayers ? 'Può farlo qualsiasi giocatore: uno swipe fa proseguire tutti.' : 'Aspettiamo almeno due concorrenti connessi. Poi potrete proseguire con uno swipe.'}</p>
               </div>}
-              {game.phase === 'category_reveal' && game.category && <div className={styles.categoryReveal}><Sparkles aria-hidden="true" size={22} /><strong>{game.category.name}</strong>{game.categoryVotes && <span>{game.categoryVotes[game.category.id] ?? 0} voti</span>}</div>}
+              {game.phase === 'category_reveal' && <PowerPreparation game={game} selfId={selfId} disabled={!connected || controlConflict || !clock.isOpen || !self || self.retired} pending={pending} onCommand={send} />}
               {isReveal && game.question && game.reveal && <div className={styles.resultCard}><span className={styles.eyebrow}>Risposta corretta</span><p className={styles.correctAnswer}><CheckCircle2 size={23} aria-hidden="true" />{game.question.options.find((option) => option.id === game.reveal?.correctOptionId)?.text ?? 'Soluzione disponibile nello studio'}</p>{game.reveal.explanation && <p className={styles.explanation}>{game.reveal.explanation}</p>}<ScoreBurst active={Boolean(self?.roundPoints)} trigger={`${game.id}:${game.round}`}><p className={styles.roundGain}>+{numberFormatter.format(self?.roundPoints ?? 0)}<span> punti per te</span></p></ScoreBurst><p className={styles.answerFeedback}>{!game.selfAnswer ? 'Nessuna risposta confermata entro il termine.' : game.selfAnswer === game.reveal.correctOptionId ? 'Risposta giusta. Bel colpo!' : 'Questa volta non era quella giusta. Nessuna penalità.'}</p><p className={styles.source}>Fonte: <a href={game.reveal.sourceUrl} target="_blank" rel="noopener noreferrer">{game.reveal.sourceName}</a> · {game.reveal.license}</p></div>}
               {['intro', 'round_reveal', 'scoreboard', 'round_ready', 'phase_complete', 'suspended', 'aborted'].includes(game.phase) && <section className={styles.board} aria-labelledby="board-heading"><div className={styles.boardHeading}><Trophy size={20} aria-hidden="true" /><h2 id="board-heading">{game.phase === 'phase_complete' ? 'Classifica della Fase 1' : 'La classifica'}</h2></div><GameLeaderboard players={game.players} selfId={selfId} showGains={isReveal || game.phase === 'scoreboard' || game.phase === 'round_ready'} /></section>}
+              {game.phase === 'round_ready' && <p className={powerStyles.inventory}><strong>Poteri in tasca ({game.powers.inventory.length}/2):</strong> {game.powers.inventory.length ? game.powers.inventory.map(card => POWERS.find(item => item.kind === card.kind)?.name).join(', ') : 'nessuno. Potresti riceverne un altro nel prossimo round.'}</p>}
               {game.message && <p className={styles.serverMessage} role="status">{game.message}</p>}
               {(game.phase === 'phase_complete' || game.phase === 'aborted') && <div className={styles.endActions}>{isHost ? <button type="button" className={`daisy-btn ${styles.confirmButton}`} disabled={pending || !connected || controlConflict} onClick={() => void send('game:return-lobby')}>{pending ? 'Rientro in corso…' : 'Torna in stanza con il gruppo'}</button> : <p className={styles.smallCopy}>L’organizzatore può riportare il gruppo nella stanza.</p>}</div>}
             </>

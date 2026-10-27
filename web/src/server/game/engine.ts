@@ -1,6 +1,8 @@
 import { randomInt, randomUUID } from 'node:crypto'
 import { GAME_DEFAULTS, type GameCategory, type GameConfig, type GameContinuePhase, type GameOption, type GamePhase, type GameSnapshot } from '../../features/game/types'
 import type { AvatarId } from '../../features/rooms/data/avatars'
+import { MAX_POWER_CARDS, POWERS, powerDropProbability, type PowerCard, type PowerEffect } from '../../features/game/powers'
+import { buildJerryCommentary } from './commentary'
 
 /** Private server content. Never import this module into a client component. */
 export interface TriviaQuestion {
@@ -46,6 +48,10 @@ export interface GameRound {
   categoryVotes: Record<string, number> | null
   selectionReason: GameSnapshot['selectionReason']
   questionInstances: QuestionInstance[]
+  powerPlays?: (PowerEffect & { cardId: string; targetId: string })[]
+  powerReadyIds?: string[]
+  powersDealt?: boolean
+  commentary?: string[]
 }
 type ResumablePhase = Exclude<GamePhase, 'suspended' | 'aborted' | 'phase_complete'>
 interface Suspension {
@@ -69,6 +75,7 @@ export interface GameState {
   usedQuestionIds: string[]
   suspension: Suspension | null
   message: string | null
+  powerInventories?: Record<string, PowerCard[]>
 }
 
 export class GameRuleError extends Error {
@@ -83,6 +90,14 @@ const currentRound = (game: GameState) => game.rounds[game.rounds.length - 1]
 const currentQuestion = (game: GameState) => currentRound(game)?.questionInstances.at(-1)
 const activePlayers = (game: GameState) => game.players.filter(player => !player.retired)
 const connectedCount = (game: GameState, connectedIds: Set<string>) => activePlayers(game).filter(player => connectedIds.has(player.id)).length
+const letters = new Intl.Segmenter('it', { granularity: 'grapheme' })
+
+export function scrambleAnswerWords(text: string): string {
+  return text.replace(/\p{L}[\p{L}\p{M}]*/gu, word => {
+    const characters = [...letters.segment(word)].map(part => part.segment)
+    return characters.length < 4 ? word : characters[0] + characters.slice(1, -1).reverse().join('') + characters.at(-1)
+  })
+}
 
 function choose<T>(items: T[]): T {
   return items[randomInt(items.length)]
@@ -95,6 +110,24 @@ function shuffle<T>(items: T[]): T[] {
     ;[result[index], result[other]] = [result[other], result[index]]
   }
   return result
+}
+
+function dealPower(): PowerCard {
+  return { id: randomUUID(), kind: choose([...POWERS]).kind }
+}
+
+/** Called once on opening a round, never on snapshots or reconnection. */
+export function awardRoundPowers(game: GameState, roll: () => number = () => randomInt(1_000_000) / 1_000_000): void {
+  const round = currentRound(game)
+  if (!game.powerInventories || !round || round.powersDealt) return
+  round.powersDealt = true
+  if (game.round === 1) return
+  const active = activePlayers(game)
+  for (const player of active) {
+    const inventory = game.powerInventories[player.id]
+    const rank = active.filter(other => other.points > player.points).length + 1
+    if (inventory.length < MAX_POWER_CARDS && roll() < powerDropProbability(rank, active.length)) inventory.push(dealPower())
+  }
 }
 
 export function isPlayableQuestion(question: TriviaQuestion): boolean {
@@ -167,6 +200,10 @@ function prepareQuestion(game: GameState, content: GameContent, now: number): bo
   question.options = shuffle(question.options)
   game.usedQuestionIds.push(question.id)
   round.questionInstances.push({ id: randomUUID(), question, status: 'prepared', opensAt: null, deadline: null, closedAt: null, answers: {} })
+  round.powerReadyIds = []
+  for (const play of round.powerPlays ?? []) {
+    play.revealedOptionIds = []
+  }
   enter(game, 'category_reveal', now, game.config.categoryRevealMs)
   return true
 }
@@ -183,6 +220,7 @@ function openRound(game: GameState, content: GameContent, connectedIds: Set<stri
   }
   game.round++
   game.rounds.push({ number: game.round, candidates: copy(shuffle(categories).slice(0, 3)), votes: {}, category: null, categoryVotes: null, selectionReason: null, questionInstances: [] })
+  awardRoundPowers(game)
   enter(game, 'category_vote', now, game.config.voteMs)
 }
 
@@ -204,6 +242,7 @@ function closeQuestion(game: GameState, now: number): void {
   if (!instance || instance.status !== 'open' || instance.opensAt === null) throw new Error('Open question is missing')
   instance.status = 'revealed'
   instance.closedAt = now
+  const pointsBefore = new Map(game.players.map(player => [player.id, player.points]))
   for (const player of game.players) {
     const answer = instance.answers[player.id]
     if (!answer) continue
@@ -212,6 +251,16 @@ function closeQuestion(game: GameState, now: number): void {
     answer.points = answer.correct ? game.config.basePoints + Math.floor(game.config.speedPoints * Math.max(0, Math.min(1, 1 - elapsed / game.config.questionMs))) : 0
     player.points += answer.points
   }
+  const previous = game.rounds.at(-2)?.questionInstances.findLast(question => question.status === 'revealed')
+  const outcome = (answer: AcceptedAnswer | undefined) => answer?.correct === true ? 'correct' as const : answer?.correct === false ? 'wrong' as const : 'missing' as const
+  currentRound(game).commentary = buildJerryCommentary({
+    round: game.round, totalRounds: game.config.rounds,
+    players: game.players.map(player => ({
+      id: player.id, nickname: player.nickname, retired: player.retired,
+      pointsBefore: pointsBefore.get(player.id)!, pointsAfter: player.points,
+      answer: outcome(instance.answers[player.id]), previousAnswer: previous ? outcome(previous.answers[player.id]) : null,
+    })),
+  })
   enter(game, 'round_reveal', now, game.config.roundRevealMs)
 }
 
@@ -222,6 +271,7 @@ export function createGame(players: { id: string; nickname: string; avatarId: Av
   const game: GameState = {
     id: randomUUID(), schemaVersion: 1, config: settings, phase: 'countdown', round: 0, version: 1, opensAt: now, deadline: now + settings.countdownMs,
     players: players.map(player => ({ ...player, points: 0, retired: false })), categoryIds: [], rounds: [], usedQuestionIds: [], suspension: null, message: null,
+    powerInventories: Object.fromEntries(players.map(player => [player.id, [dealPower()]])),
   }
   // Requiring five unique questions in each eligible category guarantees three
   // candidates in every normal round, even if the same category always wins.
@@ -293,7 +343,53 @@ export function answer(game: GameState, playerId: string, optionId: string, ques
   assertWindow(game, 'question', now)
   if (Object.hasOwn(instance.answers, playerId)) throw new GameRuleError('ALREADY_ANSWERED', 'Hai già confermato una risposta per questa domanda.')
   if (!instance.question.options.some(option => option.id === optionId)) throw new GameRuleError('INVALID_OPTION', 'Scegli una delle risposte proposte.')
+  const effect = currentRound(game).powerPlays?.find(play => play.targetId === playerId)
+  if (effect?.kind === 'fog' && !effect.revealedOptionIds.includes(optionId)) throw new GameRuleError('POWER_BLOCKED', 'Scopri questa risposta prima di sceglierla.')
   instance.answers[playerId] = { optionId, receivedAt: now, points: null, correct: null }
+  game.version++
+}
+
+function assertPreparation(game: GameState, playerId: string, questionInstanceId: string, now: number): GameRound {
+  assertActor(game, playerId)
+  assertWindow(game, 'category_reveal', now)
+  if (currentQuestion(game)?.id !== questionInstanceId) throw new GameRuleError('STALE_QUESTION', 'Questa preparazione è già terminata.')
+  const round = currentRound(game)
+  if (round.powerReadyIds?.includes(playerId)) throw new GameRuleError('ALREADY_READY', 'Hai già concluso la preparazione.')
+  return round
+}
+
+export function usePower(game: GameState, playerId: string, cardId: string, targetId: string, questionInstanceId: string, connectedIds: Set<string>, now: number): void {
+  const round = assertPreparation(game, playerId, questionInstanceId, now)
+  const inventory = game.powerInventories?.[playerId]
+  const card = inventory?.find(card => card.id === cardId)
+  if (!card || !inventory) throw new GameRuleError('POWER_NOT_OWNED', 'Questo potere non è nel tuo inventario.')
+  if (round.powerPlays?.some(play => play.fromId === playerId)) throw new GameRuleError('POWER_ALREADY_USED', 'Puoi usare un solo potere per round.')
+  if (targetId === playerId || !game.players.some(player => player.id === targetId && !player.retired) || !connectedIds.has(targetId)) throw new GameRuleError('INVALID_TARGET', 'Scegli un altro concorrente connesso.')
+  if (round.powerPlays?.some(play => play.targetId === targetId)) throw new GameRuleError('TARGET_PROTECTED', 'Questo concorrente ha già ricevuto un potere per la domanda. Scegli un altro bersaglio.')
+  round.powerPlays ??= []
+  round.powerPlays.push({ cardId, kind: card.kind, fromId: playerId, targetId, revealedOptionIds: [] })
+  inventory.splice(inventory.indexOf(card), 1)
+  ;(round.powerReadyIds ??= []).push(playerId)
+  game.version++
+}
+
+export function readyQuestion(game: GameState, playerId: string, questionInstanceId: string, now: number): void {
+  const round = assertPreparation(game, playerId, questionInstanceId, now)
+  ;(round.powerReadyIds ??= []).push(playerId)
+  game.version++
+}
+
+export function clearPower(game: GameState, playerId: string, questionInstanceId: string, optionId: string | undefined, now: number): void {
+  assertActor(game, playerId)
+  assertWindow(game, 'question', now)
+  const instance = currentQuestion(game)
+  if (instance?.id !== questionInstanceId) throw new GameRuleError('STALE_QUESTION', 'Questa domanda non è più attiva.')
+  const effect = currentRound(game).powerPlays?.find(play => play.targetId === playerId)
+  if (effect?.kind === 'fog') {
+    if (!instance.question.options.some(option => option.id === optionId)) throw new GameRuleError('INVALID_OPTION', 'Indica la risposta da scoprire.')
+    if (effect.revealedOptionIds.includes(optionId!)) throw new GameRuleError('POWER_ALREADY_CLEARED', 'Questa risposta è già scoperta.')
+    effect.revealedOptionIds.push(optionId!)
+  } else throw new GameRuleError('NO_CLEARABLE_POWER', 'Non hai un ostacolo da rimuovere con questa azione.')
   game.version++
 }
 
@@ -322,8 +418,9 @@ export function advance(game: GameState, content: GameContent, connectedIds: Set
   const instance = currentQuestion(game)
   const allVoted = game.phase === 'category_vote' && activePlayers(game).every(player => Object.hasOwn(round.votes, player.id))
   const allAnswered = game.phase === 'question' && activePlayers(game).every(player => instance && Object.hasOwn(instance.answers, player.id))
+  const allReady = game.phase === 'category_reveal' && activePlayers(game).every(player => round.powerReadyIds?.includes(player.id))
   const expired = game.deadline !== null && now >= game.deadline
-  if (!expired && !allVoted && !allAnswered) return false
+  if (!expired && !allVoted && !allAnswered && !allReady) return false
   switch (game.phase) {
     case 'countdown': enter(game, 'intro', now, null); break
     case 'category_vote': closeVote(game, content, now); break
@@ -347,9 +444,15 @@ export function advance(game: GameState, content: GameContent, connectedIds: Set
 
 /** Preserve confirmed results; invalidate a question exposed before the restart. */
 export function recoverGame(game: GameState, now: number): boolean {
+  let powersUpdated = false
+  const savedPowers = [...Object.values(game.powerInventories ?? {}).flat(), ...game.rounds.flatMap(round => round.powerPlays ?? [])]
+  for (const power of savedPowers) {
+    if ((power.kind as string) === 'locks') { power.kind = 'shuffle'; powersUpdated = true }
+  }
+  if (powersUpdated) game.version++
   const manualPause = recoverManualPause(game, now)
-  if (manualPause !== null) return manualPause
-  if (game.phase === 'phase_complete' || game.phase === 'aborted' || game.phase === 'suspended') return false
+  if (manualPause !== null) return manualPause || powersUpdated
+  if (game.phase === 'phase_complete' || game.phase === 'aborted' || game.phase === 'suspended') return powersUpdated
   if (game.phase === 'countdown') {
     abort(game, now, 'Avvio annullato dopo il riavvio del server. La stanza può iniziare una nuova partita.')
     return true
@@ -380,6 +483,11 @@ export function snapshot(game: GameState, selfId: string, connectedIds: Set<stri
   const instance = currentQuestion(game)
   const showQuestion = instance && ['question', 'round_reveal', 'scoreboard', 'round_ready', 'phase_complete'].includes(game.phase) && instance.status !== 'voided'
   const revealed = showQuestion && instance.status === 'revealed'
+  const effect = ['category_reveal', 'question'].includes(game.phase) ? round?.powerPlays?.find(play => play.targetId === selfId) : undefined
+  const options = showQuestion ? copy(instance.question.options).map(option => ({
+    ...option, text: !revealed && effect?.kind === 'scramble' ? scrambleAnswerWords(option.text)
+      : !revealed && effect?.kind === 'fog' && !effect.revealedOptionIds.includes(option.id) ? '' : option.text,
+  })) : []
   const sorted = game.players.map((player, index) => ({ player, index })).sort((a, b) => b.player.points - a.player.points || a.index - b.index)
   let rank = 1
   const players = sorted.map(({ player }, index) => {
@@ -391,12 +499,22 @@ export function snapshot(game: GameState, selfId: string, connectedIds: Set<stri
     serverNow: now, opensAt: game.opensAt, deadline: game.deadline, players,
     candidates: round ? copy(round.candidates) : [], category: round?.category ? copy(round.category) : null,
     categoryVotes: round?.categoryVotes ? { ...round.categoryVotes } : null, selectionReason: round?.selectionReason ?? null,
-    question: showQuestion ? { id: instance.question.id, instanceId: instance.id, prompt: instance.question.prompt, options: copy(instance.question.options), language: instance.question.language } : null,
+    question: showQuestion ? { id: instance.question.id, instanceId: instance.id, prompt: instance.question.prompt, options, language: instance.question.language } : null,
     selfVote: round?.votes[selfId]?.categoryId ?? null,
     selfAnswer: showQuestion ? instance.answers[selfId]?.optionId ?? null : null,
     answeredCount: showQuestion ? Object.keys(instance.answers).length : 0,
     votedCount: round ? Object.keys(round.votes).length : 0,
     reveal: revealed ? { correctOptionId: instance.question.correctOptionId, ...(instance.question.explanation ? { explanation: instance.question.explanation } : {}), sourceName: instance.question.sourceName, sourceUrl: instance.question.sourceUrl, license: instance.question.license } : null,
     message: game.message,
+    commentary: revealed ? [...round?.commentary ?? []] : [],
+    powers: {
+      inventory: copy(game.powerInventories?.[selfId] ?? []),
+      effect: effect ? { kind: effect.kind, fromId: effect.fromId, revealedOptionIds: [...effect.revealedOptionIds] } : null,
+      used: round?.powerPlays?.some(play => play.fromId === selfId) ?? false,
+      ready: round?.powerReadyIds?.includes(selfId) ?? false,
+      readyCount: round?.powerReadyIds?.filter(id => activePlayers(game).some(player => player.id === id)).length ?? 0,
+      preparationId: game.phase === 'category_reveal' ? instance?.id ?? null : null,
+      targetedIds: round?.powerPlays?.map(play => play.targetId) ?? [],
+    },
   }
 }

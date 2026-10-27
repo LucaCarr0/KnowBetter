@@ -1,4 +1,5 @@
 import type { AvatarId } from '../rooms/data/avatars'
+import type { PowerCard, PowerEffect } from './powers'
 
 export type GameContinuePhase = 'intro' | 'round_ready'
 export type GamePhase = 'countdown' | GameContinuePhase | 'category_vote' | 'category_reveal' | 'question' | 'round_reveal' | 'scoreboard' | 'phase_complete' | 'suspended' | 'aborted'
@@ -37,9 +38,19 @@ export interface GameSnapshot {
   votedCount: number
   reveal: { correctOptionId: string; explanation?: string; sourceName: string; sourceUrl: string; license: string } | null
   message: string | null
+  commentary: string[]
+  powers: {
+    inventory: PowerCard[]
+    effect: PowerEffect | null
+    used: boolean
+    ready: boolean
+    readyCount: number
+    preparationId: string | null
+    targetedIds: string[]
+  }
 }
 
-export type GameAction = 'game:start' | 'game:continue' | 'game:vote-category' | 'game:answer' | 'game:resume' | 'game:return-lobby'
+export type GameAction = 'game:start' | 'game:continue' | 'game:vote-category' | 'game:answer' | 'game:use-power' | 'game:ready-question' | 'game:clear-power' | 'game:resume' | 'game:return-lobby'
 export interface GameCommandFields {
   roomId?: string
   matchId?: string
@@ -48,13 +59,17 @@ export interface GameCommandFields {
   questionInstanceId?: string
   categoryId?: string
   optionId?: string
+  powerCardId?: string
+  targetId?: string
+  /** Retained only to recognize receipts from the retired lock power. */
+  powerStep?: number
 }
 
 export const GAME_DEFAULTS = {
   rounds: 5,
   countdownMs: 5_000,
   voteMs: 12_000,
-  categoryRevealMs: 3_000,
+  categoryRevealMs: 15_000,
   questionMs: 15_000,
   roundRevealMs: 5_000,
   scoreboardMs: 5_000,

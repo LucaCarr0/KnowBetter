@@ -8,7 +8,7 @@ import { RoomAccessPanel } from '../rooms/components/room-access-panel'
 export function SessionShell({ header, intro, phases, footer }: { header: ReactNode; intro: ReactNode; phases: ReactNode; footer: ReactNode }) {
   const connection = useRoomConnection()
   const room = connection.room
-  if (room?.game) {
+  if (room?.game && room.game.phase !== 'countdown') {
     return <GameStage game={room.game} selfId={room.selfId} roomCode={room.code} isHost={room.hostId === room.selfId}
       connected={connection.status === 'connected'} serverClockOffsetMs={connection.serverClockOffsetMs}
       controlConflict={connection.status === 'conflict'} onTakeControl={connection.takeover}

@@ -8,7 +8,7 @@ import {
 import type { PlayerIdentity, RoomAction, RoomCommand, RoomError, RoomPreview, RoomResponse, RoomSnapshot } from '../features/rooms/types'
 import type { LobbyDatabase, Queryable } from './database'
 import type { GameConfig } from '../features/game/types'
-import { createGame, continueGame, vote, answer, advance, snapshot as gameSnapshot, recoverGame, retire, GameRuleError, type GameContent, type GameState } from './game/engine'
+import { createGame, continueGame, vote, answer, usePower, readyQuestion, clearPower, advance, snapshot as gameSnapshot, recoverGame, retire, GameRuleError, type GameContent, type GameState } from './game/engine'
 
 interface GuestRow extends Record<string, unknown> { id: string; expires_at: number | string }
 interface RoomRow extends Record<string, unknown> {
@@ -159,6 +159,7 @@ export class LobbyService extends EventEmitter {
         action, code: command.code, roomId: command.roomId, matchId: command.matchId,
         roundId: command.roundId, questionInstanceId: command.questionInstanceId, categoryId: command.categoryId, optionId: command.optionId,
         ...(command.expectedPhase !== undefined ? { expectedPhase: command.expectedPhase } : {}),
+        powerCardId: command.powerCardId, targetId: command.targetId, powerStep: command.powerStep,
         identity: identityInput ? { nickname: identityInput.nickname, avatarId: identityInput.avatarId } : command.identity,
       })).digest('hex')
       const previous = (await db.query<ReceiptRow>(
@@ -301,6 +302,17 @@ export class LobbyService extends EventEmitter {
     } else if (action === 'game:answer') {
       if (typeof command.optionId !== 'string' || command.optionId.length > 100 || typeof command.questionInstanceId !== 'string' || command.questionInstanceId.length > 100) return fail('INVALID_OPTION', 'Scegli una risposta valida.')
       answer(game, member.id, command.optionId, command.questionInstanceId, receivedAt)
+    } else if (action === 'game:use-power' || action === 'game:ready-question' || action === 'game:clear-power') {
+      if (typeof command.questionInstanceId !== 'string' || command.questionInstanceId.length > 100) return fail('INVALID_REQUEST', 'Indica la domanda attuale.')
+      if (action === 'game:use-power') {
+        if (typeof command.powerCardId !== 'string' || command.powerCardId.length > 100 || typeof command.targetId !== 'string' || command.targetId.length > 100) return fail('INVALID_REQUEST', 'Scegli un potere e un avversario.')
+        usePower(game, member.id, command.powerCardId, command.targetId, command.questionInstanceId, await this.connectedIds(db, room.id), receivedAt)
+      } else if (action === 'game:ready-question') readyQuestion(game, member.id, command.questionInstanceId, receivedAt)
+      else {
+        if (command.optionId !== undefined && (typeof command.optionId !== 'string' || command.optionId.length > 100)
+          || command.powerStep !== undefined) return fail('INVALID_REQUEST', 'Indica un ostacolo valido da rimuovere.')
+        clearPower(game, member.id, command.questionInstanceId, command.optionId, receivedAt)
+      }
     } else return fail('INVALID_REQUEST', 'Operazione di gioco non riconosciuta.')
     advance(game, this.content, await this.connectedIds(db, room.id), this.now())
     await this.saveGame(db, room.id, game)

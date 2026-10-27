@@ -40,6 +40,9 @@ function confirmsCommand(operation: PendingCommand, snapshot: RoomSnapshot | nul
     if (operation.action === 'game:continue') return snapshot.version > operation.previousVersion && (game.round !== command.roundId || game.phase !== command.expectedPhase)
     if (operation.action === 'game:vote-category') return game.round === command.roundId && game.selfVote === command.categoryId
     if (operation.action === 'game:answer') return game.question?.instanceId === command.questionInstanceId && game.selfAnswer === command.optionId
+    if (operation.action === 'game:use-power') return game.round === command.roundId && game.powers.used && !game.powers.inventory.some(card => card.id === command.powerCardId)
+    if (operation.action === 'game:ready-question') return game.round === command.roundId && game.powers.ready
+    if (operation.action === 'game:clear-power') return game.question?.instanceId === command.questionInstanceId && Boolean(command.optionId && game.powers.effect?.revealedOptionIds.includes(command.optionId))
     return false
   }
   if (!snapshot || !operation.command.identity) return false

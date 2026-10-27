@@ -26,10 +26,12 @@ export function RoomLobby({ room, connected, onLeave, onUpdate, onStart }: {
   const [invite, setInvite] = useState('')
   const connectedPlayers = room.members.filter(member => member.connected).length
   const isHost = room.hostId === room.selfId
+  const starting = room.game?.phase === 'countdown'
   useEffect(() => { setInvite(`${window.location.origin}/?room=${room.code}#room-access`) }, [room.code])
 
   async function save(event: FormEvent) {
     event.preventDefault()
+    if (pending || !connected || starting) return
     const parsed = validateIdentity({ nickname, avatarId })
     if ('error' in parsed) { setMessage(parsed.error.message); return }
     setPending(true)
@@ -46,6 +48,7 @@ export function RoomLobby({ room, connected, onLeave, onUpdate, onStart }: {
   }
 
   async function start() {
+    if (pending || !connected || starting || editing || !isHost || connectedPlayers < 2) return
     setPending(true)
     setMessage('')
     const result = await onStart()
@@ -89,11 +92,20 @@ export function RoomLobby({ room, connected, onLeave, onUpdate, onStart }: {
       <p className="mt-5 text-xs leading-relaxed text-[#515570]">Your room is ready. Share your invite to bring the others in.</p>
       <link rel="preload" as="image" href="/hosts/jerry/jerry.webp" />
       <div className="mt-5 rounded-xl border-2 border-base-300 bg-base-100 p-4 text-base-content">
-        <p className="mb-3 text-sm font-bold">{connectedPlayers < 2 ? 'Servono almeno 2 giocatori connessi per iniziare.' : isHost ? `${connectedPlayers} giocatori connessi. Jerry vi aspetta!` : 'Il gruppo è pronto. Aspettiamo il via dell’organizzatore.'}</p>
-        {isHost && <button type="button" onClick={start} disabled={pending || !connected || connectedPlayers < 2 || editing} className="daisy-btn daisy-btn-primary min-h-12 w-full font-black"><Play className="size-4" aria-hidden="true" />{pending ? 'Preparazione…' : 'Inizia partita!'}</button>}
+        {starting ? (
+          <p role="status" className="flex items-center justify-center gap-2 text-sm font-bold sm:gap-3">
+            <span className="daisy-loading daisy-loading-spinner daisy-loading-md" aria-hidden="true" />
+            Jerry sta preparando lo studio…
+          </p>
+        ) : (
+          <>
+            <p className="mb-3 text-sm font-bold">{connectedPlayers < 2 ? 'Servono almeno 2 giocatori connessi per iniziare.' : isHost ? `${connectedPlayers} giocatori connessi. Jerry vi aspetta!` : 'Il gruppo è pronto. Aspettiamo il via dell’organizzatore.'}</p>
+            {isHost && <button type="button" onClick={start} disabled={pending || !connected || connectedPlayers < 2 || editing} className="daisy-btn daisy-btn-primary min-h-12 w-full font-black"><Play className="size-4" aria-hidden="true" />{pending ? 'Preparazione…' : 'Inizia partita!'}</button>}
+          </>
+        )}
       </div>
       {message && <p role="alert" className="mt-3 text-sm font-semibold text-[#a42c3b]">{message}</p>}
-      {editing && (
+      {editing && !starting && (
         <form onSubmit={save} className="mt-5 border-t border-[#d8cfc3] pt-5">
           <label htmlFor="edit-nickname" className="mb-2 block text-xs font-black uppercase tracking-wider text-[#515570]">Your nickname</label>
           <input id="edit-nickname" autoComplete="off" required value={nickname} onChange={(event) => setNickname(event.target.value)} disabled={pending || !connected} className="daisy-input mb-4 h-12 w-full rounded-xl border-2 border-[#d8cfc3] bg-white px-4 text-base font-bold text-[#10142f]" />
@@ -102,7 +114,7 @@ export function RoomLobby({ room, connected, onLeave, onUpdate, onStart }: {
         </form>
       )}
       <div className="mt-5 flex flex-wrap gap-2 border-t border-[#d8cfc3] pt-4">
-        {!editing && <button type="button" disabled={pending || !connected} onClick={() => { setNickname(self?.nickname ?? ''); setAvatarId(self?.avatarId ?? DEFAULT_AVATAR_ID); setEditing(true); setMessage('') }} className="daisy-btn h-auto min-h-11 border-0 bg-transparent px-2 py-2 text-xs text-[#515570] shadow-none"><Pencil className="size-4" aria-hidden="true" /> Edit nickname / avatar</button>}
+        {!editing && !starting && <button type="button" disabled={pending || !connected} onClick={() => { setNickname(self?.nickname ?? ''); setAvatarId(self?.avatarId ?? DEFAULT_AVATAR_ID); setEditing(true); setMessage('') }} className="daisy-btn h-auto min-h-11 border-0 bg-transparent px-2 py-2 text-xs text-[#515570] shadow-none"><Pencil className="size-4" aria-hidden="true" /> Edit nickname / avatar</button>}
         <button type="button" disabled={pending || !connected} onClick={leave} className="daisy-btn ml-auto h-auto min-h-11 border-0 bg-transparent px-2 py-2 text-xs text-[#a42c3b] shadow-none"><LogOut className="size-4" aria-hidden="true" /> Leave room</button>
       </div>
     </div>

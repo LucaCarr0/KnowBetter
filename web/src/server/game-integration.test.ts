@@ -4,7 +4,7 @@ import { test } from 'node:test'
 import type { GameSnapshot } from '../features/game/types'
 import type { RoomAction, RoomResponse, RoomSnapshot } from '../features/rooms/types'
 import { createDatabase } from './database'
-import type { GameContent, TriviaQuestion } from './game/engine'
+import type { GameContent, GameState, TriviaQuestion } from './game/engine'
 import { LobbyService, type Connection } from './lobby'
 
 const gameConfig = { countdownMs: 50, voteMs: 120, categoryRevealMs: 30, questionMs: 200, roundRevealMs: 50, scoreboardMs: 50, suspensionMs: 900 }
@@ -87,6 +87,15 @@ test('phase-one commands, snapshots and JSONB persistence share the lobby transa
     assert.equal((await tick(host)).phase, 'question')
     return currentGame(host)
   }
+  const savedGame = async (matchId: string) => database.transaction(async db => {
+    const saved = await db.query<{ state: GameState }>('SELECT state FROM kb_matches WHERE id=$1', [matchId])
+    return saved.rows[0].state
+  })
+  const setPowerKind = async (matchId: string, playerId: string, kind: 'fog' | 'shuffle') => database.transaction(async db => {
+    const saved = await db.query<{ state: GameState }>('SELECT state FROM kb_matches WHERE id=$1', [matchId])
+    saved.rows[0].state.powerInventories![playerId][0].kind = kind
+    await db.query('UPDATE kb_matches SET state=$1::jsonb WHERE id=$2', [JSON.stringify(saved.rows[0].state), matchId])
+  })
 
   try {
     await t.test('only the host can start, at least two connected players are required, and identity freezes', async () => {
@@ -259,6 +268,175 @@ test('phase-one commands, snapshots and JSONB persistence share the lobby transa
       assert.equal(revealed.phase, 'round_reveal')
       assert.ok(revealed.players.every(player => player.points === 0))
       assert.equal(errorCode(await command(host, 'game:return-lobby', { matchId: question.id })), 'GAME_NOT_FINISHED')
+    })
+
+    await t.test('power preparation consumes owned cards once, protects targets and keeps rival inventories private', async () => {
+      const { host, guest, created, joined } = await party()
+      const third = await player()
+      const thirdRoom = room(await command(third, 'room:join', { code: created.code, identity: identity('Third') }))
+      const voting = await start(host, created.id)
+      const voteFields = { matchId: voting.id, roundId: voting.round, categoryId: 'animals' }
+      for (const connection of [host, guest, third]) game(await command(connection, 'game:vote-category', voteFields))
+      const preparation = await currentGame(host)
+      const guestPreparation = await currentGame(guest)
+      const thirdPreparation = await currentGame(third)
+      assert.equal(preparation.phase, 'category_reveal')
+      assert.ok(preparation.powers.preparationId)
+      assert.equal(preparation.question, null)
+      for (const personal of [preparation, guestPreparation, thirdPreparation]) {
+        assert.equal(personal.powers.inventory.length, 1)
+        assert.equal(personal.powers.readyCount, 0)
+        assert.equal(personal.powers.preparationId, preparation.powers.preparationId)
+        assert.equal(JSON.stringify(personal).includes('powerInventories'), false)
+        assert.ok(personal.players.every(player => !Object.hasOwn(player, 'inventory')))
+      }
+      assert.equal(JSON.stringify(preparation).includes(guestPreparation.powers.inventory[0].id), false)
+      assert.equal(JSON.stringify(guestPreparation).includes(preparation.powers.inventory[0].id), false)
+      const fields = { matchId: preparation.id, roundId: preparation.round, questionInstanceId: preparation.powers.preparationId, powerCardId: preparation.powers.inventory[0].id, targetId: joined.selfId }
+      assert.equal(errorCode(await command(host, 'game:use-power', { ...fields, powerCardId: 'invented-card' })), 'POWER_NOT_OWNED')
+      assert.equal(errorCode(await command(host, 'game:use-power', { ...fields, targetId: created.selfId })), 'INVALID_TARGET')
+      assert.equal(errorCode(await command(host, 'game:use-power', { ...fields, targetId: 'invented-target' })), 'INVALID_TARGET')
+      assert.equal(errorCode(await command(host, 'game:use-power', { ...fields, roundId: 0 })), 'STALE_ROUND')
+      assert.equal(errorCode(await command(host, 'game:use-power', { ...fields, questionInstanceId: 'old-preparation' })), 'STALE_QUESTION')
+      const request = { requestId: randomUUID(), ...fields }
+      const used = game(await service.command(host, 'game:use-power', request))
+      assert.equal(used.powers.inventory.length, 0)
+      assert.equal(used.powers.used, true)
+      assert.equal(used.powers.ready, true)
+      assert.equal(used.powers.readyCount, 1)
+      assert.deepEqual(used.powers.targetedIds, [joined.selfId])
+      assert.equal((await currentGame(guest)).powers.effect!.fromId, created.selfId)
+      const replay = game(await service.command(host, 'game:use-power', request))
+      assert.equal(replay.version, used.version)
+      assert.deepEqual(replay.powers, used.powers)
+      assert.equal(errorCode(await service.command(host, 'game:use-power', { ...request, targetId: thirdRoom.selfId })), 'REQUEST_REUSED')
+
+      const attempts = await Promise.all([guest, third].map((connection, index) => command(connection, 'game:use-power', {
+        ...fields, powerCardId: [guestPreparation, thirdPreparation][index].powers.inventory[0].id, targetId: created.selfId,
+      })))
+      assert.equal(attempts.filter(response => response.ok).length, 1)
+      assert.equal(errorCode(attempts.find(response => !response.ok)!), 'TARGET_PROTECTED')
+      const rejectedIndex = attempts.findIndex(response => !response.ok)
+      const rejected = [guest, third][rejectedIndex]
+      const stillPreparing = await currentGame(rejected)
+      assert.equal(stillPreparing.phase, 'category_reveal')
+      assert.equal(stillPreparing.powers.inventory.length, 1)
+      assert.equal(stillPreparing.powers.readyCount, 2)
+      assert.equal(now < preparation.deadline!, true)
+      const question = game(await command(rejected, 'game:ready-question', fields))
+      assert.equal(question.phase, 'question')
+      assert.equal(question.opensAt, now)
+      assert.equal(question.powers.preparationId, null)
+      const saved = await savedGame(preparation.id)
+      assert.equal(saved.rounds[0].powerPlays!.length, 2)
+      assert.equal(new Set(saved.rounds[0].powerPlays!.map(play => play.targetId)).size, 2)
+      assert.equal(saved.powerInventories![created.selfId].length, 0)
+      const receipts = await database.transaction(db => db.query<{ count: number }>('SELECT count(*)::integer AS count FROM kb_receipts WHERE guest_id=$1 AND request_id=$2', [host.guestId, request.requestId]))
+      assert.equal(receipts.rows[0].count, 1)
+    })
+
+    await t.test('fog clearing and shuffle preserve private effects, stable answer IDs and durable receipts', async () => {
+      for (const kind of ['fog', 'shuffle'] as const) {
+        const { host, guest, created, joined } = await party()
+        const voting = await start(host, created.id)
+        const voteFields = { matchId: voting.id, roundId: voting.round, categoryId: 'animals' }
+        game(await command(host, 'game:vote-category', voteFields))
+        const preparation = game(await command(guest, 'game:vote-category', voteFields))
+        await setPowerKind(preparation.id, created.selfId, kind)
+        const fields = { matchId: preparation.id, roundId: preparation.round, questionInstanceId: preparation.powers.preparationId }
+        const hostCard = (await currentGame(host)).powers.inventory[0]
+        assert.equal(hostCard.kind, kind)
+        game(await command(host, 'game:use-power', { ...fields, powerCardId: hostCard.id, targetId: joined.selfId }))
+        const question = game(await command(guest, 'game:ready-question', fields))
+        assert.equal(question.phase, 'question')
+        assert.equal(question.powers.effect!.kind, kind)
+        assert.equal((await currentGame(guest)).selfAnswer, null)
+        if (kind === 'fog') {
+          assert.equal(errorCode(await command(guest, 'game:answer', { ...fields, optionId: 'a' })), 'POWER_BLOCKED')
+          assert.ok(question.question!.options.every(option => option.text === ''))
+          assert.ok((await currentGame(host)).question!.options.every(option => option.text.length > 0))
+          assert.equal(errorCode(await command(guest, 'game:clear-power', { ...fields, optionId: 'invented-option' })), 'INVALID_OPTION')
+          const request = { requestId: randomUUID(), ...fields, optionId: 'a' }
+          const cleared = game(await service.command(guest, 'game:clear-power', request))
+          assert.deepEqual(cleared.powers.effect!.revealedOptionIds, ['a'])
+          assert.equal(cleared.question!.options.find(option => option.id === 'a')!.text, 'Option a')
+          assert.equal(cleared.question!.options.filter(option => option.text === '').length, 3)
+          assert.deepEqual(game(await service.command(guest, 'game:clear-power', request)).powers.effect, cleared.powers.effect)
+          assert.equal(errorCode(await service.command(guest, 'game:clear-power', { ...request, optionId: 'b' })), 'REQUEST_REUSED')
+          assert.equal(errorCode(await command(guest, 'game:clear-power', fields)), 'INVALID_OPTION')
+          assert.equal(errorCode(await command(guest, 'game:clear-power', { ...fields, optionId: 'a' })), 'POWER_ALREADY_CLEARED')
+        } else {
+          assert.equal((await currentGame(host)).powers.effect, null)
+          assert.deepEqual(question.question!.options, (await currentGame(host)).question!.options)
+          assert.equal(errorCode(await command(guest, 'game:clear-power', { ...fields, optionId: 'a' })), 'NO_CLEARABLE_POWER')
+          assert.equal(errorCode(await command(guest, 'game:clear-power', { ...fields, powerStep: 1 })), 'INVALID_REQUEST')
+        }
+        const accepted = game(await command(guest, 'game:answer', { ...fields, optionId: 'a' }))
+        assert.equal(accepted.selfAnswer, 'a')
+        assert.equal(accepted.answeredCount, 1)
+        assert.equal(accepted.powers.inventory.length, 1)
+        assert.equal((await currentGame(host)).powers.inventory.length, 0)
+      }
+    })
+
+    await t.test('recovery preserves consumed powers without new deals and old receipts cannot clear a replacement question', async () => {
+      const { host, guest, created, joined } = await party()
+      const voting = await start(host, created.id)
+      const voteFields = { matchId: voting.id, roundId: voting.round, categoryId: 'animals' }
+      game(await command(host, 'game:vote-category', voteFields))
+      const preparation = game(await command(guest, 'game:vote-category', voteFields))
+      await setPowerKind(preparation.id, created.selfId, 'fog')
+      await setPowerKind(preparation.id, joined.selfId, 'shuffle')
+      const fields = { matchId: preparation.id, roundId: preparation.round, questionInstanceId: preparation.powers.preparationId }
+      const hostRequest = { requestId: randomUUID(), ...fields, powerCardId: (await currentGame(host)).powers.inventory[0].id, targetId: joined.selfId }
+      const guestRequest = { requestId: randomUUID(), ...fields, powerCardId: (await currentGame(guest)).powers.inventory[0].id, targetId: created.selfId }
+      game(await service.command(host, 'game:use-power', hostRequest))
+      const original = game(await service.command(guest, 'game:use-power', guestRequest))
+      assert.equal(original.phase, 'question')
+      const clearRequest = { requestId: randomUUID(), ...fields, optionId: 'a' }
+      assert.deepEqual(game(await service.command(guest, 'game:clear-power', clearRequest)).powers.effect!.revealedOptionIds, ['a'])
+      assert.equal(errorCode(await command(host, 'game:clear-power', { ...fields, optionId: 'a' })), 'NO_CLEARABLE_POWER')
+      const inventories = (await savedGame(preparation.id)).powerInventories
+      assert.deepEqual(Object.values(inventories!).map(cards => cards.length), [0, 0])
+
+      await service.drain()
+      service = new LobbyService(database, { now: () => now, gameContent, gameConfig })
+      await service.initialize()
+      const returningHost = { guestId: host.guestId, socketId: randomUUID() }
+      const returningGuest = { guestId: guest.guestId, socketId: randomUUID() }
+      assert.equal(await service.connect(returningHost), true)
+      assert.equal((await currentGame(returningHost)).phase, 'suspended')
+      assert.equal(await service.connect(returningGuest), true)
+      await state(returningGuest)
+      await service.sweep()
+      const replacementPreparation = await currentGame(returningGuest)
+      assert.equal(replacementPreparation.phase, 'category_reveal')
+      assert.notEqual(replacementPreparation.powers.preparationId, original.question!.instanceId)
+      assert.equal(replacementPreparation.round, original.round)
+      assert.equal(replacementPreparation.powers.inventory.length, 0)
+      assert.deepEqual(replacementPreparation.powers.effect!.revealedOptionIds, [])
+      assert.deepEqual((await currentGame(returningHost)).powers.effect!.revealedOptionIds, [])
+      assert.deepEqual((await savedGame(preparation.id)).powerInventories, inventories)
+      const replay = game(await service.command(returningHost, 'game:use-power', hostRequest))
+      assert.equal(replay.powers.inventory.length, 0)
+      assert.equal(replay.powers.ready, false)
+      assert.equal(replay.powers.readyCount, 0)
+      assert.equal(errorCode(await command(returningHost, 'game:use-power', { ...hostRequest, requestId: randomUUID() })), 'STALE_QUESTION')
+      const replacementFields = { matchId: replacementPreparation.id, roundId: replacementPreparation.round, questionInstanceId: replacementPreparation.powers.preparationId }
+      game(await command(returningHost, 'game:ready-question', replacementFields))
+      const replacement = game(await command(returningGuest, 'game:ready-question', replacementFields))
+      assert.equal(replacement.phase, 'question')
+      assert.notEqual(replacement.question!.id, original.question!.id)
+      const clearingReplay = game(await service.command(returningGuest, 'game:clear-power', clearRequest))
+      assert.deepEqual(clearingReplay.powers.effect!.revealedOptionIds, [])
+      assert.equal(clearingReplay.question!.instanceId, replacement.question!.instanceId)
+      assert.equal(errorCode(await command(returningGuest, 'game:clear-power', { ...clearRequest, requestId: randomUUID() })), 'STALE_QUESTION')
+      assert.deepEqual(game(await command(returningGuest, 'game:clear-power', { ...replacementFields, optionId: 'a' })).powers.effect!.revealedOptionIds, ['a'])
+      const saved = await savedGame(preparation.id)
+      assert.equal(saved.rounds[0].powerPlays!.length, 2)
+      assert.equal(saved.rounds[0].powersDealt, true)
+      assert.deepEqual(saved.powerInventories, inventories)
+      assert.deepEqual(saved.rounds[0].questionInstances.map(instance => instance.status), ['voided', 'open'])
     })
 
     await t.test('offline game membership survives the lobby reservation window and resumes the same player', async () => {
