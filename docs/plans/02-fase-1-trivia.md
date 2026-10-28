@@ -1,7 +1,7 @@
 # Piano di implementazione — Fase 1 del gioco
 
 Data: 26 ottobre 2026.
-Ultimo aggiornamento: 27 ottobre 2026.
+Ultimo aggiornamento: 28 ottobre 2026.
 Stato: piano autorizzato il 26 ottobre 2026 con «procedi col piano». Implementata la Fase 1 sul frontend e sul coordinatore esistenti; l'utente ha inoltre richiesto l'importazione nel database di cataloghi di domande da internet. Le sezioni sotto conservano la distinzione originaria fra requisiti e default proposti; questi ultimi sono stati applicati come configurazione iniziale dell'implementazione. Prove visive sui telefoni a cura dell'utente.
 Riferimenti: [memoria di progetto](../../PROJECT_MEMORY.md), [modulo home e stanze](01-menu-e-stanze.md).
 
@@ -14,6 +14,8 @@ Ulteriore richiesta del 27 ottobre: più tempo per la scelta di potere/bersaglio
 Ulteriore richiesta del 27 ottobre: Shuffle sostituisce Lucchetti. Ogni 1.000 ms le risposte cambiano posizione sul telefono colpito, senza cambiare testo, ID o correttezza. Si riusa l’orologio della domanda, con ordine ricostruibile dopo rientro; al riavvio i vecchi `locks` persistiti vengono convertiti in `shuffle` senza perdere carte o bersagli. Controllo TypeScript e 100 test senza listener di rete superati; le prove UI e la taratura sul telefono restano al proprietario.
 
 Taratura successiva del 27 ottobre: su richiesta del proprietario Shuffle passa da 0,5 a 1 secondo tra gli scambi di posizione. Il nuovo valore sostituisce quello iniziale.
+
+Richiesta del 28 ottobre: rendere esplicito il voto democratico, mostrando avatar e conteggi sulle categorie e facendo distruggere e uscire di scena le due perdenti. Il proprietario chiarisce che la sequenza completa deve durare 2,5 secondi, sostituendo l'interpretazione di 5 secondi. La presentazione dell'esito usa `category_reveal`, con voti individuali pubblicati solo dopo la chiusura; i poteri restano subito utilizzabili e non cambiano le finestre server. Le regole rimangono un voto per concorrente, vittoria della categoria più votata e sorteggio esplicito in caso di parità o astensione. Le prove da interfaccia restano al proprietario.
 
 Aggiornamenti d'implementazione: lo stato autorevole e lo storico dei round sono salvati come JSONB in `kb_matches`, nella stessa transazione delle ricevute, usando la coda e il blocco database già esistenti. Categorie e domande sono in tabelle dedicate. La rosa della partita è indipendente dalla lista dei posti della lobby. A fine fase l'organizzatore può riportare il gruppo in lobby conservando il record concluso; il nuovo avvio crea una nuova partita. Le domande troppo lunghe per il timer vengono conservate nel database ma escluse dall'estrazione. Cataloghi, licenze e filtri sono documentati in [src/server/content/README.md](../../web/src/server/content/README.md).
 
@@ -29,6 +31,7 @@ Sono confermati dal proprietario:
 - Classifica dei punti disponibile nel client di ogni giocatore.
 - Cinque round di cultura generale, con punti per correttezza e rapidità.
 - Votazione della sottocategoria **all'inizio di ogni round, incluso il primo**; questa precisazione aggiorna la precedente sequenza che collocava il voto dopo la domanda.
+- Voto democratico chiaramente spiegato, avatar sulle categorie votate ed eliminazione animata delle due categorie perdenti, richiesti il 28 ottobre.
 - Categorie riconoscibili, per esempio animali, arte, sport, film e storia. Il catalogo completo rimane da definire.
 - Tre viste alternate: **plancia**, **scelta della categoria**, **risposta alla domanda**. Il proprietario ha chiarito che «votazione», nell'elenco iniziale delle schermate, indica la scelta della risposta personale; non esiste un secondo voto sulla categoria.
 - Plancia intesa anche come scena principale dello show: presentazione, regole, momenti collettivi, esiti e classifica.
@@ -200,7 +203,7 @@ Introdurre migrazioni SQL versionate applicabili anche a database PGlite già po
 
 **Snapshot indicativo:** partita e stanza, fase, round, istanza della domanda, versione, `serverNow`, apertura/scadenza, scena di Jerry, classifica, informazioni pubbliche del round e dati del solo destinatario (`selfVote`, `selfAnswer`, conferme ed esito personale quando rivelabile). Riusare il socket esistente e una pubblicazione personalizzata, senza avviare una connessione indipendente per ogni schermata.
 
-Prima della rivelazione non inviare soluzione, correttezza, punti del round o risposte degli altri, nemmeno nelle ricevute o negli eventi di riconnessione. I conteggi aggregati di chi ha votato/risposto possono essere pubblici; **proposta:** nascondere i totali per categoria fino alla chiusura del voto. La classifica durante la domanda rimane quella dei round già conclusi.
+Prima della rivelazione non inviare soluzione, correttezza, punti del round o risposte degli altri, nemmeno nelle ricevute o negli eventi di riconnessione. I conteggi aggregati di chi ha votato/risposto possono essere pubblici. **Implementazione aggiornata il 28 ottobre:** totali e scelte individuali per categoria restano nascosti fino alla chiusura del voto; dopo la scelta, `categoryVoters` associa ogni categoria agli ID stabili dei concorrenti già presenti nella rosa, per visualizzarne gli avatar. La proiezione deriva dai voti già salvati e non richiede migrazioni SQL. La classifica durante la domanda rimane quella dei round già conclusi.
 
 Le operazioni di lobby e partita devono condividere la stessa disciplina di serializzazione e transazione; due code indipendenti non proteggono dall'ingresso contemporaneo all'avvio. Salvataggio, ricevuta e avanzamento precedono la conferma e la pubblicazione. Aggiungere vincoli sul database come ultima protezione contro duplicazioni di voto, risposta o punti.
 

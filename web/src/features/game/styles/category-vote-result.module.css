@@ -1,0 +1,58 @@
+.result { margin: 1rem 0; color: var(--studio-ink); }
+.heading { display: flex; align-items: center; gap: .5rem; font-size: 1rem; font-weight: 900; letter-spacing: -.025em; }
+.heading > svg { flex-shrink: 0; }
+.rule { margin-top: .4rem; font-size: .75rem; line-height: 1.5; }
+.stage { display: flex; flex-direction: column; gap: .5rem; margin-block: .8rem; }
+.slot { position: relative; min-width: 0; }
+.collapse { display: grid; grid-template-rows: 1fr; }
+.crop { min-height: 0; overflow: hidden; padding: 0 .2rem .2rem; }
+.card { min-width: 0; gap: .4rem; padding: .65rem .75rem; border: 2px solid var(--studio-ink); border-radius: .75rem; background: var(--studio-cream); color: var(--studio-ink); box-shadow: 0 .15rem 0 var(--studio-ink); }
+.cardHeading { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
+.cardHeading > h3 { min-width: 0; font-size: .86rem; font-weight: 900; line-height: 1.25; overflow-wrap: anywhere; }
+.count { min-height: 1.4rem; height: auto; flex-shrink: 0; padding: .15rem .45rem; border: 1px solid var(--studio-ink); border-radius: .35rem; background: var(--studio-ink); color: var(--studio-cream); font-size: .64rem; font-weight: 850; }
+.voters { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem; min-height: 1.9rem; }
+.voter { position: relative; display: inline-flex; border: 1.5px solid transparent; border-radius: .5rem; }
+.avatar { width: 1.7rem; height: 1.7rem; }
+.avatar > div { padding: .1rem; border-radius: .35rem; }
+.self { border-color: var(--studio-ink); background: var(--studio-lime); }
+.you { position: absolute; inset: auto -.15rem -.2rem auto; padding: .03rem .15rem; border: 1px solid var(--studio-ink); border-radius: .2rem; background: var(--studio-lime); font-size: .45rem; line-height: 1.2; font-weight: 900; }
+.empty { font-size: .65rem; opacity: .75; }
+.winnerLabel { display: inline-flex; align-items: center; gap: .25rem; margin-left: auto; font-size: .6rem; font-weight: 850; animation: winner-label var(--vote-duration) linear var(--vote-offset) both; }
+.loser { animation: close-gap var(--vote-duration) linear var(--vote-offset) both; }
+.loser .collapse { animation: collapse-card var(--vote-duration) ease-in-out var(--vote-offset) both; }
+.loser .card { animation: remove-card var(--vote-duration) linear var(--vote-offset) both; }
+.winner .card { animation: crown-card var(--vote-duration) ease-out var(--vote-offset) both; }
+.fragments { position: absolute; inset: 0 .2rem .2rem; pointer-events: none; }
+.fragment { position: absolute; inset: 0; display: flex; align-items: center; padding: .65rem .75rem; border: 2px solid var(--studio-ink); border-radius: .75rem; background: var(--studio-cream); color: var(--studio-ink); opacity: 0; animation: shatter var(--vote-duration) ease-in var(--vote-offset) both; }
+.fragment > span { width: 100%; font-size: .86rem; line-height: 1.25; font-weight: 900; overflow-wrap: anywhere; }
+.outcome { padding: .65rem .75rem; border-left: 3px solid var(--studio-ink); font-size: .75rem; line-height: 1.5; }
+.outcome > strong, .outcome > span { display: block; }
+.outcome > strong { font-size: .85rem; font-weight: 900; }
+.summary { margin-top: .65rem; font-size: .68rem; line-height: 1.5; }
+.summary > summary { width: fit-content; cursor: pointer; font-weight: 750; text-decoration: underline; text-underline-offset: .15rem; }
+.summary > summary:focus-visible { outline: 3px solid var(--color-info); outline-offset: 3px; }
+.summary > ul { display: grid; gap: .3rem; margin-top: .5rem; padding-left: 1rem; list-style: disc; }
+
+@keyframes remove-card { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+@keyframes shatter {
+  0%, 50% { opacity: 0; transform: translate(0) rotate(0); }
+  51%, 54% { opacity: 1; transform: translate(0) rotate(0); }
+  80%, 100% { opacity: 0; transform: translate(var(--fragment-x), var(--fragment-y)) rotate(var(--fragment-turn)); }
+}
+@keyframes collapse-card { 0%, 81% { grid-template-rows: 1fr; } 100% { grid-template-rows: 0fr; } }
+@keyframes close-gap { 0%, 81% { margin-bottom: 0; visibility: visible; } 100% { margin-bottom: -.5rem; visibility: hidden; } }
+@keyframes crown-card { 0%, 51% { background: var(--studio-cream); } 65%, 100% { background: var(--studio-lime); } }
+@keyframes winner-label { 0%, 54% { opacity: 0; } 65%, 100% { opacity: 1; } }
+
+@media (min-width: 640px) {
+  .card { padding: .8rem 1rem; }
+  .cardHeading > h3, .fragment > span { font-size: 1rem; }
+  .avatar { width: 2rem; height: 2rem; }
+  .rule, .outcome { font-size: .8rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loser, .loser .collapse, .loser .card, .winner .card, .winnerLabel { animation: none; }
+  .winner .card { background: var(--studio-lime); }
+  .fragments { display: none; }
+}

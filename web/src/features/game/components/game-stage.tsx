@@ -8,6 +8,7 @@ import { PlayerAvatar } from '../../rooms/components/player-avatar'
 import { useGameClock } from '../hooks/use-game-clock'
 import { POWERS, shuffleAnswerOptions } from '../powers'
 import type { GameAction, GameCommandFields, GameSnapshot } from '../types'
+import { CategoryVoteResult } from './category-vote-result'
 import { GameLeaderboard } from './game-leaderboard'
 import { JerryPresenter } from './jerry-presenter'
 import { PowerPreparation } from './power-preparation'
@@ -126,11 +127,11 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
     ? shuffleAnswerOptions(options, Math.min(clock.now, game.deadline ?? clock.now) - game.opensAt, `${game.question.instanceId}:${selfId}`)
     : options
   const selectedOption = options.find(option => option.id === (confirmed ?? selection))
-  const sceneTitle = isVoting ? 'Il prossimo argomento?'
+  const sceneTitle = isVoting ? 'Il vostro voto decide!'
     : isQuestion ? 'È la tua risposta definitiva?'
       : game.phase === 'countdown' ? 'Ciak, si gioca!'
         : game.phase === 'intro' ? 'Benvenuti nello studio!'
-          : game.phase === 'category_reveal' ? 'Preparate i colpi di scena!'
+          : game.phase === 'category_reveal' ? 'Ecco il verdetto del gruppo!'
             : isReveal ? 'E la risposta giusta è…'
               : game.phase === 'scoreboard' ? 'Facciamo il punto.'
                 : game.phase === 'round_ready' ? `Pronti per il round ${game.round + 1}?`
@@ -140,8 +141,7 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
   function panelMessage(): ReactNode {
     switch (game.phase) {
       case 'countdown': return <p>Telefoni pronti, cervelli accesi. Stiamo per andare in onda!</p>
-      case 'intro': return <><p>Io sono Jerry. Voi siete quelli che sanno tutto… giusto?</p><ol className={styles.rules}><li>Votate la categoria prima di ogni round.</li><li>Prima della domanda, lanciate un potere su un avversario o conservatelo.</li><li>Scegliete e confermate una delle quattro risposte in 15 secondi.</li><li>Risposta giusta: 500 punti, più un bonus fino a 500 se siete rapidi!</li></ol><p className={styles.smallCopy}>Partite con un potere monouso. Un solo attacco per domanda, un solo effetto per bersaglio.</p><p className={styles.smallCopy}>Ogni round potete ricevere un’altra carta, fino a due in tasca: dal 20% per il primo al 60% per l’ultimo.</p><p className={styles.smallCopy}>Cinque round. Nessuna penalità per gli errori. Scaldate i pollici!</p></>
-      case 'category_reveal': return <><p>Si gioca con <strong>{game.category?.name ?? 'la categoria scelta'}</strong>!</p><p className={styles.smallCopy}>{game.selectionReason === 'tie' ? 'Parità di voti: il sorteggio ha deciso.' : game.selectionReason === 'abstention' ? 'Nessun voto: ci ha pensato il sorteggio.' : 'La categoria che ha raccolto più voti.'} Avete un momento per mettere i bastoni tra le ruote agli altri!</p></>
+      case 'intro': return <><p>Io sono Jerry. Voi siete quelli che sanno tutto… giusto?</p><ol className={styles.rules}><li>Votate la categoria prima di ogni round: un giocatore, un voto. Vince quella con più voti!</li><li>Prima della domanda, lanciate un potere su un avversario o conservatelo.</li><li>Scegliete e confermate una delle quattro risposte in 15 secondi.</li><li>Risposta giusta: 500 punti, più un bonus fino a 500 se siete rapidi!</li></ol><p className={styles.smallCopy}>Partite con un potere monouso. Un solo attacco per domanda, un solo effetto per bersaglio.</p><p className={styles.smallCopy}>Ogni round potete ricevere un’altra carta, fino a due in tasca: dal 20% per il primo al 60% per l’ultimo.</p><p className={styles.smallCopy}>Cinque round. Nessuna penalità per gli errori. Scaldate i pollici!</p></>
       case 'round_reveal': return <><p>{self?.roundPoints ? 'Lo sapevi! Mi sa che qui c’è della stoffa.' : 'Una domanda in più, una curiosità in più. E si riparte!'}</p><p className={styles.smallCopy}>La classifica si aggiorna con i punti di questo round.</p></>
       case 'scoreboard': return <>{showCommentary ? game.commentary.slice(0, 2).map((line, index) => <p key={index}>{line}</p>) : <p>{game.round < game.totalRounds ? 'Occhio alla classifica: c’è ancora spazio per la rimonta!' : 'Cinque domande dopo, guardate quanti punti avete portato a casa.'}</p>}<p className={styles.smallCopy}>{game.round < game.totalRounds ? 'Poi sarete voi a scegliere quando iniziare il prossimo round.' : 'Tra poco il riepilogo della prima fase.'}</p></>
       case 'round_ready': return <>{showCommentary ? game.commentary.slice(0, 2).map((line, index) => <p key={index}>{line}</p>) : <p>Riprendete fiato, confrontate i punti. Il prossimo round parte quando volete voi!</p>}<p className={styles.smallCopy}>Un giocatore trascina il pulsante e tutto il gruppo passa al voto della categoria.</p></>
@@ -174,8 +174,12 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
           {game.deadline !== null && game.phase !== 'countdown' && <div className={styles.timerBlock}><div className={styles.timerLabel}><span>{isVoting ? 'Tempo per votare' : isQuestion ? 'Tempo per rispondere' : game.phase === 'category_reveal' ? 'Tempo per giocare un potere' : game.phase === 'suspended' ? 'Attesa di riconnessione' : 'Tra poco…'}</span><span className={styles.timerNumber}><Clock3 size={15} aria-hidden="true" /><span role="timer" aria-label={`${clock.seconds} secondi rimanenti`} aria-live="off">{clock.seconds}<small>s</small></span></span></div><progress className={`daisy-progress ${styles.timerProgress}`} value={clock.remainingPercent} max={100} aria-label="Tempo residuo" /></div>}
 
           {isInteractive ? (
-            <form onSubmit={submitSelection} className={styles.selectionForm}>
-              <p className={styles.instructions}>{isVoting ? 'Scegli la tua categoria e conferma il voto. Vince la più votata!' : 'Scegli una risposta, poi confermala. Prima rispondi bene, più punti guadagni.'}</p>
+            <form onSubmit={submitSelection} className={styles.selectionForm} aria-describedby={isVoting ? 'category-vote-rule' : undefined}>
+              {isVoting ? <div id="category-vote-rule" className={styles.votingRule}>
+                <span className={`daisy-badge ${styles.votingBadge}`}>Voto democratico</span>
+                <p><strong>Un giocatore, un voto.</strong> La maggioranza decide: vince la categoria con più voti.</p>
+                <p className={styles.votingHint}>Scegli e conferma. In caso di parità, sorteggio tra le più votate. Gli avatar compariranno alla chiusura del voto.</p>
+              </div> : <p className={styles.instructions}>Scegli una risposta, poi confermala. Prima rispondi bene, più punti guadagni.</p>}
               {power && <div role="status" className={`daisy-alert ${powerStyles.effect}`}><WandSparkles size={22} aria-hidden="true" /><div><strong>{powerFrom?.nickname ?? 'Un avversario'} ti ha lanciato {power.name}!</strong><p>{power.description} Il tempo resta di 15 secondi.</p></div></div>}
               {isQuestion && game.question && <div className={styles.questionBox}><span className={styles.eyebrow}>{game.category?.name ?? 'Cultura generale'}{game.question.language !== 'it' && game.question.language !== 'it-IT' ? ` · ${game.question.language.toUpperCase()}` : ''}</span><h2 id="current-question-prompt" className={styles.questionText}>{game.question.prompt}</h2></div>}
               <div className={isVoting ? styles.categoryChoices : styles.answerChoices} role="group" aria-label={isVoting ? 'Categorie disponibili' : 'Risposte disponibili'}>
@@ -192,16 +196,20 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
               </div>
               {effect?.kind === 'spotlight' && <><div className={powerStyles.spotlightControls}><button type="button" disabled={disabled || spotlightIndex === 0} className={`daisy-btn ${powerStyles.navigation}`} aria-label="Mostra la risposta precedente" onClick={() => setSpotlightIndex(index => index - 1)}><ArrowLeft size={20} aria-hidden="true" /></button><span role="status" aria-live="polite">Risposta {spotlightIndex + 1} di {options.length}</span><button type="button" disabled={disabled || spotlightIndex === options.length - 1} className={`daisy-btn ${powerStyles.navigation}`} aria-label="Mostra la risposta successiva" onClick={() => setSpotlightIndex(index => index + 1)}><ArrowRight size={20} aria-hidden="true" /></button></div>{selectedOption && <p role="status" className={styles.smallCopy}>Hai scelto la risposta {String.fromCharCode(65 + options.indexOf(selectedOption))}.</p>}</>}
               <div className={styles.confirmation} aria-live="polite">
-                {confirmed ? <p className={styles.confirmedMessage}><CheckCircle2 size={21} aria-hidden="true" />{isVoting ? 'Voto confermato. Aspettiamo il gruppo!' : 'Risposta confermata. Tra poco la soluzione!'}</p>
+                {confirmed ? <p className={styles.confirmedMessage}><CheckCircle2 size={21} aria-hidden="true" />{isVoting ? `Hai votato ${selectedOption?.text ?? 'la tua categoria'}. Aspettiamo il verdetto del gruppo!` : 'Risposta confermata. Tra poco la soluzione!'}</p>
                   : <button type="submit" disabled={disabled || !selection} className={`daisy-btn ${styles.confirmButton}`}>{pending ? <><span className="daisy-loading daisy-loading-spinner daisy-loading-sm" aria-hidden="true" /> Invio in corso…</> : <><Send size={18} aria-hidden="true" />{isVoting ? 'Conferma il voto' : 'Conferma la risposta'}</>}</button>}
                 {!clock.isOpen && !confirmed && <p className={styles.smallCopy}>{clock.now < game.opensAt ? 'La finestra si aprirà tra un attimo.' : 'Tempo scaduto. Aspettiamo lo studio.'}</p>}
-                <p className={styles.participantCount}>{isVoting ? game.votedCount : game.answeredCount} / {game.players.filter((player) => !player.retired).length} {isVoting ? 'voti ricevuti' : 'risposte ricevute'}</p>
+                <p className={styles.participantCount}>{isVoting
+                  ? `${game.votedCount} ${game.votedCount === 1 ? 'voto ricevuto' : 'voti ricevuti'}`
+                  : `${game.answeredCount} / ${game.players.filter((player) => !player.retired).length} risposte ricevute`}</p>
               </div>
             </form>
           ) : (
             <>
               {game.phase === 'countdown' && <p role="status"><span className="daisy-loading daisy-loading-spinner daisy-loading-md" aria-hidden="true" /> Lo studio si sta preparando…</p>}
-              <JerryPresenter compact={game.phase !== 'intro'}>{panelMessage()}</JerryPresenter>
+              {game.phase === 'category_reveal'
+                ? <CategoryVoteResult game={game} selfId={selfId} elapsedMs={Math.max(clock.now, game.serverNow) - game.opensAt} />
+                : <JerryPresenter compact={game.phase !== 'intro'}>{panelMessage()}</JerryPresenter>}
               {manualPhase && <div className="my-6">
                 <SwipeToContinue label={manualPhase === 'intro' ? 'Scorri per iniziare' : 'Scorri per il prossimo round'}
                   pending={pending} disabled={!connected || controlConflict || !self || self.retired || !enoughPlayers}

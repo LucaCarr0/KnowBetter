@@ -20,8 +20,14 @@ coverage/
 .pnpm-store/
 .vercel/
 .codex/
-.agents/
+.agents/*
+!.agents/skills/
+.agents/skills/*
+!.agents/skills/graphify/
 .aws/
+
+# Regenerable Graphify output
+graphify-out/
 
 # Operating system files
 .DS_Store

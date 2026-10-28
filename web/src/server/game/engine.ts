@@ -499,6 +499,9 @@ export function snapshot(game: GameState, selfId: string, connectedIds: Set<stri
     serverNow: now, opensAt: game.opensAt, deadline: game.deadline, players,
     candidates: round ? copy(round.candidates) : [], category: round?.category ? copy(round.category) : null,
     categoryVotes: round?.categoryVotes ? { ...round.categoryVotes } : null, selectionReason: round?.selectionReason ?? null,
+    categoryVoters: round?.categoryVotes ? Object.fromEntries(round.candidates.map(category => [
+      category.id, game.players.filter(player => round.votes[player.id]?.categoryId === category.id).map(player => player.id),
+    ])) : null,
     question: showQuestion ? { id: instance.question.id, instanceId: instance.id, prompt: instance.question.prompt, options, language: instance.question.language } : null,
     selfVote: round?.votes[selfId]?.categoryId ?? null,
     selfAnswer: showQuestion ? instance.answers[selfId]?.optionId ?? null : null,

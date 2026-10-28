@@ -68,6 +68,10 @@
 .countdown > span { display: block; font-size: clamp(6rem, 24vw, 10rem); line-height: 1; font-weight: 950; letter-spacing: -.08em; color: var(--studio-orange); -webkit-text-stroke: 2px var(--studio-ink); text-shadow: .25rem .25rem 0 var(--studio-ink); animation: count-pop 280ms cubic-bezier(.15,.85,.3,1.3) both; }
 .countdown > p { margin-top: 1rem; font-size: .8rem; font-weight: 750; }
 .instructions { margin: -.15rem 0 1.25rem; max-width: 40rem; font-size: .83rem; line-height: 1.55; color: #515570; }
+.votingRule { margin-bottom: 1.25rem; padding: .9rem 1rem; border: 2px solid var(--studio-ink); border-radius: .85rem; background: var(--color-base-200); font-size: .9rem; line-height: 1.5; }
+.votingBadge { height: auto; margin-bottom: .55rem; padding: .3rem .5rem; border: 0; border-radius: .35rem; background: var(--studio-ink); color: var(--studio-cream); font-size: .6rem; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+.votingRule strong { font-weight: 900; }
+.votingHint { margin-top: .4rem; font-size: .75rem; }
 .questionBox { margin-bottom: 1.25rem; padding: 1.2rem; border: 2px solid var(--studio-ink); border-radius: 1rem; background: #fffaf3; box-shadow: .2rem .25rem 0 #d8cfc3; }
 .questionText { margin-top: .55rem; font-size: clamp(1.2rem, 4.5vw, 1.9rem); line-height: 1.3; letter-spacing: -.025em; font-weight: 850; overflow-wrap: anywhere; }
 .categoryChoices, .answerChoices { display: grid; grid-template-columns: 1fr; gap: .65rem; }

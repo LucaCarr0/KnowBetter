@@ -168,6 +168,7 @@ test('voting is once per player, bounded by the server clock, and counts stay pr
   assert.equal(personal.selfVote, 'animals')
   assert.equal(other.selfVote, null)
   assert.equal(personal.categoryVotes, null)
+  for (const player of roster) assert.equal(snapshot(game, player.id, connected, opensAt).categoryVoters, null)
   assert.equal(personal.votedCount, 1)
   assert.equal(advance(game, catalog, connected, game.deadline! - 1), false)
   assert.throws(() => vote(game, roster[1].id, 'art', game.deadline!), rule('ACTION_TOO_LATE'))
@@ -175,6 +176,42 @@ test('voting is once per player, bounded by the server clock, and counts stay pr
   assert.equal(game.phase, 'category_reveal')
   assert.equal(snapshot(game, roster[1].id, connected, game.opensAt).selectionReason, 'votes')
   assert.equal(game.rounds[0].category?.id, 'animals')
+})
+
+test('closed votes reveal detached voter IDs in roster order, including retired and offline voters', () => {
+  const catalog = content()
+  const contestants = [
+    ...roster,
+    { id: 'player-c', nickname: 'Carla', avatarId: 'owl' as const },
+    { id: 'player-d', nickname: 'Dario', avatarId: 'frog' as const },
+  ]
+  const game = createGame(contestants, catalog, 0, shortConfig)
+  assert.equal(snapshot(game, roster[0].id, connected, 0).categoryVoters, null)
+  reachVote(game, catalog)
+  for (const player of [...contestants].reverse()) vote(game, player.id, player.id === 'player-c' ? 'art' : 'animals', game.opensAt)
+  const online = new Set([roster[0].id, 'player-c'])
+  retire(game, roster[1].id, game.opensAt)
+  for (const player of contestants) assert.equal(snapshot(game, player.id, online, game.opensAt).categoryVoters, null)
+  assert.equal(advance(game, catalog, online, game.opensAt), true)
+  assert.equal(game.phase, 'category_reveal')
+  game.players[3].points = 1000
+  const expected = { animals: ['player-a', 'player-b', 'player-d'], art: ['player-c'], history: [] }
+  const original = JSON.stringify(game)
+  const personal = snapshot(game, roster[0].id, online, game.opensAt)
+  assert.equal(personal.players[0].id, 'player-d')
+  for (const player of contestants) {
+    const result = snapshot(game, player.id, online, game.opensAt)
+    assert.deepEqual(result.categoryVoters, expected)
+    for (const [categoryId, voters] of Object.entries(result.categoryVoters!)) assert.equal(voters.length, result.categoryVotes![categoryId])
+    assert.deepEqual(result.categoryVoters!.animals.map(id => result.players.find(entry => entry.id === id)!.avatarId), ['panda', 'dog', 'frog'])
+  }
+  assert.equal(personal.players.find(player => player.id === 'player-b')!.retired, true)
+  assert.equal(personal.players.find(player => player.id === 'player-d')!.connected, false)
+  personal.categoryVoters!.animals.push('intruder')
+  personal.categoryVoters!.history = ['player-c']
+  personal.categoryVotes!.animals = 100
+  assert.deepEqual(snapshot(game, roster[0].id, online, game.opensAt).categoryVoters, expected)
+  assert.equal(JSON.stringify(game), original)
 })
 
 test('ties and abstentions select only the eligible categories and persist the draw result', () => {
@@ -189,6 +226,9 @@ test('ties and abstentions select only the eligible categories and persist the d
     step(game, catalog)
     const round = game.rounds[0]
     assert.equal(round.selectionReason, abstain ? 'abstention' : 'tie')
+    assert.deepEqual(snapshot(game, roster[0].id, connected, game.opensAt).categoryVoters, {
+      animals: abstain ? [] : [roster[0].id], art: abstain ? [] : [roster[1].id], history: [],
+    })
     assert.ok((abstain ? ['animals', 'art', 'history'] : ['animals', 'art']).includes(round.category!.id))
     const selected = JSON.stringify(round.category)
     assert.equal(advance(game, catalog, connected, game.opensAt), false)
@@ -277,6 +317,12 @@ test('five rounds include five votes, never repeat a question, and end without a
   for (let round = 1; round <= 5; round++) {
     assert.equal(game.round, round)
     assert.equal(game.phase, 'category_vote')
+    for (const player of roster) {
+      const voting = snapshot(game, player.id, connected, game.opensAt)
+      assert.equal(voting.categoryVotes, null)
+      assert.equal(voting.categoryVoters, null)
+      assert.equal(voting.selfVote, null)
+    }
     reachQuestion(game, catalog)
     const instance = game.rounds.at(-1)!.questionInstances[0]
     answer(game, roster[0].id, 'a', instance.id, game.opensAt)
@@ -390,6 +436,7 @@ test('restart voids an exposed question, preserves audit, and resumes with a new
   assert.equal(game.rounds[0].questionInstances[0].status, 'voided')
   assert.equal(game.rounds[0].questionInstances[0].answers[roster[0].id].points, null)
   assert.equal(game.players[0].points, 0)
+  assert.deepEqual(snapshot(game, roster[0].id, connected, 5000).categoryVoters, { animals: roster.map(player => player.id), art: [], history: [] })
   assert.equal(advance(game, catalog, new Set([roster[0].id]), 5001), false)
   assert.equal(advance(game, catalog, connected, 5002), true)
   assert.equal(game.phase, 'category_reveal')
@@ -414,14 +461,17 @@ test('restart during a vote preserves accepted votes and restarts one common vot
   reachVote(game, catalog)
   vote(game, roster[0].id, 'art', game.opensAt)
   recoverGame(game, 5000)
+  for (const player of roster) assert.equal(snapshot(game, player.id, connected, 5000).categoryVoters, null)
   advance(game, catalog, connected, 5001)
   assert.equal(game.phase, 'category_vote')
   assert.equal(game.deadline, 5001 + shortConfig.voteMs)
   assert.equal(snapshot(game, roster[0].id, connected, 5001).selfVote, 'art')
+  for (const player of roster) assert.equal(snapshot(game, player.id, connected, 5001).categoryVoters, null)
   assert.throws(() => vote(game, roster[0].id, 'history', 5001), rule('ALREADY_VOTED'))
   vote(game, roster[1].id, 'art', 5001)
   advance(game, catalog, connected, 5001)
   assert.equal(game.rounds[0].category!.id, 'art')
+  assert.deepEqual(snapshot(game, roster[0].id, connected, 5001).categoryVoters, { animals: [], art: roster.map(player => player.id), history: [] })
 })
 
 test('recovery preserves revealed points, and suspension expiry interrupts without creating results', () => {

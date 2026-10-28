@@ -30,6 +30,7 @@ export interface GameSnapshot {
   candidates: GameCategory[]
   category: GameCategory | null
   categoryVotes: Record<string, number> | null
+  categoryVoters: Record<string, string[]> | null
   selectionReason: 'votes' | 'tie' | 'abstention' | null
   question: { id: string; instanceId: string; prompt: string; options: GameOption[]; language: string } | null
   selfVote: string | null
