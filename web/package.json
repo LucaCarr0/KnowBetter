@@ -12,7 +12,7 @@
     "start": "NODE_ENV=production node --env-file-if-exists=.env.local --import tsx src/server/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test --test-isolation=none src/server/*.test.ts src/server/game/*.test.ts src/server/content/*.test.ts scripts/*.test.ts",
-    "test:unit": "node --import tsx --test --test-isolation=none src/server/lobby.test.ts src/server/shutdown.test.ts src/server/shutdown-database.test.ts src/server/game-integration.test.ts src/server/trivia.test.ts src/server/database.test.ts src/server/database-lock.test.ts scripts/db.test.ts src/server/game/*.test.ts src/server/content/*.test.ts",
+    "test:unit": "node --import tsx --test --test-isolation=none src/server/lobby.test.ts src/server/shutdown.test.ts src/server/shutdown-database.test.ts src/server/game-integration.test.ts src/server/bonus-integration.test.ts src/server/trivia.test.ts src/server/database.test.ts src/server/database-lock.test.ts scripts/db.test.ts src/server/game/*.test.ts src/server/content/*.test.ts",
     "trivia:import": "node --env-file-if-exists=.env.local --import tsx scripts/import-trivia.ts",
     "db:inspect": "node --env-file-if-exists=.env.local --import tsx scripts/db.ts inspect",
     "db:sql": "node --env-file-if-exists=.env.local --import tsx scripts/db.ts sql",

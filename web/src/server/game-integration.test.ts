@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
 import { test } from 'node:test'
+import { getBonusCatalog } from './content/bonus-catalog'
 import type { GameSnapshot } from '../features/game/types'
 import type { RoomAction, RoomResponse, RoomSnapshot } from '../features/rooms/types'
 import { createDatabase } from './database'
@@ -14,6 +15,7 @@ function catalog(): GameContent {
   const categories = ['animals', 'art', 'history'].map(id => ({ id, name: id }))
   return {
     categories,
+    bonusQuestions: getBonusCatalog().questions,
     questions: categories.flatMap(category => Array.from({ length: 8 }, (_, index): TriviaQuestion => ({
       id: `${category.id}-${index}`, categoryId: category.id, prompt: `Question ${category.id} ${index}`,
       options: ['a', 'b', 'c', 'd'].map(id => ({ id, text: `Option ${id}` })), correctOptionId: 'a',
@@ -232,13 +234,53 @@ test('phase-one commands, snapshots and JSONB persistence share the lobby transa
         assert.equal(completedReplay.players.find(player => player.id === created.selfId)!.points, round * 1000)
         assert.equal((await tick(host)).phase, 'scoreboard')
         const next = await tick(host)
-        assert.equal(next.phase, round === 5 ? 'phase_complete' : 'round_ready')
+        assert.equal(next.phase, round === 5 ? 'bonus_intro' : 'round_ready')
         if (round < 5) assert.equal(game(await command(guest, 'game:continue', { matchId: next.id, roundId: round, expectedPhase: 'round_ready' })).phase, 'category_vote')
       }
-      const completed = await currentGame(host)
+      const bonusIntro = await currentGame(host)
+      assert.equal(bonusIntro.phase, 'bonus_intro')
+      assert.equal(bonusIntro.round, 5)
+      assert.equal(bonusIntro.deadline, null)
+      assert.equal(used.size, 5)
+      const playing = game(await command(guest, 'game:continue', { matchId: bonusIntro.id, roundId: 5, expectedPhase: 'bonus_intro' }))
+      assert.equal(playing.phase, 'bonus_playing')
+      assert.equal(playing.deadline! - playing.opensAt, 60_000)
+      const bonusRunId = playing.bonus!.runId
+      let lastRequest: Record<string, unknown> = {}
+      for (let index = 0; index < 21; index++) {
+        const current = await currentGame(host)
+        const privateState = await savedGame(current.id)
+        const question = privateState.bonus!.questions[index]
+        const optionId = question.options.find(option => option.id !== question.correctOptionId)!.id
+        const request = { requestId: randomUUID(), matchId: current.id, roundId: 5, bonusRunId, questionInstanceId: current.bonus!.question!.instanceId, optionId }
+        const accepted = game(await service.command(host, 'game:bonus-answer', request))
+        assert.equal(accepted.bonus!.chain, index + 1)
+        assert.equal(accepted.bonus!.lastConsumedInstanceId, request.questionInstanceId)
+        assert.equal(accepted.players.find(player => player.id === created.selfId)!.points, 5000)
+        const replay = game(await service.command(host, 'game:bonus-answer', request))
+        assert.equal(replay.bonus!.chain, index + 1)
+        assert.equal(replay.bonus!.lastConsumedInstanceId, request.questionInstanceId)
+        assert.equal(errorCode(await service.command(host, 'game:bonus-answer', { ...request, bonusRunId: 'old-run' })), 'REQUEST_REUSED')
+        assert.equal(errorCode(await command(host, 'game:bonus-answer', { ...request, requestId: randomUUID() })), index === 20 ? 'BONUS_COMPLETED' : 'STALE_QUESTION')
+        assert.equal((await currentGame(guest)).bonus!.chain, 0)
+        lastRequest = request
+      }
+      assert.equal((await currentGame(host)).bonus!.completedMs, 0)
+      const results = await tick(host)
+      assert.equal(results.phase, 'bonus_results')
+      assert.equal(results.deadline, null)
+      assert.deepEqual(results.bonus!.results!.map(result => [result.chain, result.bonusPoints]), [[21, 3000], [0, 0]])
+      assert.equal(results.players.find(player => player.id === created.selfId)!.points, 8000)
+      assert.equal(game(await service.command(host, 'game:bonus-answer', lastRequest)).players.find(player => player.id === created.selfId)!.points, 8000)
+      const saved = await savedGame(results.id)
+      assert.equal(saved.rounds.length, 5)
+      assert.deepEqual(saved.bonus!.results, results.bonus!.results)
+      const completed = game(await command(guest, 'game:continue', { matchId: results.id, roundId: 5, expectedPhase: 'bonus_results' }))
+      assert.equal(completed.phase, 'phase_complete')
       assert.equal(completed.round, 5)
       assert.equal(completed.deadline, null)
-      assert.equal(used.size, 5)
+      const winner = completed.bonus!.results!.find(result => result.playerId === created.selfId)!
+      assert.deepEqual([winner.triviaPoints, winner.bonusPoints, winner.totalPoints], [5000, 3000, 8000])
       assert.equal(errorCode(await command(guest, 'game:return-lobby', { matchId: completed.id })), 'HOST_REQUIRED')
       const returned = room(await command(host, 'game:return-lobby', { matchId: completed.id }))
       assert.equal(returned.status, 'waiting')
@@ -246,7 +288,7 @@ test('phase-one commands, snapshots and JSONB persistence share the lobby transa
       assert.equal(returned.members.length, 2)
       const oldMatch = await database.transaction(db => db.query<{ active: boolean; state: { players: { points: number }[] } }>('SELECT active,state FROM kb_matches WHERE id=$1', [completed.id]))
       assert.equal(oldMatch.rows[0].active, false)
-      assert.equal(oldMatch.rows[0].state.players.find(player => player.points === 5000)?.points, 5000)
+      assert.equal(oldMatch.rows[0].state.players.find(player => player.points === 8000)?.points, 8000)
     })
 
     await t.test('stale match, round, instance and exact deadline cannot submit or mutate points', async () => {

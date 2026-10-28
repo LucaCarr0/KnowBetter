@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
+import { getBonusCatalog } from '../content/bonus-catalog'
 import { MAX_POWER_CARDS, POWERS, powerDropProbability, shuffleAnswerOptions, type PowerKind } from '../../features/game/powers'
 import { advance, answer, awardRoundPowers, clearPower, continueGame, createGame, GameRuleError, readyQuestion, recoverGame, scrambleAnswerWords, snapshot, usePower, vote, type GameContent, type GameState } from './engine'
 
 const roster = ['Ada', 'Bruno', 'Carla'].map((nickname, index) => ({ id: `player-${index}`, nickname, avatarId: 'panda' as const }))
 const online = new Set(roster.map(player => player.id))
 const content: GameContent = {
+  bonusQuestions: getBonusCatalog().questions,
   categories: ['arte', 'storia', 'scienze'].map(id => ({ id, name: id })),
   questions: ['arte', 'storia', 'scienze'].flatMap(categoryId => Array.from({ length: 8 }, (_, index) => ({
     id: `${categoryId}-${index}`, categoryId, prompt: `Quale gatto ama Roma? ${index}`,

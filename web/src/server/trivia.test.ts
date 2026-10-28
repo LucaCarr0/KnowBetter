@@ -6,17 +6,22 @@ import { tmpdir } from 'node:os'
 import { createDatabase } from './database'
 import { importTrivia, loadTrivia } from './trivia'
 import { getCatalog } from './content/catalog'
+import { getBonusCatalog } from './content/bonus-catalog'
 
 test('the complete compatible catalog is imported by category, idempotently, with answer keys and provenance', async () => {
   const database = await createDatabase({ dataDir: 'memory://' })
   try {
     const catalog = getCatalog()
+    const bonus = getBonusCatalog()
     const first = await importTrivia(database)
     assert.equal(first.imported, true)
-    assert.equal(first.questions, catalog.questions.length)
-    assert.equal(first.categories, catalog.categories.length)
+    assert.equal(first.questions, catalog.questions.length + bonus.questions.length)
+    assert.equal(first.categories, catalog.categories.length + bonus.categories.length)
     assert.equal((await importTrivia(database)).imported, false)
     const content = await loadTrivia(database)
+    assert.deepEqual(content.bonusQuestions, [...bonus.questions].sort((left, right) => left.id.localeCompare(right.id)))
+    assert.equal(content.categories.some(category => category.id === 'bonus-21'), false)
+    assert.equal(content.questions.some(question => question.id.startsWith('bonus21-')), false)
     assert.equal(content.questions.length, catalog.questions.filter(question => question.language === 'it' && question.playable !== false).length)
     const sample = catalog.questions.find(question => question.playable !== false && question.language === 'it')!
     assert.deepEqual(content.questions.find(question => question.id === sample.id), sample)
@@ -29,7 +34,26 @@ test('the complete compatible catalog is imported by category, idempotently, wit
       if (eligible.length) assert.ok(content.questions.filter(question => question.categoryId === category.id).length >= 5, category.name)
     }
     const imports = await database.transaction(db => db.query('SELECT count(*)::integer AS count FROM kb_content_imports'))
-    assert.equal(imports.rows[0].count, 1)
+    assert.equal(imports.rows[0].count, 2)
+
+    // Existing installs already have the ordinary catalog; only the missing bonus is added.
+    await database.transaction(async db => {
+      await db.query("DELETE FROM kb_trivia_questions WHERE question->>'format'='binary'")
+      await db.query('DELETE FROM kb_content_imports WHERE version=$1', [bonus.version])
+    })
+    assert.equal((await loadTrivia(database)).bonusQuestions!.length, 0)
+    assert.equal((await importTrivia(database)).imported, true)
+    const restored = await loadTrivia(database)
+    assert.equal(restored.questions.length, content.questions.length)
+    assert.equal(restored.bonusQuestions!.length, 105)
+    assert.equal((await importTrivia(database)).imported, false)
+
+    await database.transaction(db => db.query("UPDATE kb_trivia_questions SET question=jsonb_set(question,'{playable}','false'::jsonb) WHERE id=$1", [bonus.questions[0].id]))
+    const filtered = await loadTrivia(database)
+    assert.equal(filtered.bonusQuestions!.length, 104)
+    assert.equal(filtered.questions.length, content.questions.length)
+    await database.transaction(db => db.query("UPDATE kb_trivia_questions SET question=jsonb_set(question,'{options}',$2::jsonb) WHERE id=$1", [bonus.questions[1].id, JSON.stringify([{ id: 'A', text: 'unica' }])]))
+    await assert.rejects(() => loadTrivia(database), /Invalid or ambiguous binary options/)
   } finally { await database.close() }
 })
 

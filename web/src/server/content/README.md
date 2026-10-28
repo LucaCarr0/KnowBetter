@@ -146,3 +146,67 @@ Per verificare riproducibilità, esclusioni, risposte, licenze e quantità:
 ```sh
 node --import tsx --test --test-isolation=none src/server/content/catalog.test.ts
 ```
+
+## Catalogo originale del bonus «21 al contrario»
+
+`bonus-catalog.json`, versione **`bonus-21-it-20261028-v1`**, contiene **105 domande
+italiane originali**, con due alternative: una vera e una falsa. La soluzione
+`correctOptionId` identifica l'alternativa **vera**; nel bonus occorre scegliere
+l'altra. Non riutilizzare questo catalogo nelle domande ordinarie a quattro opzioni.
+
+Il catalogo comprende 30 calcoli interi, 15 quesiti di geometria, 20 simboli
+chimici, 20 quesiti sul Sistema solare e 20 capitali europee. Ogni domanda conserva
+versione, fonte HTTPS, data di controllo **28 ottobre 2026** e nota sul fatto
+verificato. I calcoli includono operatore e operandi per ripetere la verifica nei
+validatori e nei test; nessuna espressione viene valutata come codice.
+
+Le formulazioni e i distrattori sono stati scritti per Know Better. Le fonti
+seguenti verificano i fatti; i loro testi non sono stati importati o tradotti nel
+catalogo. `license: "Originale Know Better"` indica l'origine del testo, senza
+attribuire al progetto licenze sui testi delle fonti o scegliere una nuova
+licenza di distribuzione del progetto.
+
+- [NIST, tavola periodica 2024](https://www.nist.gov/document/periodic-table-2024),
+  pagina 1: simboli degli elementi.
+- [NASA, pianeti](https://science.nasa.gov/solar-system/planets/),
+  [Venere](https://science.nasa.gov/venus/venus-facts/),
+  [Marte](https://science.nasa.gov/mars/facts/),
+  [Sole](https://science.nasa.gov/sun/facts/) e
+  [asteroidi](https://science.nasa.gov/solar-system/asteroids/): ordine,
+  classificazione e proprietà elementari del Sistema solare.
+- [Michigan State University, Connected Mathematics Project](https://connectedmath.msu.edu/families/helping-with-math/7-1-shapes-and-designs.aspx):
+  numero di lati dei poligoni.
+- [Wolfram MathWorld, quadrato](https://mathworld.wolfram.com/Square.html),
+  [cubo](https://mathworld.wolfram.com/Cube.html),
+  [addizione](https://mathworld.wolfram.com/Addition.html),
+  [sottrazione](https://mathworld.wolfram.com/Subtraction.html) e
+  [moltiplicazione](https://mathworld.wolfram.com/Multiplication.html):
+  proprietà geometriche e definizioni delle operazioni, applicate ai calcoli originali.
+- [Unione europea, schede ufficiali dei paesi](https://european-union.europa.eu/principles-countries-history/eu-countries_en):
+  campo `Capital` di ciascuna delle 20 schede citate individualmente nei record.
+  Per i Paesi Bassi la domanda indica la capitale Amsterdam; il distrattore
+  Rotterdam evita l'ambiguità fra capitale e sede del governo all'Aia.
+
+`getBonusCatalog()` è sincrono e privato al server. Il caricamento verifica almeno
+105 ID e testi distinti, limite di 90 caratteri per domanda, 30 per alternativa,
+due opzioni distinte, chiave vera presente e riferimenti di verifica. `easy` è una
+stima editoriale iniziale; facilità, ritmo e bilanciamento richiedono prove giocate.
+La verifica con fonti e calcoli non sostituisce una revisione editoriale umana.
+
+`importTrivia()` importa entrambi i cataloghi nella stessa transazione e nelle
+tabelle esistenti; registra due versioni in `kb_content_imports`. Il database
+conterrà **7.602 domande e 11 categorie archiviate** dopo l'importazione del bonus,
+senza migrazioni SQL aggiuntive. `format: "binary"` nel JSONB separa il bonus:
+`loadTrivia()` restituisce `bonusQuestions` e conserva in `questions` solo il
+formato ordinario, compresi i record precedenti senza `format`. Nessuna domanda
+binaria o categoria del bonus compare nel voto trivia. Le chiamate a servizi
+esterni sono limitate alla verifica editoriale; importazione e gioco usano i file
+versionati e il database locale.
+
+Il coordinatore importa automaticamente la versione mancante al prossimo avvio;
+in alternativa, a coordinatore fermo, usare il comando esistente `pnpm trivia:import`.
+Il database locale attivo non è stato aperto durante questa implementazione.
+
+```sh
+node --import tsx --test --test-isolation=none src/server/content/bonus-catalog.test.ts src/server/trivia.test.ts
+```

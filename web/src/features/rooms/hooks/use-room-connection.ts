@@ -18,15 +18,16 @@ import { normalizeNickname, normalizeRoomCode } from '../lib/validation'
 export type RoomConnectionStatus = 'connecting' | 'connected' | 'reconnecting' | 'offline' | 'conflict'
 
 type RoomInput = { identity?: PlayerIdentity; code?: string } & GameCommandFields
-type PendingCommand = {
+export type PendingCommand = {
   action: RoomAction
   fingerprint: string
   command: RoomCommand
   previousRoomId: string | null
   previousVersion: number
+  confirm?: (response: RoomResponse) => void
 }
 
-function confirmsCommand(operation: PendingCommand, snapshot: RoomSnapshot | null): boolean {
+export function confirmsCommand(operation: PendingCommand, snapshot: RoomSnapshot | null): boolean {
   if (operation.action === 'room:leave') return snapshot === null
   if (operation.action === 'room:resume') return true
   if (operation.action.startsWith('game:')) {
@@ -39,6 +40,7 @@ function confirmsCommand(operation: PendingCommand, snapshot: RoomSnapshot | nul
     if (operation.action === 'game:resume') return true
     if (operation.action === 'game:continue') return snapshot.version > operation.previousVersion && (game.round !== command.roundId || game.phase !== command.expectedPhase)
     if (operation.action === 'game:vote-category') return game.round === command.roundId && game.selfVote === command.categoryId
+    if (operation.action === 'game:bonus-answer') return Boolean(game.bonus && game.bonus.runId === command.bonusRunId && game.bonus.lastConsumedInstanceId === command.questionInstanceId)
     if (operation.action === 'game:answer') return game.question?.instanceId === command.questionInstanceId && game.selfAnswer === command.optionId
     if (operation.action === 'game:use-power') return game.round === command.roundId && game.powers.used && !game.powers.inventory.some(card => card.id === command.powerCardId)
     if (operation.action === 'game:ready-question') return game.round === command.roundId && game.powers.ready
@@ -99,6 +101,7 @@ export function useRoomConnection() {
     revisionRef.current += 1
     setRoom(snapshot)
     if (pendingRef.current && confirmsCommand(pendingRef.current, snapshot)) {
+      pendingRef.current.confirm?.({ ok: true, room: snapshot })
       pendingRef.current = null
       setError(null)
     }
@@ -284,9 +287,10 @@ export function useRoomConnection() {
     setError(null)
 
     try {
-      const response = await sendRoomCommand(socket, action, operation.command, lifecycle.signal, () => {
+      const confirmed = new Promise<RoomResponse>((resolve) => { operation.confirm = resolve })
+      const response = await Promise.race([confirmed, sendRoomCommand(socket, action, operation.command, lifecycle.signal, () => {
         if (!lifecycle.signal.aborted && pendingRef.current === operation) setError({ code: 'REQUEST_RETRYING', message: 'Still waiting for confirmation. Retrying the same action safely…' })
-      })
+      })])
       if (lifecycle.signal.aborted) return response
       pendingRef.current = null
       if (response.ok) {

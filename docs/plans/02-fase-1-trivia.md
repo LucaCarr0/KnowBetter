@@ -2,7 +2,7 @@
 
 Data: 26 ottobre 2026.
 Ultimo aggiornamento: 28 ottobre 2026.
-Stato: piano autorizzato il 26 ottobre 2026 con «procedi col piano». Implementata la Fase 1 sul frontend e sul coordinatore esistenti; l'utente ha inoltre richiesto l'importazione nel database di cataloghi di domande da internet. Le sezioni sotto conservano la distinzione originaria fra requisiti e default proposti; questi ultimi sono stati applicati come configurazione iniziale dell'implementazione. Prove visive sui telefoni a cura dell'utente.
+Stato: piano autorizzato il 26 ottobre 2026 con «procedi col piano». Implementata la Fase 1 sul frontend e sul coordinatore esistenti, compreso il bonus finale «21 al contrario» autorizzato il 28 ottobre 2026; l'utente ha inoltre richiesto l'importazione nel database di cataloghi di domande da internet. Le sezioni sotto conservano la distinzione originaria fra requisiti e default proposti; questi ultimi sono stati applicati come configurazione iniziale dell'implementazione. Prove visive sui telefoni a cura dell'utente.
 Riferimenti: [memoria di progetto](../../PROJECT_MEMORY.md), [modulo home e stanze](01-menu-e-stanze.md).
 
 Aggiornamento del ritmo richiesto il 26 ottobre 2026: istruzioni e avvio dei round sono manuali, senza scadenza. Un pulsante da trascinare, disponibile a qualsiasi concorrente attivo, fa proseguire tutta la partita. Restano i 5 secondi della classifica e gli attuali timer di voto e domanda. Questa decisione sostituisce l'introduzione automatica di 10 secondi e il passaggio automatico dalla classifica al voto successivo.
@@ -99,7 +99,10 @@ flowchart TD
   E --> R[Classifica aggiornata]
   R -->|Dopo 5 secondi, round 1–4| P[Plancia: pausa senza countdown]
   P -->|Swipe di un concorrente| V
-  R -->|Round 5| F[Riepilogo della Fase 1]
+  R -->|Round 5| BI[Jerry: presentazione di 21 al contrario]
+  BI -->|Swipe, almeno due connessi| BP[21 risposte false consecutive: massimo 60 secondi]
+  BP --> BR[Classifica bonus e premi]
+  BR -->|Swipe di un concorrente| F[Riepilogo: punti trivia più bonus]
 ```
 
 La plancia raggruppa più momenti dello show; non occorrono altre schermate principali per presentazione e risultati. Ogni ripetizione del voto riguarda il round che sta per iniziare. Dopo il quinto round non si apre un voto privo di destinazione.
@@ -139,14 +142,14 @@ Questi valori sono i **default iniziali del piano**, successivamente applicati e
 | Modifica del voto | Selezione locale modificabile fino alla conferma; primo voto confermato definitivo |
 | Maggioranza | Vince la categoria con più voti, senza ballottaggio |
 | Parità e astensioni | Sorteggio server fra le più votate; se nessuno vota, fra tutte le candidate. Conservare e comunicare il risultato del sorteggio |
-| Annuncio e preparazione dei poteri | Riusa `category_reveal`: da 3 a un massimo di 8 secondi sulla plancia; chiusura anticipata se tutti i concorrenti ancora in gara usano un potere o passano |
+| Annuncio e preparazione dei poteri | Riusa `category_reveal`: da 3 a un massimo di 15 secondi sulla plancia; chiusura anticipata se tutti i concorrenti ancora in gara usano un potere o passano |
 | Risposte | 4 alternative con una sola corretta; una risposta confermata per giocatore e round |
 | Durata della domanda | 15 secondi dal comune istante di apertura; chiusura anticipata se tutti i partecipanti ancora in gara hanno risposto |
 | Risposta errata o assente | 0 punti, senza sottrazioni |
 | Risposta corretta | 500 punti base + bonus velocità da 0 a 500, calcolato sul tempo di arrivo al server |
 | Soluzione e classifica | 5 secondi per soluzione/esito e 5 per classifica; poi pausa senza scadenza prima del prossimo round, aperto con swipe di un concorrente |
 | Pari punti in classifica | Stessa posizione; ordine visivo stabile di ingresso, senza spareggio implicito |
-| Fine Fase 1 | Riepilogo fermo con punti conservati, senza avviare Fase 2 e senza proclamare il vincitore finale |
+| Fine Fase 1 | Dopo il quinto round: presentazione e prova «21 al contrario», classifica bonus e riepilogo fermo; nessun avvio della Fase 2 o vittoria finale |
 
 Formula candidata per una risposta corretta: `500 + floor(500 × clamp(1 − elapsedMs / answerDurationMs, 0, 1))`. `elapsedMs` deriva dall'apertura comune e dal timestamp di ricezione registrato dal coordinatore, non da un valore inviato dal telefono. Le risposte ricevute alla scadenza o oltre sono rifiutate. La chiusura anticipata non ricalcola il bonus su una durata più breve. La latenza resta parte del tempo osservato: nessuna compensazione basata sull'orologio dichiarato dal client.
 
@@ -181,7 +184,7 @@ Il seed deve coprire cinque round senza ripetizioni anche se viene scelta ripetu
 
 **Architettura proposta:** estendere il coordinatore esistente con una macchina a stati della partita, mantenendo un solo processo autorevole. Tempi, categorie, domande, punteggi e progressione sono decisi dal server. Il telefono invia intenzioni e rappresenta lo stato ricevuto.
 
-Separare lo stato della stanza (`waiting`, `starting`, `playing`, `closed`) dallo stato dettagliato della partita. Gli stati di gioco sono `countdown`, `intro`, `round_ready`, `category_vote`, `category_reveal`, `question`, `round_reveal`, `scoreboard`, `phase_complete`, oltre agli stati tecnici `suspended`/`aborted`. `intro` e `round_ready` non hanno scadenza. I nomi sono scelte tecniche, non schermate principali aggiuntive richieste al giocatore.
+Separare lo stato della stanza (`waiting`, `starting`, `playing`, `closed`) dallo stato dettagliato della partita. Gli stati di gioco sono `countdown`, `intro`, `round_ready`, `category_vote`, `category_reveal`, `question`, `round_reveal`, `scoreboard`, `bonus_intro`, `bonus_playing`, `bonus_results`, `phase_complete`, oltre agli stati tecnici `suspended`/`aborted`. `intro`, `round_ready`, `bonus_intro` e `bonus_results` non hanno scadenza. I nomi sono scelte tecniche, non schermate principali aggiuntive richieste al giocatore.
 
 | Dato proposto | Responsabilità |
 | --- | --- |
@@ -192,12 +195,13 @@ Separare lo stato della stanza (`waiting`, `starting`, `playing`, `closed`) dall
 | Risposte | Opzione, istante server di ricezione, accettazione ed esito; vincolo univoco per partita/istanza della domanda/giocatore |
 | Punti del round | Correttezza, quota base, bonus e totale; vincolo che impedisca una seconda assegnazione |
 | Poteri e preparazione | Inventario personale, estrazioni già effettuate, carta consumata, bersaglio, effetto della domanda e avanzamento personale; salvati nel JSONB opzionale della partita |
+| Bonus finale | Esecuzione, configurazione, 21 domande private con ordine comune, partecipanti fissati alla partenza, progressi e istanze personali, scadenze, completamenti, risultati e premi assegnati; campo JSONB opzionale per compatibilità |
 | Commenti di Jerry | Al massimo due battute condivise per round, calcolate dagli esiti e conservate fino alla pausa successiva |
 | Ricevute | Identificativo richiesta, partecipante, stanza/partita/round/istanza pertinenti, impronta dei parametri ed esito; reinvii riconoscibili |
 
 Introdurre migrazioni SQL versionate applicabili anche a database PGlite già popolati: il solo `CREATE TABLE IF NOT EXISTS` attuale non modifica il vincolo degli stati. Conservare stanze e sessioni esistenti e verificare la migrazione anche sul percorso PostgreSQL esterno.
 
-**Comandi:** `game:start`, `game:continue`, `game:vote-category`, `game:answer`, `game:resume`, `game:return-lobby`; l'abbandono riusa `room:leave`. Ogni azione mutante porta `requestId` e gli identificativi pertinenti: l'avvio si riferisce alla stanza, mentre partita e round sono assegnati dal server. `game:continue` include partita, round e fase attesa (`intro` o `round_ready`); è ammesso a qualsiasi concorrente attivo e connesso con controllo della scheda, con almeno due connessi. Due swipe simultanei o un comando obsoleto non possono saltare scene. Il voto si riferisce a partita e round; la risposta include anche `questionInstanceId`, così un reinvio non può colpire una domanda sostitutiva. Il server ricava il giocatore dalla sessione già autenticata e controlla anche il possesso della scheda attiva. Separare la convalida di questi comandi da quella delle operazioni lobby che richiedono nickname/avatar. La versione va usata per rilevare azioni obsolete senza rifiutare un voto valido solo perché un altro giocatore ha appena aggiornato lo stato.
+**Comandi:** `game:start`, `game:continue`, `game:vote-category`, `game:answer`, `game:bonus-answer`, `game:resume`, `game:return-lobby`; l'abbandono riusa `room:leave`. Ogni azione mutante porta `requestId` e gli identificativi pertinenti: l'avvio si riferisce alla stanza, mentre partita e round sono assegnati dal server. `game:continue` include partita, round e fase attesa (`intro`, `round_ready`, `bonus_intro` o `bonus_results`); è ammesso a qualsiasi concorrente attivo e connesso con controllo della scheda, con almeno due connessi per avviare round o bonus. La classifica bonus è già finalizzata: lo swipe verso il riepilogo resta disponibile al concorrente attivo anche se è rimasto solo. Due swipe simultanei o un comando obsoleto non possono saltare scene. Il voto si riferisce a partita e round; la risposta include anche `questionInstanceId`, così un reinvio non può colpire una domanda sostitutiva. Il server ricava il giocatore dalla sessione già autenticata e controlla anche il possesso della scheda attiva. Separare la convalida di questi comandi da quella delle operazioni lobby che richiedono nickname/avatar. La versione va usata per rilevare azioni obsolete senza rifiutare un voto valido solo perché un altro giocatore ha appena aggiornato lo stato.
 
 **Estensione poteri del 27 ottobre:** `game:use-power` usa carta e bersaglio, `game:ready-question` conclude la propria preparazione senza usare una carta, `game:clear-power` registra i tocchi necessari per l'effetto personale. Ricevute e identificativi di preparazione/domanda impediscono di ripetere consumi, saltare i vincoli o applicare un comando alla domanda successiva. Non serve un nuovo trasporto o processo server.
 
@@ -285,6 +289,31 @@ Per la futura implementazione usare clock e timer controllabili nei test del mot
 Permesso di avvio, partecipanti offline, maggioranza/parità, tempi, formula dei punti, catalogo italiano, recupero e ritorno in lobby hanno ora default applicati, descritti nella memoria di progetto. Restano da valutare con le prove difficoltà editoriale, ritmo e bilanciamento dei quattro poteri; limite di due carte, un uso per round, interpolazione della probabilità e preparazione di massimo 15 secondi sono scelte operative modificabili. Le fasi successive e l'eventuale voce di Jerry restano fuori da questo aggiornamento.
 
 Il minimo di 2 giocatori, i 5 secondi iniziali ora rappresentati dalla rotellina nella lobby, il conduttore fornito con commenti personali, il ritmo cartoon, la classifica su ogni client, il voto categoria prima di ogni round e l'introduzione dei poteri con la taratura accettata sono confermati.
+
+## 11. Bonus finale della Fase 1 — «21 al contrario»
+
+La specifica completa allegata il 28 ottobre 2026 è autorizzata con «procedi con l'implementazione». Aggiorna la precedente chiusura dopo il quinto round; non introduce un sesto round trivia o la Fase 2.
+
+**Regole confermate:**
+
+- Tutti ricevono le stesse 21 domande binarie nello stesso ordine, con posizione delle alternative conservata dopo ogni errore.
+- Scegliere l'alternativa falsa fa avanzare. Scegliere quella vera o lasciare scadere cinque secondi azzera la catena e riporta alla prima domanda.
+- Il minuto comune continua; alla scadenza vale soltanto la catena finale, senza conservare il miglior tentativo o contare la domanda incompleta.
+- Chi raggiunge 21 attende e vede tempo personale e conteggio dei completamenti. La chiusura anticipata richiede il completamento di tutti i partecipanti ancora in gara.
+- Nessun potere trivia, punto per risposta, microfono, riconoscimento vocale o doppiaggio. Jerry usa testi.
+- Presentazione e classifica bonus sono pause senza scadenza; lo swipe di un concorrente apre rispettivamente prova comune e riepilogo della sola Fase 1. Per partire servono almeno due concorrenti connessi.
+
+**Classifica e premi confermati.** Catena finale decrescente; solo fra i completamenti di 21 conta il tempo dalla partenza comune. Stessa catena sotto 21 o stesso tempo di completamento danno pari posizione e pari premio, saltando le posizioni successive. Il denominatore usa i partecipanti fissati alla partenza. Formula `round(3000 − 2500 × (posizione − 1) / (partecipanti − 1))`; catena zero o ritiro danno zero. Con quattro concorrenti positivi senza parità: 3.000, 2.167, 1.333 e 500. Risultati e nuovi totali condividono il commit; il riepilogo mostra sempre trivia + bonus = totale Fase 1.
+
+**Catalogo e contratto.** Preparati 105 quesiti italiani originali, semplici, con una sola alternativa falsa; limiti 90 caratteri per la domanda e 30 per l'alternativa. Versione e fonti di verifica sono conservate nel catalogo privato. Importazione idempotente nelle tabelle esistenti, con `format: 'binary'` nel JSONB e caricamento separato dalle trivia ordinarie. Ogni nuova partita conserva 21 domande distinte; le opzioni inviate al telefono hanno ID opachi casuali. Nessuna richiesta esterna durante la prova. La macchina a stati aggiunge `bonus_intro`, `bonus_playing`, `bonus_results`; `game:bonus-answer` porta partita, esecuzione bonus, istanza personale e opzione. Snapshot e conferma dell'ultima istanza accettata appartengono soltanto al destinatario. Ogni avanzamento e reset crea un'istanza nuova, anche tornando alla domanda 1.
+
+**Default operativi della specifica applicati.** Disconnessione e refresh non fermano i timer; lo scheduler elabora i timeout personali senza input, conserva i confini originali se arriva tardi e dà precedenza alla chiusura comune quando coincide col timeout personale. I reinvii riusano ricevute e coda esistenti; un'istanza consumata non può avanzare o azzerare nuovamente il progresso. L'ultima istanza accettata resta recuperabile anche dopo un successivo timeout. Riavvio durante la prova: nuova presentazione, sequenza ed esecuzione di 60 secondi, senza perdere punti trivia. Bonus già finalizzato: nessun nuovo premio o tentativo. Salvataggi precedenti senza campo bonus: percorso storico a cinque trivia. Catalogo insufficiente: blocco esplicito prima del countdown delle nuove partite. Nessuna nuova migrazione SQL o dipendenza runtime.
+
+**Verifiche automatiche previste dalla specifica e coperte dai test dedicati.** Percorso cinque trivia/bonus/riepilogo senza sesto round, completamento di 21, reset dopo la ventesima, progressi indipendenti, timeout senza input, confini 5/60 secondi e ritardo dello scheduler. Premi per 2–10 concorrenti, catena finale al posto del miglior tentativo, parità e completamenti, tutti a zero e ritiri. Reinvii, fingerprint dell'esecuzione, conferme perse, istanze obsolete, riconnessione, riavvio prima e dopo il premio, privacy e compatibilità. Una prova in memoria esercita dieci connessioni sulla coda delle transazioni senza aprire listener di rete o il database locale attivo.
+
+**Verifiche del bonus del 28 ottobre.** Superati 123 test della suite `pnpm test:unit`, controllo TypeScript separato (`tsc --noEmit`) e build di produzione Next.js/Webpack con controllo dei tipi attivo; `git diff --check` senza errori. La build è riuscita fuori sandbox dopo l'approvazione richiesta dal tool: nella sandbox il sottoprocesso TypeScript restituiva `Could not parse output from TypeScript's --showConfig.`. I test includono quattro verifiche persistenti del riconoscimento delle conferme nel client, importazione SQL idempotente e separata del catalogo binario, cinque trivia seguite dal bonus, confini temporali, premi e parità per 2–10 concorrenti, recupero JSONB e una simulazione di dieci connessioni nella coda delle transazioni con reinvii, timeout, riconnessione e riavvio prima e dopo il premio. Nessun listener di rete, server applicativo, browser o database locale attivo aperto; importazione del nuovo catalogo nel database di gioco al prossimo avvio. PostgreSQL esterno e prova visiva sui telefoni non eseguiti. Il proprietario ha ribadito di curare personalmente le verifiche da interfaccia; ritmo e bilanciamento richiedono la sua prova giocata.
+
+Le prove su telefoni restano al proprietario. Ritmo delle domande e peso dei premi richiedono una partita giocata prima di considerarli bilanciati.
 
 ## Riferimenti tecnici consultati
 

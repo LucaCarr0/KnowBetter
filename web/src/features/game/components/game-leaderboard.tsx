@@ -4,10 +4,11 @@ import styles from '../styles/game-stage.module.css'
 
 const pointsFormatter = new Intl.NumberFormat('it-IT')
 
-export function GameLeaderboard({ players, selfId, showGains = false }: {
+export function GameLeaderboard({ players, selfId, showGains = false, showBreakdown = false }: {
   players: GamePlayer[]
   selfId: string
   showGains?: boolean
+  showBreakdown?: boolean
 }) {
   return (
     <ol className={styles.leaderboard} aria-label="Classifica dei punti">
@@ -17,6 +18,7 @@ export function GameLeaderboard({ players, selfId, showGains = false }: {
           <PlayerAvatar avatarId={player.avatarId} className="size-10 sm:size-12" />
           <div className={styles.playerName}>
             <p>{player.nickname}{player.id === selfId && <span className={styles.youLabel}> tu</span>}</p>
+            {showBreakdown && <span className={styles.presence}>{pointsFormatter.format(player.triviaPoints ?? player.points)} trivia + {pointsFormatter.format(player.bonusPoints ?? 0)} bonus = {pointsFormatter.format(player.points)} totale</span>}
             {(player.retired || !player.connected) && <span className={styles.presence}>{player.retired ? 'Ha lasciato la partita' : 'In riconnessione'}</span>}
           </div>
           <div className={styles.playerPoints}>

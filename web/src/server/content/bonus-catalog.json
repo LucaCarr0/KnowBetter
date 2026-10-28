@@ -1,0 +1,3321 @@
+{
+  "version": "bonus-21-it-20261028-v1",
+  "categories": [
+    {
+      "id": "bonus-21",
+      "name": "21 al contrario",
+      "icon": "🔄"
+    }
+  ],
+  "questions": [
+    {
+      "id": "bonus21-addition-2-3",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 2 + 3?",
+      "options": [
+        {
+          "id": "A",
+          "text": "5"
+        },
+        {
+          "id": "B",
+          "text": "7"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Addition.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "addition-2-3",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Addition.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 2 + 3 = 5."
+      },
+      "calculation": {
+        "operator": "+",
+        "left": 2,
+        "right": 3
+      }
+    },
+    {
+      "id": "bonus21-addition-4-5",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 4 + 5?",
+      "options": [
+        {
+          "id": "A",
+          "text": "11"
+        },
+        {
+          "id": "B",
+          "text": "9"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Addition.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "addition-4-5",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Addition.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 4 + 5 = 9."
+      },
+      "calculation": {
+        "operator": "+",
+        "left": 4,
+        "right": 5
+      }
+    },
+    {
+      "id": "bonus21-addition-7-2",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 7 + 2?",
+      "options": [
+        {
+          "id": "A",
+          "text": "9"
+        },
+        {
+          "id": "B",
+          "text": "11"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Addition.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "addition-7-2",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Addition.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 7 + 2 = 9."
+      },
+      "calculation": {
+        "operator": "+",
+        "left": 7,
+        "right": 2
+      }
+    },
+    {
+      "id": "bonus21-addition-6-6",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 6 + 6?",
+      "options": [
+        {
+          "id": "A",
+          "text": "14"
+        },
+        {
+          "id": "B",
+          "text": "12"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Addition.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "addition-6-6",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Addition.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 6 + 6 = 12."
+      },
+      "calculation": {
+        "operator": "+",
+        "left": 6,
+        "right": 6
+      }
+    },
+    {
+      "id": "bonus21-addition-8-5",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 8 + 5?",
+      "options": [
+        {
+          "id": "A",
+          "text": "13"
+        },
+        {
+          "id": "B",
+          "text": "15"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Addition.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "addition-8-5",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Addition.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 8 + 5 = 13."
+      },
+      "calculation": {
+        "operator": "+",
+        "left": 8,
+        "right": 5
+      }
+    },
+    {
+      "id": "bonus21-addition-10-4",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 10 + 4?",
+      "options": [
+        {
+          "id": "A",
+          "text": "16"
+        },
+        {
+          "id": "B",
+          "text": "14"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Addition.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "addition-10-4",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Addition.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 10 + 4 = 14."
+      },
+      "calculation": {
+        "operator": "+",
+        "left": 10,
+        "right": 4
+      }
+    },
+    {
+      "id": "bonus21-addition-9-6",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 9 + 6?",
+      "options": [
+        {
+          "id": "A",
+          "text": "15"
+        },
+        {
+          "id": "B",
+          "text": "17"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Addition.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "addition-9-6",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Addition.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 9 + 6 = 15."
+      },
+      "calculation": {
+        "operator": "+",
+        "left": 9,
+        "right": 6
+      }
+    },
+    {
+      "id": "bonus21-addition-11-7",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 11 + 7?",
+      "options": [
+        {
+          "id": "A",
+          "text": "20"
+        },
+        {
+          "id": "B",
+          "text": "18"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Addition.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "addition-11-7",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Addition.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 11 + 7 = 18."
+      },
+      "calculation": {
+        "operator": "+",
+        "left": 11,
+        "right": 7
+      }
+    },
+    {
+      "id": "bonus21-addition-12-8",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 12 + 8?",
+      "options": [
+        {
+          "id": "A",
+          "text": "20"
+        },
+        {
+          "id": "B",
+          "text": "22"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Addition.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "addition-12-8",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Addition.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 12 + 8 = 20."
+      },
+      "calculation": {
+        "operator": "+",
+        "left": 12,
+        "right": 8
+      }
+    },
+    {
+      "id": "bonus21-addition-15-10",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 15 + 10?",
+      "options": [
+        {
+          "id": "A",
+          "text": "27"
+        },
+        {
+          "id": "B",
+          "text": "25"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Addition.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "addition-15-10",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Addition.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 15 + 10 = 25."
+      },
+      "calculation": {
+        "operator": "+",
+        "left": 15,
+        "right": 10
+      }
+    },
+    {
+      "id": "bonus21-subtraction-9-4",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 9 − 4?",
+      "options": [
+        {
+          "id": "A",
+          "text": "5"
+        },
+        {
+          "id": "B",
+          "text": "7"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Subtraction.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "subtraction-9-4",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Subtraction.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 9 − 4 = 5."
+      },
+      "calculation": {
+        "operator": "−",
+        "left": 9,
+        "right": 4
+      }
+    },
+    {
+      "id": "bonus21-subtraction-12-5",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 12 − 5?",
+      "options": [
+        {
+          "id": "A",
+          "text": "9"
+        },
+        {
+          "id": "B",
+          "text": "7"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Subtraction.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "subtraction-12-5",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Subtraction.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 12 − 5 = 7."
+      },
+      "calculation": {
+        "operator": "−",
+        "left": 12,
+        "right": 5
+      }
+    },
+    {
+      "id": "bonus21-subtraction-15-6",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 15 − 6?",
+      "options": [
+        {
+          "id": "A",
+          "text": "9"
+        },
+        {
+          "id": "B",
+          "text": "11"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Subtraction.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "subtraction-15-6",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Subtraction.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 15 − 6 = 9."
+      },
+      "calculation": {
+        "operator": "−",
+        "left": 15,
+        "right": 6
+      }
+    },
+    {
+      "id": "bonus21-subtraction-20-8",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 20 − 8?",
+      "options": [
+        {
+          "id": "A",
+          "text": "14"
+        },
+        {
+          "id": "B",
+          "text": "12"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Subtraction.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "subtraction-20-8",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Subtraction.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 20 − 8 = 12."
+      },
+      "calculation": {
+        "operator": "−",
+        "left": 20,
+        "right": 8
+      }
+    },
+    {
+      "id": "bonus21-subtraction-18-9",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 18 − 9?",
+      "options": [
+        {
+          "id": "A",
+          "text": "9"
+        },
+        {
+          "id": "B",
+          "text": "11"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Subtraction.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "subtraction-18-9",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Subtraction.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 18 − 9 = 9."
+      },
+      "calculation": {
+        "operator": "−",
+        "left": 18,
+        "right": 9
+      }
+    },
+    {
+      "id": "bonus21-subtraction-25-10",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 25 − 10?",
+      "options": [
+        {
+          "id": "A",
+          "text": "17"
+        },
+        {
+          "id": "B",
+          "text": "15"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Subtraction.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "subtraction-25-10",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Subtraction.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 25 − 10 = 15."
+      },
+      "calculation": {
+        "operator": "−",
+        "left": 25,
+        "right": 10
+      }
+    },
+    {
+      "id": "bonus21-subtraction-30-12",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 30 − 12?",
+      "options": [
+        {
+          "id": "A",
+          "text": "18"
+        },
+        {
+          "id": "B",
+          "text": "20"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Subtraction.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "subtraction-30-12",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Subtraction.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 30 − 12 = 18."
+      },
+      "calculation": {
+        "operator": "−",
+        "left": 30,
+        "right": 12
+      }
+    },
+    {
+      "id": "bonus21-subtraction-14-7",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 14 − 7?",
+      "options": [
+        {
+          "id": "A",
+          "text": "9"
+        },
+        {
+          "id": "B",
+          "text": "7"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Subtraction.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "subtraction-14-7",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Subtraction.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 14 − 7 = 7."
+      },
+      "calculation": {
+        "operator": "−",
+        "left": 14,
+        "right": 7
+      }
+    },
+    {
+      "id": "bonus21-subtraction-50-20",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 50 − 20?",
+      "options": [
+        {
+          "id": "A",
+          "text": "30"
+        },
+        {
+          "id": "B",
+          "text": "32"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Subtraction.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "subtraction-50-20",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Subtraction.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 50 − 20 = 30."
+      },
+      "calculation": {
+        "operator": "−",
+        "left": 50,
+        "right": 20
+      }
+    },
+    {
+      "id": "bonus21-subtraction-16-4",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 16 − 4?",
+      "options": [
+        {
+          "id": "A",
+          "text": "14"
+        },
+        {
+          "id": "B",
+          "text": "12"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Subtraction.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "subtraction-16-4",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Subtraction.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 16 − 4 = 12."
+      },
+      "calculation": {
+        "operator": "−",
+        "left": 16,
+        "right": 4
+      }
+    },
+    {
+      "id": "bonus21-multiplication-2-4",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 2 × 4?",
+      "options": [
+        {
+          "id": "A",
+          "text": "8"
+        },
+        {
+          "id": "B",
+          "text": "10"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Multiplication.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "multiplication-2-4",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Multiplication.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 2 × 4 = 8."
+      },
+      "calculation": {
+        "operator": "×",
+        "left": 2,
+        "right": 4
+      }
+    },
+    {
+      "id": "bonus21-multiplication-3-3",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 3 × 3?",
+      "options": [
+        {
+          "id": "A",
+          "text": "11"
+        },
+        {
+          "id": "B",
+          "text": "9"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Multiplication.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "multiplication-3-3",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Multiplication.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 3 × 3 = 9."
+      },
+      "calculation": {
+        "operator": "×",
+        "left": 3,
+        "right": 3
+      }
+    },
+    {
+      "id": "bonus21-multiplication-4-5",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 4 × 5?",
+      "options": [
+        {
+          "id": "A",
+          "text": "20"
+        },
+        {
+          "id": "B",
+          "text": "22"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Multiplication.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "multiplication-4-5",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Multiplication.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 4 × 5 = 20."
+      },
+      "calculation": {
+        "operator": "×",
+        "left": 4,
+        "right": 5
+      }
+    },
+    {
+      "id": "bonus21-multiplication-5-5",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 5 × 5?",
+      "options": [
+        {
+          "id": "A",
+          "text": "27"
+        },
+        {
+          "id": "B",
+          "text": "25"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Multiplication.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "multiplication-5-5",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Multiplication.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 5 × 5 = 25."
+      },
+      "calculation": {
+        "operator": "×",
+        "left": 5,
+        "right": 5
+      }
+    },
+    {
+      "id": "bonus21-multiplication-6-2",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 6 × 2?",
+      "options": [
+        {
+          "id": "A",
+          "text": "12"
+        },
+        {
+          "id": "B",
+          "text": "14"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Multiplication.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "multiplication-6-2",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Multiplication.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 6 × 2 = 12."
+      },
+      "calculation": {
+        "operator": "×",
+        "left": 6,
+        "right": 2
+      }
+    },
+    {
+      "id": "bonus21-multiplication-3-7",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 3 × 7?",
+      "options": [
+        {
+          "id": "A",
+          "text": "23"
+        },
+        {
+          "id": "B",
+          "text": "21"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Multiplication.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "multiplication-3-7",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Multiplication.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 3 × 7 = 21."
+      },
+      "calculation": {
+        "operator": "×",
+        "left": 3,
+        "right": 7
+      }
+    },
+    {
+      "id": "bonus21-multiplication-4-4",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 4 × 4?",
+      "options": [
+        {
+          "id": "A",
+          "text": "16"
+        },
+        {
+          "id": "B",
+          "text": "18"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Multiplication.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "multiplication-4-4",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Multiplication.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 4 × 4 = 16."
+      },
+      "calculation": {
+        "operator": "×",
+        "left": 4,
+        "right": 4
+      }
+    },
+    {
+      "id": "bonus21-multiplication-5-6",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 5 × 6?",
+      "options": [
+        {
+          "id": "A",
+          "text": "32"
+        },
+        {
+          "id": "B",
+          "text": "30"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Multiplication.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "multiplication-5-6",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Multiplication.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 5 × 6 = 30."
+      },
+      "calculation": {
+        "operator": "×",
+        "left": 5,
+        "right": 6
+      }
+    },
+    {
+      "id": "bonus21-multiplication-8-2",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 8 × 2?",
+      "options": [
+        {
+          "id": "A",
+          "text": "16"
+        },
+        {
+          "id": "B",
+          "text": "18"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Multiplication.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "multiplication-8-2",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Multiplication.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 8 × 2 = 16."
+      },
+      "calculation": {
+        "operator": "×",
+        "left": 8,
+        "right": 2
+      }
+    },
+    {
+      "id": "bonus21-multiplication-9-3",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanto fa 9 × 3?",
+      "options": [
+        {
+          "id": "A",
+          "text": "29"
+        },
+        {
+          "id": "B",
+          "text": "27"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Multiplication.html",
+      "sourceName": "Calcolo originale Know Better; definizione Wolfram MathWorld",
+      "license": "Originale Know Better",
+      "sourceId": "multiplication-9-3",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Multiplication.html",
+        "checkedAt": "2026-10-28",
+        "note": "Calcolo intero verificato: 9 × 3 = 27."
+      },
+      "calculation": {
+        "operator": "×",
+        "left": 9,
+        "right": 3
+      }
+    },
+    {
+      "id": "bonus21-sides-triangle",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanti lati ha un triangolo?",
+      "options": [
+        {
+          "id": "A",
+          "text": "3"
+        },
+        {
+          "id": "B",
+          "text": "4"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://connectedmath.msu.edu/families/helping-with-math/7-1-shapes-and-designs.aspx",
+      "sourceName": "Michigan State University — Connected Mathematics Project",
+      "license": "Originale Know Better",
+      "sourceId": "sides-triangle",
+      "playable": true,
+      "verification": {
+        "url": "https://connectedmath.msu.edu/families/helping-with-math/7-1-shapes-and-designs.aspx",
+        "checkedAt": "2026-10-28",
+        "note": "La tabella Polygon associa triangle a 3 lati."
+      }
+    },
+    {
+      "id": "bonus21-sides-quadrilateral",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanti lati ha un quadrilatero?",
+      "options": [
+        {
+          "id": "A",
+          "text": "5"
+        },
+        {
+          "id": "B",
+          "text": "4"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://connectedmath.msu.edu/families/helping-with-math/7-1-shapes-and-designs.aspx",
+      "sourceName": "Michigan State University — Connected Mathematics Project",
+      "license": "Originale Know Better",
+      "sourceId": "sides-quadrilateral",
+      "playable": true,
+      "verification": {
+        "url": "https://connectedmath.msu.edu/families/helping-with-math/7-1-shapes-and-designs.aspx",
+        "checkedAt": "2026-10-28",
+        "note": "La tabella Polygon associa quadrilateral a 4 lati."
+      }
+    },
+    {
+      "id": "bonus21-sides-pentagon",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanti lati ha un pentagono?",
+      "options": [
+        {
+          "id": "A",
+          "text": "5"
+        },
+        {
+          "id": "B",
+          "text": "6"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://connectedmath.msu.edu/families/helping-with-math/7-1-shapes-and-designs.aspx",
+      "sourceName": "Michigan State University — Connected Mathematics Project",
+      "license": "Originale Know Better",
+      "sourceId": "sides-pentagon",
+      "playable": true,
+      "verification": {
+        "url": "https://connectedmath.msu.edu/families/helping-with-math/7-1-shapes-and-designs.aspx",
+        "checkedAt": "2026-10-28",
+        "note": "La tabella Polygon associa pentagon a 5 lati."
+      }
+    },
+    {
+      "id": "bonus21-sides-hexagon",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanti lati ha un esagono?",
+      "options": [
+        {
+          "id": "A",
+          "text": "7"
+        },
+        {
+          "id": "B",
+          "text": "6"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://connectedmath.msu.edu/families/helping-with-math/7-1-shapes-and-designs.aspx",
+      "sourceName": "Michigan State University — Connected Mathematics Project",
+      "license": "Originale Know Better",
+      "sourceId": "sides-hexagon",
+      "playable": true,
+      "verification": {
+        "url": "https://connectedmath.msu.edu/families/helping-with-math/7-1-shapes-and-designs.aspx",
+        "checkedAt": "2026-10-28",
+        "note": "La tabella Polygon associa hexagon a 6 lati."
+      }
+    },
+    {
+      "id": "bonus21-sides-heptagon",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanti lati ha un ettagono?",
+      "options": [
+        {
+          "id": "A",
+          "text": "7"
+        },
+        {
+          "id": "B",
+          "text": "8"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://connectedmath.msu.edu/families/helping-with-math/7-1-shapes-and-designs.aspx",
+      "sourceName": "Michigan State University — Connected Mathematics Project",
+      "license": "Originale Know Better",
+      "sourceId": "sides-heptagon",
+      "playable": true,
+      "verification": {
+        "url": "https://connectedmath.msu.edu/families/helping-with-math/7-1-shapes-and-designs.aspx",
+        "checkedAt": "2026-10-28",
+        "note": "La tabella Polygon associa heptagon a 7 lati."
+      }
+    },
+    {
+      "id": "bonus21-sides-octagon",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanti lati ha un ottagono?",
+      "options": [
+        {
+          "id": "A",
+          "text": "9"
+        },
+        {
+          "id": "B",
+          "text": "8"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://connectedmath.msu.edu/families/helping-with-math/7-1-shapes-and-designs.aspx",
+      "sourceName": "Michigan State University — Connected Mathematics Project",
+      "license": "Originale Know Better",
+      "sourceId": "sides-octagon",
+      "playable": true,
+      "verification": {
+        "url": "https://connectedmath.msu.edu/families/helping-with-math/7-1-shapes-and-designs.aspx",
+        "checkedAt": "2026-10-28",
+        "note": "La tabella Polygon associa octagon a 8 lati."
+      }
+    },
+    {
+      "id": "bonus21-sides-nonagon",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanti lati ha un ennagono?",
+      "options": [
+        {
+          "id": "A",
+          "text": "9"
+        },
+        {
+          "id": "B",
+          "text": "10"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://connectedmath.msu.edu/families/helping-with-math/7-1-shapes-and-designs.aspx",
+      "sourceName": "Michigan State University — Connected Mathematics Project",
+      "license": "Originale Know Better",
+      "sourceId": "sides-nonagon",
+      "playable": true,
+      "verification": {
+        "url": "https://connectedmath.msu.edu/families/helping-with-math/7-1-shapes-and-designs.aspx",
+        "checkedAt": "2026-10-28",
+        "note": "La tabella Polygon associa nonagon a 9 lati."
+      }
+    },
+    {
+      "id": "bonus21-sides-decagon",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanti lati ha un decagono?",
+      "options": [
+        {
+          "id": "A",
+          "text": "11"
+        },
+        {
+          "id": "B",
+          "text": "10"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://connectedmath.msu.edu/families/helping-with-math/7-1-shapes-and-designs.aspx",
+      "sourceName": "Michigan State University — Connected Mathematics Project",
+      "license": "Originale Know Better",
+      "sourceId": "sides-decagon",
+      "playable": true,
+      "verification": {
+        "url": "https://connectedmath.msu.edu/families/helping-with-math/7-1-shapes-and-designs.aspx",
+        "checkedAt": "2026-10-28",
+        "note": "La tabella Polygon associa decagon a 10 lati."
+      }
+    },
+    {
+      "id": "bonus21-sides-dodecagon",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanti lati ha un dodecagono?",
+      "options": [
+        {
+          "id": "A",
+          "text": "12"
+        },
+        {
+          "id": "B",
+          "text": "13"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://connectedmath.msu.edu/families/helping-with-math/7-1-shapes-and-designs.aspx",
+      "sourceName": "Michigan State University — Connected Mathematics Project",
+      "license": "Originale Know Better",
+      "sourceId": "sides-dodecagon",
+      "playable": true,
+      "verification": {
+        "url": "https://connectedmath.msu.edu/families/helping-with-math/7-1-shapes-and-designs.aspx",
+        "checkedAt": "2026-10-28",
+        "note": "La tabella Polygon associa dodecagon a 12 lati."
+      }
+    },
+    {
+      "id": "bonus21-square-sides",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanti lati ha un quadrato?",
+      "options": [
+        {
+          "id": "A",
+          "text": "5"
+        },
+        {
+          "id": "B",
+          "text": "4"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Square.html",
+      "sourceName": "Wolfram MathWorld — Square",
+      "license": "Originale Know Better",
+      "sourceId": "square-sides",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Square.html",
+        "checkedAt": "2026-10-28",
+        "note": "Un quadrato è un poligono regolare con quattro lati."
+      }
+    },
+    {
+      "id": "bonus21-square-angle",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Gli angoli interni di un quadrato sono…",
+      "options": [
+        {
+          "id": "A",
+          "text": "Retti"
+        },
+        {
+          "id": "B",
+          "text": "Acuti"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Square.html",
+      "sourceName": "Wolfram MathWorld — Square",
+      "license": "Originale Know Better",
+      "sourceId": "square-angle",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Square.html",
+        "checkedAt": "2026-10-28",
+        "note": "I quattro angoli interni del quadrato sono retti."
+      }
+    },
+    {
+      "id": "bonus21-square-lengths",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "I quattro lati di un quadrato sono…",
+      "options": [
+        {
+          "id": "A",
+          "text": "Tutti diversi"
+        },
+        {
+          "id": "B",
+          "text": "Tutti uguali"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Square.html",
+      "sourceName": "Wolfram MathWorld — Square",
+      "license": "Originale Know Better",
+      "sourceId": "square-lengths",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Square.html",
+        "checkedAt": "2026-10-28",
+        "note": "I lati del quadrato hanno la stessa lunghezza."
+      }
+    },
+    {
+      "id": "bonus21-cube-faces",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quante facce ha un cubo?",
+      "options": [
+        {
+          "id": "A",
+          "text": "6"
+        },
+        {
+          "id": "B",
+          "text": "8"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Cube.html",
+      "sourceName": "Wolfram MathWorld — Cube",
+      "license": "Originale Know Better",
+      "sourceId": "cube-faces",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Cube.html",
+        "checkedAt": "2026-10-28",
+        "note": "Un cubo ha sei facce quadrate."
+      }
+    },
+    {
+      "id": "bonus21-cube-vertices",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanti vertici ha un cubo?",
+      "options": [
+        {
+          "id": "A",
+          "text": "6"
+        },
+        {
+          "id": "B",
+          "text": "8"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Cube.html",
+      "sourceName": "Wolfram MathWorld — Cube",
+      "license": "Originale Know Better",
+      "sourceId": "cube-vertices",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Cube.html",
+        "checkedAt": "2026-10-28",
+        "note": "Un cubo ha otto vertici."
+      }
+    },
+    {
+      "id": "bonus21-cube-edges",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanti spigoli ha un cubo?",
+      "options": [
+        {
+          "id": "A",
+          "text": "12"
+        },
+        {
+          "id": "B",
+          "text": "10"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://mathworld.wolfram.com/Cube.html",
+      "sourceName": "Wolfram MathWorld — Cube",
+      "license": "Originale Know Better",
+      "sourceId": "cube-edges",
+      "playable": true,
+      "verification": {
+        "url": "https://mathworld.wolfram.com/Cube.html",
+        "checkedAt": "2026-10-28",
+        "note": "Un cubo ha dodici spigoli."
+      }
+    },
+    {
+      "id": "bonus21-element-h",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il simbolo chimico dell'idrogeno?",
+      "options": [
+        {
+          "id": "A",
+          "text": "He"
+        },
+        {
+          "id": "B",
+          "text": "H"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://www.nist.gov/document/periodic-table-2024",
+      "sourceName": "NIST — Periodic Table of the Elements, 2024",
+      "license": "Originale Know Better",
+      "sourceId": "element-h",
+      "playable": true,
+      "verification": {
+        "url": "https://www.nist.gov/document/periodic-table-2024",
+        "checkedAt": "2026-10-28",
+        "note": "Tavola periodica NIST, pagina 1: idrogeno = H."
+      }
+    },
+    {
+      "id": "bonus21-element-o",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il simbolo chimico dell'ossigeno?",
+      "options": [
+        {
+          "id": "A",
+          "text": "O"
+        },
+        {
+          "id": "B",
+          "text": "Os"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://www.nist.gov/document/periodic-table-2024",
+      "sourceName": "NIST — Periodic Table of the Elements, 2024",
+      "license": "Originale Know Better",
+      "sourceId": "element-o",
+      "playable": true,
+      "verification": {
+        "url": "https://www.nist.gov/document/periodic-table-2024",
+        "checkedAt": "2026-10-28",
+        "note": "Tavola periodica NIST, pagina 1: ossigeno = O."
+      }
+    },
+    {
+      "id": "bonus21-element-c",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il simbolo chimico del carbonio?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ca"
+        },
+        {
+          "id": "B",
+          "text": "C"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://www.nist.gov/document/periodic-table-2024",
+      "sourceName": "NIST — Periodic Table of the Elements, 2024",
+      "license": "Originale Know Better",
+      "sourceId": "element-c",
+      "playable": true,
+      "verification": {
+        "url": "https://www.nist.gov/document/periodic-table-2024",
+        "checkedAt": "2026-10-28",
+        "note": "Tavola periodica NIST, pagina 1: carbonio = C."
+      }
+    },
+    {
+      "id": "bonus21-element-n",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il simbolo chimico dell'azoto?",
+      "options": [
+        {
+          "id": "A",
+          "text": "N"
+        },
+        {
+          "id": "B",
+          "text": "Na"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://www.nist.gov/document/periodic-table-2024",
+      "sourceName": "NIST — Periodic Table of the Elements, 2024",
+      "license": "Originale Know Better",
+      "sourceId": "element-n",
+      "playable": true,
+      "verification": {
+        "url": "https://www.nist.gov/document/periodic-table-2024",
+        "checkedAt": "2026-10-28",
+        "note": "Tavola periodica NIST, pagina 1: azoto = N."
+      }
+    },
+    {
+      "id": "bonus21-element-fe",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il simbolo chimico del ferro?",
+      "options": [
+        {
+          "id": "A",
+          "text": "F"
+        },
+        {
+          "id": "B",
+          "text": "Fe"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://www.nist.gov/document/periodic-table-2024",
+      "sourceName": "NIST — Periodic Table of the Elements, 2024",
+      "license": "Originale Know Better",
+      "sourceId": "element-fe",
+      "playable": true,
+      "verification": {
+        "url": "https://www.nist.gov/document/periodic-table-2024",
+        "checkedAt": "2026-10-28",
+        "note": "Tavola periodica NIST, pagina 1: ferro = Fe."
+      }
+    },
+    {
+      "id": "bonus21-element-au",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il simbolo chimico dell'oro?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Au"
+        },
+        {
+          "id": "B",
+          "text": "Ag"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://www.nist.gov/document/periodic-table-2024",
+      "sourceName": "NIST — Periodic Table of the Elements, 2024",
+      "license": "Originale Know Better",
+      "sourceId": "element-au",
+      "playable": true,
+      "verification": {
+        "url": "https://www.nist.gov/document/periodic-table-2024",
+        "checkedAt": "2026-10-28",
+        "note": "Tavola periodica NIST, pagina 1: oro = Au."
+      }
+    },
+    {
+      "id": "bonus21-element-ag",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il simbolo chimico dell'argento?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Au"
+        },
+        {
+          "id": "B",
+          "text": "Ag"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://www.nist.gov/document/periodic-table-2024",
+      "sourceName": "NIST — Periodic Table of the Elements, 2024",
+      "license": "Originale Know Better",
+      "sourceId": "element-ag",
+      "playable": true,
+      "verification": {
+        "url": "https://www.nist.gov/document/periodic-table-2024",
+        "checkedAt": "2026-10-28",
+        "note": "Tavola periodica NIST, pagina 1: argento = Ag."
+      }
+    },
+    {
+      "id": "bonus21-element-cu",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il simbolo chimico del rame?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Cu"
+        },
+        {
+          "id": "B",
+          "text": "C"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://www.nist.gov/document/periodic-table-2024",
+      "sourceName": "NIST — Periodic Table of the Elements, 2024",
+      "license": "Originale Know Better",
+      "sourceId": "element-cu",
+      "playable": true,
+      "verification": {
+        "url": "https://www.nist.gov/document/periodic-table-2024",
+        "checkedAt": "2026-10-28",
+        "note": "Tavola periodica NIST, pagina 1: rame = Cu."
+      }
+    },
+    {
+      "id": "bonus21-element-he",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il simbolo chimico dell'elio?",
+      "options": [
+        {
+          "id": "A",
+          "text": "H"
+        },
+        {
+          "id": "B",
+          "text": "He"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://www.nist.gov/document/periodic-table-2024",
+      "sourceName": "NIST — Periodic Table of the Elements, 2024",
+      "license": "Originale Know Better",
+      "sourceId": "element-he",
+      "playable": true,
+      "verification": {
+        "url": "https://www.nist.gov/document/periodic-table-2024",
+        "checkedAt": "2026-10-28",
+        "note": "Tavola periodica NIST, pagina 1: elio = He."
+      }
+    },
+    {
+      "id": "bonus21-element-ne",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il simbolo chimico del neon?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ne"
+        },
+        {
+          "id": "B",
+          "text": "N"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://www.nist.gov/document/periodic-table-2024",
+      "sourceName": "NIST — Periodic Table of the Elements, 2024",
+      "license": "Originale Know Better",
+      "sourceId": "element-ne",
+      "playable": true,
+      "verification": {
+        "url": "https://www.nist.gov/document/periodic-table-2024",
+        "checkedAt": "2026-10-28",
+        "note": "Tavola periodica NIST, pagina 1: neon = Ne."
+      }
+    },
+    {
+      "id": "bonus21-element-na",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il simbolo chimico del sodio?",
+      "options": [
+        {
+          "id": "A",
+          "text": "S"
+        },
+        {
+          "id": "B",
+          "text": "Na"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://www.nist.gov/document/periodic-table-2024",
+      "sourceName": "NIST — Periodic Table of the Elements, 2024",
+      "license": "Originale Know Better",
+      "sourceId": "element-na",
+      "playable": true,
+      "verification": {
+        "url": "https://www.nist.gov/document/periodic-table-2024",
+        "checkedAt": "2026-10-28",
+        "note": "Tavola periodica NIST, pagina 1: sodio = Na."
+      }
+    },
+    {
+      "id": "bonus21-element-k",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il simbolo chimico del potassio?",
+      "options": [
+        {
+          "id": "A",
+          "text": "K"
+        },
+        {
+          "id": "B",
+          "text": "P"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://www.nist.gov/document/periodic-table-2024",
+      "sourceName": "NIST — Periodic Table of the Elements, 2024",
+      "license": "Originale Know Better",
+      "sourceId": "element-k",
+      "playable": true,
+      "verification": {
+        "url": "https://www.nist.gov/document/periodic-table-2024",
+        "checkedAt": "2026-10-28",
+        "note": "Tavola periodica NIST, pagina 1: potassio = K."
+      }
+    },
+    {
+      "id": "bonus21-element-ca",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il simbolo chimico del calcio?",
+      "options": [
+        {
+          "id": "A",
+          "text": "C"
+        },
+        {
+          "id": "B",
+          "text": "Ca"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://www.nist.gov/document/periodic-table-2024",
+      "sourceName": "NIST — Periodic Table of the Elements, 2024",
+      "license": "Originale Know Better",
+      "sourceId": "element-ca",
+      "playable": true,
+      "verification": {
+        "url": "https://www.nist.gov/document/periodic-table-2024",
+        "checkedAt": "2026-10-28",
+        "note": "Tavola periodica NIST, pagina 1: calcio = Ca."
+      }
+    },
+    {
+      "id": "bonus21-element-mg",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il simbolo chimico del magnesio?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Mg"
+        },
+        {
+          "id": "B",
+          "text": "Mn"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://www.nist.gov/document/periodic-table-2024",
+      "sourceName": "NIST — Periodic Table of the Elements, 2024",
+      "license": "Originale Know Better",
+      "sourceId": "element-mg",
+      "playable": true,
+      "verification": {
+        "url": "https://www.nist.gov/document/periodic-table-2024",
+        "checkedAt": "2026-10-28",
+        "note": "Tavola periodica NIST, pagina 1: magnesio = Mg."
+      }
+    },
+    {
+      "id": "bonus21-element-al",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il simbolo chimico dell'alluminio?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ag"
+        },
+        {
+          "id": "B",
+          "text": "Al"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://www.nist.gov/document/periodic-table-2024",
+      "sourceName": "NIST — Periodic Table of the Elements, 2024",
+      "license": "Originale Know Better",
+      "sourceId": "element-al",
+      "playable": true,
+      "verification": {
+        "url": "https://www.nist.gov/document/periodic-table-2024",
+        "checkedAt": "2026-10-28",
+        "note": "Tavola periodica NIST, pagina 1: alluminio = Al."
+      }
+    },
+    {
+      "id": "bonus21-element-si",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il simbolo chimico del silicio?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Si"
+        },
+        {
+          "id": "B",
+          "text": "S"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://www.nist.gov/document/periodic-table-2024",
+      "sourceName": "NIST — Periodic Table of the Elements, 2024",
+      "license": "Originale Know Better",
+      "sourceId": "element-si",
+      "playable": true,
+      "verification": {
+        "url": "https://www.nist.gov/document/periodic-table-2024",
+        "checkedAt": "2026-10-28",
+        "note": "Tavola periodica NIST, pagina 1: silicio = Si."
+      }
+    },
+    {
+      "id": "bonus21-element-cl",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il simbolo chimico del cloro?",
+      "options": [
+        {
+          "id": "A",
+          "text": "C"
+        },
+        {
+          "id": "B",
+          "text": "Cl"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://www.nist.gov/document/periodic-table-2024",
+      "sourceName": "NIST — Periodic Table of the Elements, 2024",
+      "license": "Originale Know Better",
+      "sourceId": "element-cl",
+      "playable": true,
+      "verification": {
+        "url": "https://www.nist.gov/document/periodic-table-2024",
+        "checkedAt": "2026-10-28",
+        "note": "Tavola periodica NIST, pagina 1: cloro = Cl."
+      }
+    },
+    {
+      "id": "bonus21-element-s",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il simbolo chimico dello zolfo?",
+      "options": [
+        {
+          "id": "A",
+          "text": "S"
+        },
+        {
+          "id": "B",
+          "text": "Zn"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://www.nist.gov/document/periodic-table-2024",
+      "sourceName": "NIST — Periodic Table of the Elements, 2024",
+      "license": "Originale Know Better",
+      "sourceId": "element-s",
+      "playable": true,
+      "verification": {
+        "url": "https://www.nist.gov/document/periodic-table-2024",
+        "checkedAt": "2026-10-28",
+        "note": "Tavola periodica NIST, pagina 1: zolfo = S."
+      }
+    },
+    {
+      "id": "bonus21-element-p",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il simbolo chimico del fosforo?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Fe"
+        },
+        {
+          "id": "B",
+          "text": "P"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://www.nist.gov/document/periodic-table-2024",
+      "sourceName": "NIST — Periodic Table of the Elements, 2024",
+      "license": "Originale Know Better",
+      "sourceId": "element-p",
+      "playable": true,
+      "verification": {
+        "url": "https://www.nist.gov/document/periodic-table-2024",
+        "checkedAt": "2026-10-28",
+        "note": "Tavola periodica NIST, pagina 1: fosforo = P."
+      }
+    },
+    {
+      "id": "bonus21-element-zn",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il simbolo chimico dello zinco?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Zn"
+        },
+        {
+          "id": "B",
+          "text": "Zr"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://www.nist.gov/document/periodic-table-2024",
+      "sourceName": "NIST — Periodic Table of the Elements, 2024",
+      "license": "Originale Know Better",
+      "sourceId": "element-zn",
+      "playable": true,
+      "verification": {
+        "url": "https://www.nist.gov/document/periodic-table-2024",
+        "checkedAt": "2026-10-28",
+        "note": "Tavola periodica NIST, pagina 1: zinco = Zn."
+      }
+    },
+    {
+      "id": "bonus21-planet-order-1",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il primo pianeta partendo dal Sole?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Venere"
+        },
+        {
+          "id": "B",
+          "text": "Mercurio"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://science.nasa.gov/solar-system/planets/",
+      "sourceName": "NASA Science — About the Planets",
+      "license": "Originale Know Better",
+      "sourceId": "planet-order-1",
+      "playable": true,
+      "verification": {
+        "url": "https://science.nasa.gov/solar-system/planets/",
+        "checkedAt": "2026-10-28",
+        "note": "Ordine dal Sole, posizione 1: Mercurio."
+      }
+    },
+    {
+      "id": "bonus21-planet-order-2",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il secondo pianeta partendo dal Sole?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Venere"
+        },
+        {
+          "id": "B",
+          "text": "Terra"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://science.nasa.gov/solar-system/planets/",
+      "sourceName": "NASA Science — About the Planets",
+      "license": "Originale Know Better",
+      "sourceId": "planet-order-2",
+      "playable": true,
+      "verification": {
+        "url": "https://science.nasa.gov/solar-system/planets/",
+        "checkedAt": "2026-10-28",
+        "note": "Ordine dal Sole, posizione 2: Venere."
+      }
+    },
+    {
+      "id": "bonus21-planet-order-3",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il terzo pianeta partendo dal Sole?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Marte"
+        },
+        {
+          "id": "B",
+          "text": "Terra"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://science.nasa.gov/solar-system/planets/",
+      "sourceName": "NASA Science — About the Planets",
+      "license": "Originale Know Better",
+      "sourceId": "planet-order-3",
+      "playable": true,
+      "verification": {
+        "url": "https://science.nasa.gov/solar-system/planets/",
+        "checkedAt": "2026-10-28",
+        "note": "Ordine dal Sole, posizione 3: Terra."
+      }
+    },
+    {
+      "id": "bonus21-planet-order-4",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il quarto pianeta partendo dal Sole?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Marte"
+        },
+        {
+          "id": "B",
+          "text": "Giove"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://science.nasa.gov/solar-system/planets/",
+      "sourceName": "NASA Science — About the Planets",
+      "license": "Originale Know Better",
+      "sourceId": "planet-order-4",
+      "playable": true,
+      "verification": {
+        "url": "https://science.nasa.gov/solar-system/planets/",
+        "checkedAt": "2026-10-28",
+        "note": "Ordine dal Sole, posizione 4: Marte."
+      }
+    },
+    {
+      "id": "bonus21-planet-order-5",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il quinto pianeta partendo dal Sole?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Saturno"
+        },
+        {
+          "id": "B",
+          "text": "Giove"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://science.nasa.gov/solar-system/planets/",
+      "sourceName": "NASA Science — About the Planets",
+      "license": "Originale Know Better",
+      "sourceId": "planet-order-5",
+      "playable": true,
+      "verification": {
+        "url": "https://science.nasa.gov/solar-system/planets/",
+        "checkedAt": "2026-10-28",
+        "note": "Ordine dal Sole, posizione 5: Giove."
+      }
+    },
+    {
+      "id": "bonus21-planet-order-6",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il sesto pianeta partendo dal Sole?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Saturno"
+        },
+        {
+          "id": "B",
+          "text": "Urano"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://science.nasa.gov/solar-system/planets/",
+      "sourceName": "NASA Science — About the Planets",
+      "license": "Originale Know Better",
+      "sourceId": "planet-order-6",
+      "playable": true,
+      "verification": {
+        "url": "https://science.nasa.gov/solar-system/planets/",
+        "checkedAt": "2026-10-28",
+        "note": "Ordine dal Sole, posizione 6: Saturno."
+      }
+    },
+    {
+      "id": "bonus21-planet-order-7",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il settimo pianeta partendo dal Sole?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Nettuno"
+        },
+        {
+          "id": "B",
+          "text": "Urano"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://science.nasa.gov/solar-system/planets/",
+      "sourceName": "NASA Science — About the Planets",
+      "license": "Originale Know Better",
+      "sourceId": "planet-order-7",
+      "playable": true,
+      "verification": {
+        "url": "https://science.nasa.gov/solar-system/planets/",
+        "checkedAt": "2026-10-28",
+        "note": "Ordine dal Sole, posizione 7: Urano."
+      }
+    },
+    {
+      "id": "bonus21-planet-order-8",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è l'ottavo pianeta partendo dal Sole?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Nettuno"
+        },
+        {
+          "id": "B",
+          "text": "Mercurio"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://science.nasa.gov/solar-system/planets/",
+      "sourceName": "NASA Science — About the Planets",
+      "license": "Originale Know Better",
+      "sourceId": "planet-order-8",
+      "playable": true,
+      "verification": {
+        "url": "https://science.nasa.gov/solar-system/planets/",
+        "checkedAt": "2026-10-28",
+        "note": "Ordine dal Sole, posizione 8: Nettuno."
+      }
+    },
+    {
+      "id": "bonus21-planet-smallest",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il pianeta più piccolo del Sistema solare?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Giove"
+        },
+        {
+          "id": "B",
+          "text": "Mercurio"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://science.nasa.gov/solar-system/planets/",
+      "sourceName": "NASA Science",
+      "license": "Originale Know Better",
+      "sourceId": "planet-smallest",
+      "playable": true,
+      "verification": {
+        "url": "https://science.nasa.gov/solar-system/planets/",
+        "checkedAt": "2026-10-28",
+        "note": "Mercurio è il più piccolo degli otto pianeti."
+      }
+    },
+    {
+      "id": "bonus21-planet-largest",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il pianeta più grande del Sistema solare?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Giove"
+        },
+        {
+          "id": "B",
+          "text": "Terra"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://science.nasa.gov/solar-system/planets/",
+      "sourceName": "NASA Science",
+      "license": "Originale Know Better",
+      "sourceId": "planet-largest",
+      "playable": true,
+      "verification": {
+        "url": "https://science.nasa.gov/solar-system/planets/",
+        "checkedAt": "2026-10-28",
+        "note": "Giove è il pianeta più grande del Sistema solare."
+      }
+    },
+    {
+      "id": "bonus21-planet-second-largest",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il secondo pianeta più grande del Sistema solare?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Mercurio"
+        },
+        {
+          "id": "B",
+          "text": "Saturno"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://science.nasa.gov/solar-system/planets/",
+      "sourceName": "NASA Science",
+      "license": "Originale Know Better",
+      "sourceId": "planet-second-largest",
+      "playable": true,
+      "verification": {
+        "url": "https://science.nasa.gov/solar-system/planets/",
+        "checkedAt": "2026-10-28",
+        "note": "Saturno è il secondo pianeta più grande."
+      }
+    },
+    {
+      "id": "bonus21-planet-hottest",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è il pianeta più caldo del Sistema solare?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Venere"
+        },
+        {
+          "id": "B",
+          "text": "Nettuno"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://science.nasa.gov/venus/venus-facts/",
+      "sourceName": "NASA Science",
+      "license": "Originale Know Better",
+      "sourceId": "planet-hottest",
+      "playable": true,
+      "verification": {
+        "url": "https://science.nasa.gov/venus/venus-facts/",
+        "checkedAt": "2026-10-28",
+        "note": "Venere ha la superficie più calda fra i pianeti."
+      }
+    },
+    {
+      "id": "bonus21-planet-red",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quale pianeta è soprannominato «Pianeta rosso»?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Venere"
+        },
+        {
+          "id": "B",
+          "text": "Marte"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://science.nasa.gov/mars/facts/",
+      "sourceName": "NASA Science",
+      "license": "Originale Know Better",
+      "sourceId": "planet-red",
+      "playable": true,
+      "verification": {
+        "url": "https://science.nasa.gov/mars/facts/",
+        "checkedAt": "2026-10-28",
+        "note": "Marte è soprannominato Red Planet per il colore rossastro."
+      }
+    },
+    {
+      "id": "bonus21-planet-count",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanti pianeti ha il Sistema solare?",
+      "options": [
+        {
+          "id": "A",
+          "text": "8"
+        },
+        {
+          "id": "B",
+          "text": "9"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://science.nasa.gov/solar-system/planets/",
+      "sourceName": "NASA Science",
+      "license": "Originale Know Better",
+      "sourceId": "planet-count",
+      "playable": true,
+      "verification": {
+        "url": "https://science.nasa.gov/solar-system/planets/",
+        "checkedAt": "2026-10-28",
+        "note": "La classificazione IAU attuale comprende otto pianeti."
+      }
+    },
+    {
+      "id": "bonus21-planet-inner-count",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quanti sono i pianeti interni rocciosi del Sistema solare?",
+      "options": [
+        {
+          "id": "A",
+          "text": "6"
+        },
+        {
+          "id": "B",
+          "text": "4"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://science.nasa.gov/solar-system/planets/",
+      "sourceName": "NASA Science",
+      "license": "Originale Know Better",
+      "sourceId": "planet-inner-count",
+      "playable": true,
+      "verification": {
+        "url": "https://science.nasa.gov/solar-system/planets/",
+        "checkedAt": "2026-10-28",
+        "note": "Mercurio, Venere, Terra e Marte sono i quattro pianeti interni."
+      }
+    },
+    {
+      "id": "bonus21-planet-gas",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quale coppia comprende due giganti gassosi?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Giove e Saturno"
+        },
+        {
+          "id": "B",
+          "text": "Terra e Marte"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://science.nasa.gov/solar-system/planets/",
+      "sourceName": "NASA Science",
+      "license": "Originale Know Better",
+      "sourceId": "planet-gas",
+      "playable": true,
+      "verification": {
+        "url": "https://science.nasa.gov/solar-system/planets/",
+        "checkedAt": "2026-10-28",
+        "note": "NASA classifica Giove e Saturno come giganti gassosi."
+      }
+    },
+    {
+      "id": "bonus21-planet-ice",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Quale coppia comprende due giganti ghiacciati?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Mercurio e Venere"
+        },
+        {
+          "id": "B",
+          "text": "Urano e Nettuno"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://science.nasa.gov/solar-system/planets/",
+      "sourceName": "NASA Science",
+      "license": "Originale Know Better",
+      "sourceId": "planet-ice",
+      "playable": true,
+      "verification": {
+        "url": "https://science.nasa.gov/solar-system/planets/",
+        "checkedAt": "2026-10-28",
+        "note": "NASA classifica Urano e Nettuno come giganti ghiacciati."
+      }
+    },
+    {
+      "id": "bonus21-pluto-type",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Come è classificato Plutone dal 2006?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Pianeta nano"
+        },
+        {
+          "id": "B",
+          "text": "Stella"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://science.nasa.gov/solar-system/planets/",
+      "sourceName": "NASA Science",
+      "license": "Originale Know Better",
+      "sourceId": "pluto-type",
+      "playable": true,
+      "verification": {
+        "url": "https://science.nasa.gov/solar-system/planets/",
+        "checkedAt": "2026-10-28",
+        "note": "Nel 2006 la IAU ha riclassificato Plutone come pianeta nano."
+      }
+    },
+    {
+      "id": "bonus21-asteroid-belt",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Fra quali pianeti si trova la fascia principale degli asteroidi?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Venere e Terra"
+        },
+        {
+          "id": "B",
+          "text": "Marte e Giove"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://science.nasa.gov/solar-system/asteroids/",
+      "sourceName": "NASA Science",
+      "license": "Originale Know Better",
+      "sourceId": "asteroid-belt",
+      "playable": true,
+      "verification": {
+        "url": "https://science.nasa.gov/solar-system/asteroids/",
+        "checkedAt": "2026-10-28",
+        "note": "La fascia principale è fra Marte e Giove."
+      }
+    },
+    {
+      "id": "bonus21-sun-type",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Il Sole è…",
+      "options": [
+        {
+          "id": "A",
+          "text": "Una stella"
+        },
+        {
+          "id": "B",
+          "text": "Un pianeta"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://science.nasa.gov/sun/facts/",
+      "sourceName": "NASA Science",
+      "license": "Originale Know Better",
+      "sourceId": "sun-type",
+      "playable": true,
+      "verification": {
+        "url": "https://science.nasa.gov/sun/facts/",
+        "checkedAt": "2026-10-28",
+        "note": "Il Sole è una stella al centro del Sistema solare."
+      }
+    },
+    {
+      "id": "bonus21-capital-italy",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è la capitale dell'Italia?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Milano"
+        },
+        {
+          "id": "B",
+          "text": "Roma"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://european-union.europa.eu/principles-countries-history/eu-countries/italy_en",
+      "sourceName": "Unione europea — scheda ufficiale del paese",
+      "license": "Originale Know Better",
+      "sourceId": "capital-italy",
+      "playable": true,
+      "verification": {
+        "url": "https://european-union.europa.eu/principles-countries-history/eu-countries/italy_en",
+        "checkedAt": "2026-10-28",
+        "note": "Sezione Overview, campo Capital: Roma; il distrattore è una città diversa dello stesso paese."
+      }
+    },
+    {
+      "id": "bonus21-capital-france",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è la capitale della Francia?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Parigi"
+        },
+        {
+          "id": "B",
+          "text": "Lione"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://european-union.europa.eu/principles-countries-history/eu-countries/france_en",
+      "sourceName": "Unione europea — scheda ufficiale del paese",
+      "license": "Originale Know Better",
+      "sourceId": "capital-france",
+      "playable": true,
+      "verification": {
+        "url": "https://european-union.europa.eu/principles-countries-history/eu-countries/france_en",
+        "checkedAt": "2026-10-28",
+        "note": "Sezione Overview, campo Capital: Parigi; il distrattore è una città diversa dello stesso paese."
+      }
+    },
+    {
+      "id": "bonus21-capital-germany",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è la capitale della Germania?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Monaco"
+        },
+        {
+          "id": "B",
+          "text": "Berlino"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://european-union.europa.eu/principles-countries-history/eu-countries/germany_en",
+      "sourceName": "Unione europea — scheda ufficiale del paese",
+      "license": "Originale Know Better",
+      "sourceId": "capital-germany",
+      "playable": true,
+      "verification": {
+        "url": "https://european-union.europa.eu/principles-countries-history/eu-countries/germany_en",
+        "checkedAt": "2026-10-28",
+        "note": "Sezione Overview, campo Capital: Berlino; il distrattore è una città diversa dello stesso paese."
+      }
+    },
+    {
+      "id": "bonus21-capital-spain",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è la capitale della Spagna?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Madrid"
+        },
+        {
+          "id": "B",
+          "text": "Barcellona"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://european-union.europa.eu/principles-countries-history/eu-countries/spain_en",
+      "sourceName": "Unione europea — scheda ufficiale del paese",
+      "license": "Originale Know Better",
+      "sourceId": "capital-spain",
+      "playable": true,
+      "verification": {
+        "url": "https://european-union.europa.eu/principles-countries-history/eu-countries/spain_en",
+        "checkedAt": "2026-10-28",
+        "note": "Sezione Overview, campo Capital: Madrid; il distrattore è una città diversa dello stesso paese."
+      }
+    },
+    {
+      "id": "bonus21-capital-portugal",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è la capitale del Portogallo?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Porto"
+        },
+        {
+          "id": "B",
+          "text": "Lisbona"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://european-union.europa.eu/principles-countries-history/eu-countries/portugal_en",
+      "sourceName": "Unione europea — scheda ufficiale del paese",
+      "license": "Originale Know Better",
+      "sourceId": "capital-portugal",
+      "playable": true,
+      "verification": {
+        "url": "https://european-union.europa.eu/principles-countries-history/eu-countries/portugal_en",
+        "checkedAt": "2026-10-28",
+        "note": "Sezione Overview, campo Capital: Lisbona; il distrattore è una città diversa dello stesso paese."
+      }
+    },
+    {
+      "id": "bonus21-capital-austria",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è la capitale dell'Austria?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Vienna"
+        },
+        {
+          "id": "B",
+          "text": "Salisburgo"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://european-union.europa.eu/principles-countries-history/eu-countries/austria_en",
+      "sourceName": "Unione europea — scheda ufficiale del paese",
+      "license": "Originale Know Better",
+      "sourceId": "capital-austria",
+      "playable": true,
+      "verification": {
+        "url": "https://european-union.europa.eu/principles-countries-history/eu-countries/austria_en",
+        "checkedAt": "2026-10-28",
+        "note": "Sezione Overview, campo Capital: Vienna; il distrattore è una città diversa dello stesso paese."
+      }
+    },
+    {
+      "id": "bonus21-capital-belgium",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è la capitale del Belgio?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Bruges"
+        },
+        {
+          "id": "B",
+          "text": "Bruxelles"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://european-union.europa.eu/principles-countries-history/eu-countries/belgium_en",
+      "sourceName": "Unione europea — scheda ufficiale del paese",
+      "license": "Originale Know Better",
+      "sourceId": "capital-belgium",
+      "playable": true,
+      "verification": {
+        "url": "https://european-union.europa.eu/principles-countries-history/eu-countries/belgium_en",
+        "checkedAt": "2026-10-28",
+        "note": "Sezione Overview, campo Capital: Bruxelles; il distrattore è una città diversa dello stesso paese."
+      }
+    },
+    {
+      "id": "bonus21-capital-greece",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è la capitale della Grecia?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Atene"
+        },
+        {
+          "id": "B",
+          "text": "Salonicco"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://european-union.europa.eu/principles-countries-history/eu-countries/greece_en",
+      "sourceName": "Unione europea — scheda ufficiale del paese",
+      "license": "Originale Know Better",
+      "sourceId": "capital-greece",
+      "playable": true,
+      "verification": {
+        "url": "https://european-union.europa.eu/principles-countries-history/eu-countries/greece_en",
+        "checkedAt": "2026-10-28",
+        "note": "Sezione Overview, campo Capital: Atene; il distrattore è una città diversa dello stesso paese."
+      }
+    },
+    {
+      "id": "bonus21-capital-ireland",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è la capitale dell'Irlanda?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Cork"
+        },
+        {
+          "id": "B",
+          "text": "Dublino"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://european-union.europa.eu/principles-countries-history/eu-countries/ireland_en",
+      "sourceName": "Unione europea — scheda ufficiale del paese",
+      "license": "Originale Know Better",
+      "sourceId": "capital-ireland",
+      "playable": true,
+      "verification": {
+        "url": "https://european-union.europa.eu/principles-countries-history/eu-countries/ireland_en",
+        "checkedAt": "2026-10-28",
+        "note": "Sezione Overview, campo Capital: Dublino; il distrattore è una città diversa dello stesso paese."
+      }
+    },
+    {
+      "id": "bonus21-capital-finland",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è la capitale della Finlandia?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Helsinki"
+        },
+        {
+          "id": "B",
+          "text": "Turku"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://european-union.europa.eu/principles-countries-history/eu-countries/finland_en",
+      "sourceName": "Unione europea — scheda ufficiale del paese",
+      "license": "Originale Know Better",
+      "sourceId": "capital-finland",
+      "playable": true,
+      "verification": {
+        "url": "https://european-union.europa.eu/principles-countries-history/eu-countries/finland_en",
+        "checkedAt": "2026-10-28",
+        "note": "Sezione Overview, campo Capital: Helsinki; il distrattore è una città diversa dello stesso paese."
+      }
+    },
+    {
+      "id": "bonus21-capital-sweden",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è la capitale della Svezia?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Göteborg"
+        },
+        {
+          "id": "B",
+          "text": "Stoccolma"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://european-union.europa.eu/principles-countries-history/eu-countries/sweden_en",
+      "sourceName": "Unione europea — scheda ufficiale del paese",
+      "license": "Originale Know Better",
+      "sourceId": "capital-sweden",
+      "playable": true,
+      "verification": {
+        "url": "https://european-union.europa.eu/principles-countries-history/eu-countries/sweden_en",
+        "checkedAt": "2026-10-28",
+        "note": "Sezione Overview, campo Capital: Stoccolma; il distrattore è una città diversa dello stesso paese."
+      }
+    },
+    {
+      "id": "bonus21-capital-denmark",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è la capitale della Danimarca?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Copenaghen"
+        },
+        {
+          "id": "B",
+          "text": "Aarhus"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://european-union.europa.eu/principles-countries-history/eu-countries/denmark_en",
+      "sourceName": "Unione europea — scheda ufficiale del paese",
+      "license": "Originale Know Better",
+      "sourceId": "capital-denmark",
+      "playable": true,
+      "verification": {
+        "url": "https://european-union.europa.eu/principles-countries-history/eu-countries/denmark_en",
+        "checkedAt": "2026-10-28",
+        "note": "Sezione Overview, campo Capital: Copenaghen; il distrattore è una città diversa dello stesso paese."
+      }
+    },
+    {
+      "id": "bonus21-capital-poland",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è la capitale della Polonia?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Cracovia"
+        },
+        {
+          "id": "B",
+          "text": "Varsavia"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://european-union.europa.eu/principles-countries-history/eu-countries/poland_en",
+      "sourceName": "Unione europea — scheda ufficiale del paese",
+      "license": "Originale Know Better",
+      "sourceId": "capital-poland",
+      "playable": true,
+      "verification": {
+        "url": "https://european-union.europa.eu/principles-countries-history/eu-countries/poland_en",
+        "checkedAt": "2026-10-28",
+        "note": "Sezione Overview, campo Capital: Varsavia; il distrattore è una città diversa dello stesso paese."
+      }
+    },
+    {
+      "id": "bonus21-capital-czechia",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è la capitale della Cechia?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Praga"
+        },
+        {
+          "id": "B",
+          "text": "Brno"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://european-union.europa.eu/principles-countries-history/eu-countries/czechia_en",
+      "sourceName": "Unione europea — scheda ufficiale del paese",
+      "license": "Originale Know Better",
+      "sourceId": "capital-czechia",
+      "playable": true,
+      "verification": {
+        "url": "https://european-union.europa.eu/principles-countries-history/eu-countries/czechia_en",
+        "checkedAt": "2026-10-28",
+        "note": "Sezione Overview, campo Capital: Praga; il distrattore è una città diversa dello stesso paese."
+      }
+    },
+    {
+      "id": "bonus21-capital-hungary",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è la capitale dell'Ungheria?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Debrecen"
+        },
+        {
+          "id": "B",
+          "text": "Budapest"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://european-union.europa.eu/principles-countries-history/eu-countries/hungary_en",
+      "sourceName": "Unione europea — scheda ufficiale del paese",
+      "license": "Originale Know Better",
+      "sourceId": "capital-hungary",
+      "playable": true,
+      "verification": {
+        "url": "https://european-union.europa.eu/principles-countries-history/eu-countries/hungary_en",
+        "checkedAt": "2026-10-28",
+        "note": "Sezione Overview, campo Capital: Budapest; il distrattore è una città diversa dello stesso paese."
+      }
+    },
+    {
+      "id": "bonus21-capital-romania",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è la capitale della Romania?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Bucarest"
+        },
+        {
+          "id": "B",
+          "text": "Cluj-Napoca"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://european-union.europa.eu/principles-countries-history/eu-countries/romania_en",
+      "sourceName": "Unione europea — scheda ufficiale del paese",
+      "license": "Originale Know Better",
+      "sourceId": "capital-romania",
+      "playable": true,
+      "verification": {
+        "url": "https://european-union.europa.eu/principles-countries-history/eu-countries/romania_en",
+        "checkedAt": "2026-10-28",
+        "note": "Sezione Overview, campo Capital: Bucarest; il distrattore è una città diversa dello stesso paese."
+      }
+    },
+    {
+      "id": "bonus21-capital-bulgaria",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è la capitale della Bulgaria?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Varna"
+        },
+        {
+          "id": "B",
+          "text": "Sofia"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://european-union.europa.eu/principles-countries-history/eu-countries/bulgaria_en",
+      "sourceName": "Unione europea — scheda ufficiale del paese",
+      "license": "Originale Know Better",
+      "sourceId": "capital-bulgaria",
+      "playable": true,
+      "verification": {
+        "url": "https://european-union.europa.eu/principles-countries-history/eu-countries/bulgaria_en",
+        "checkedAt": "2026-10-28",
+        "note": "Sezione Overview, campo Capital: Sofia; il distrattore è una città diversa dello stesso paese."
+      }
+    },
+    {
+      "id": "bonus21-capital-croatia",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è la capitale della Croazia?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Zagabria"
+        },
+        {
+          "id": "B",
+          "text": "Spalato"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://european-union.europa.eu/principles-countries-history/eu-countries/croatia_en",
+      "sourceName": "Unione europea — scheda ufficiale del paese",
+      "license": "Originale Know Better",
+      "sourceId": "capital-croatia",
+      "playable": true,
+      "verification": {
+        "url": "https://european-union.europa.eu/principles-countries-history/eu-countries/croatia_en",
+        "checkedAt": "2026-10-28",
+        "note": "Sezione Overview, campo Capital: Zagabria; il distrattore è una città diversa dello stesso paese."
+      }
+    },
+    {
+      "id": "bonus21-capital-netherlands",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è la capitale dei Paesi Bassi?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Rotterdam"
+        },
+        {
+          "id": "B",
+          "text": "Amsterdam"
+        }
+      ],
+      "correctOptionId": "B",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://european-union.europa.eu/principles-countries-history/eu-countries/netherlands_en",
+      "sourceName": "Unione europea — scheda ufficiale del paese",
+      "license": "Originale Know Better",
+      "sourceId": "capital-netherlands",
+      "playable": true,
+      "verification": {
+        "url": "https://european-union.europa.eu/principles-countries-history/eu-countries/netherlands_en",
+        "checkedAt": "2026-10-28",
+        "note": "Sezione Overview, campo Capital: Amsterdam; il distrattore è una città diversa dello stesso paese."
+      }
+    },
+    {
+      "id": "bonus21-capital-malta",
+      "categoryId": "bonus-21",
+      "format": "binary",
+      "catalogVersion": "bonus-21-it-20261028-v1",
+      "prompt": "Qual è la capitale di Malta?",
+      "options": [
+        {
+          "id": "A",
+          "text": "La Valletta"
+        },
+        {
+          "id": "B",
+          "text": "Mdina"
+        }
+      ],
+      "correctOptionId": "A",
+      "difficulty": "easy",
+      "language": "it",
+      "sourceUrl": "https://european-union.europa.eu/principles-countries-history/eu-countries/malta_en",
+      "sourceName": "Unione europea — scheda ufficiale del paese",
+      "license": "Originale Know Better",
+      "sourceId": "capital-malta",
+      "playable": true,
+      "verification": {
+        "url": "https://european-union.europa.eu/principles-countries-history/eu-countries/malta_en",
+        "checkedAt": "2026-10-28",
+        "note": "Sezione Overview, campo Capital: La Valletta; il distrattore è una città diversa dello stesso paese."
+      }
+    }
+  ],
+  "metadata": {
+    "createdAt": "2026-10-28",
+    "author": "Know Better",
+    "questionCount": 105,
+    "format": "binary",
+    "factCheckedAt": "2026-10-28",
+    "verificationPolicy": "Fatti confrontati con fonti primarie citate; calcoli interi ricontrollati automaticamente. Formulazioni e distrattori originali.",
+    "difficultyPolicy": "easy è una stima editoriale iniziale; ritmo e difficoltà richiedono prove giocate."
+  }
+}

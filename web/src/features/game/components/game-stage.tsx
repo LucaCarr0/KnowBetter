@@ -8,6 +8,8 @@ import { PlayerAvatar } from '../../rooms/components/player-avatar'
 import { useGameClock } from '../hooks/use-game-clock'
 import { POWERS, shuffleAnswerOptions } from '../powers'
 import type { GameAction, GameCommandFields, GameSnapshot } from '../types'
+import { BonusPlay } from './bonus-play'
+import { BonusResults } from './bonus-results'
 import { CategoryVoteResult } from './category-vote-result'
 import { GameLeaderboard } from './game-leaderboard'
 import { JerryPresenter } from './jerry-presenter'
@@ -33,9 +35,11 @@ const numberFormatter = new Intl.NumberFormat('it-IT')
 
 export function GameStage({ game, selfId, roomCode, isHost, connected, controlConflict = false, serverClockOffsetMs, onCommand, onLeave, onTakeControl }: GameStageProps) {
   const self = game.players.find((player) => player.id === selfId)
-  const sceneKey = `${game.id}:${game.round}:${game.phase}:${game.question?.instanceId ?? game.powers.preparationId ?? ''}`
-  const currentScene = useRef(sceneKey)
-  currentScene.current = sceneKey
+  const sceneKey = `${game.id}:${game.round}:${game.phase}:${game.phase.startsWith('bonus_') ? game.bonus?.runId ?? '' : game.question?.instanceId ?? game.powers.preparationId ?? ''}`
+  const interactionKey = `${sceneKey}:${game.phase === 'bonus_playing' ? game.bonus?.question?.instanceId ?? 'finished' : ''}`
+  const currentScene = useRef(interactionKey)
+  currentScene.current = interactionKey
+  const sendingScene = useRef<string | null>(null)
   const [selection, setSelection] = useState<string | null>(null)
   const [spotlightIndex, setSpotlightIndex] = useState(0)
   const [pending, setPending] = useState(false)
@@ -52,6 +56,9 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
     setSpotlightIndex(0)
     setError('')
     setPending(false)
+  }, [interactionKey])
+
+  useEffect(() => {
     scoreboard.current?.close()
     heading.current?.focus({ preventScroll: true })
   }, [sceneKey])
@@ -65,8 +72,9 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
   }, [])
 
   async function send(action: GameAction, input?: GameCommandFields) {
-    if (pending) return
-    const submittedScene = sceneKey
+    if (pending || sendingScene.current === interactionKey) return
+    const submittedScene = interactionKey
+    sendingScene.current = submittedScene
     setPending(true)
     setError('')
     try {
@@ -75,6 +83,7 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
     } catch {
       if (currentScene.current === submittedScene) setError('Conferma non ricevuta. Controlla la connessione e riprova: i punti non vengono duplicati.')
     } finally {
+      if (sendingScene.current === submittedScene) sendingScene.current = null
       if (currentScene.current === submittedScene) setPending(false)
     }
   }
@@ -112,12 +121,14 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
 
   const isVoting = game.phase === 'category_vote'
   const isQuestion = game.phase === 'question'
+  const isBonusPlaying = game.phase === 'bonus_playing'
+  const isBonus = game.phase.startsWith('bonus_')
   const effect = isQuestion ? game.powers.effect : null
   const power = POWERS.find(item => item.kind === effect?.kind)
   const powerFrom = game.players.find(player => player.id === effect?.fromId)
-  const showCommentary = ['scoreboard', 'round_ready', 'phase_complete'].includes(game.phase) && game.commentary.length > 0
+  const showCommentary = ['scoreboard', 'round_ready'].includes(game.phase) && game.commentary.length > 0
   const isReveal = game.phase === 'round_reveal'
-  const manualPhase = game.phase === 'intro' || game.phase === 'round_ready' ? game.phase : null
+  const manualPhase = game.phase === 'intro' || game.phase === 'round_ready' || game.phase === 'bonus_intro' || game.phase === 'bonus_results' ? game.phase : null
   const enoughPlayers = game.players.filter((player) => player.connected && !player.retired).length >= 2
   const isInteractive = isVoting || isQuestion
   const confirmed = isVoting ? game.selfVote : game.selfAnswer
@@ -128,7 +139,8 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
     : options
   const selectedOption = options.find(option => option.id === (confirmed ?? selection))
   const sceneTitle = isVoting ? 'Il vostro voto decide!'
-    : isQuestion ? 'È la tua risposta definitiva?'
+    : isBonus ? '21 al contrario'
+      : isQuestion ? 'È la tua risposta definitiva?'
       : game.phase === 'countdown' ? 'Ciak, si gioca!'
         : game.phase === 'intro' ? 'Benvenuti nello studio!'
           : game.phase === 'category_reveal' ? 'Ecco il verdetto del gruppo!'
@@ -143,9 +155,11 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
       case 'countdown': return <p>Telefoni pronti, cervelli accesi. Stiamo per andare in onda!</p>
       case 'intro': return <><p>Io sono Jerry. Voi siete quelli che sanno tutto… giusto?</p><ol className={styles.rules}><li>Votate la categoria prima di ogni round: un giocatore, un voto. Vince quella con più voti!</li><li>Prima della domanda, lanciate un potere su un avversario o conservatelo.</li><li>Scegliete e confermate una delle quattro risposte in 15 secondi.</li><li>Risposta giusta: 500 punti, più un bonus fino a 500 se siete rapidi!</li></ol><p className={styles.smallCopy}>Partite con un potere monouso. Un solo attacco per domanda, un solo effetto per bersaglio.</p><p className={styles.smallCopy}>Ogni round potete ricevere un’altra carta, fino a due in tasca: dal 20% per il primo al 60% per l’ultimo.</p><p className={styles.smallCopy}>Cinque round. Nessuna penalità per gli errori. Scaldate i pollici!</p></>
       case 'round_reveal': return <><p>{self?.roundPoints ? 'Lo sapevi! Mi sa che qui c’è della stoffa.' : 'Una domanda in più, una curiosità in più. E si riparte!'}</p><p className={styles.smallCopy}>La classifica si aggiorna con i punti di questo round.</p></>
-      case 'scoreboard': return <>{showCommentary ? game.commentary.slice(0, 2).map((line, index) => <p key={index}>{line}</p>) : <p>{game.round < game.totalRounds ? 'Occhio alla classifica: c’è ancora spazio per la rimonta!' : 'Cinque domande dopo, guardate quanti punti avete portato a casa.'}</p>}<p className={styles.smallCopy}>{game.round < game.totalRounds ? 'Poi sarete voi a scegliere quando iniziare il prossimo round.' : 'Tra poco il riepilogo della prima fase.'}</p></>
+      case 'scoreboard': return <>{showCommentary ? game.commentary.slice(0, 2).map((line, index) => <p key={index}>{line}</p>) : <p>{game.round < game.totalRounds ? 'Occhio alla classifica: c’è ancora spazio per la rimonta!' : 'Cinque domande dopo, guardate quanti punti avete portato a casa.'}</p>}<p className={styles.smallCopy}>{game.round < game.totalRounds ? 'Poi sarete voi a scegliere quando iniziare il prossimo round.' : game.bonus ? 'Tra poco il bonus: 21 al contrario!' : 'Tra poco il riepilogo della prima fase.'}</p></>
       case 'round_ready': return <>{showCommentary ? game.commentary.slice(0, 2).map((line, index) => <p key={index}>{line}</p>) : <p>Riprendete fiato, confrontate i punti. Il prossimo round parte quando volete voi!</p>}<p className={styles.smallCopy}>Un giocatore trascina il pulsante e tutto il gruppo passa al voto della categoria.</p></>
-      case 'phase_complete': return <>{showCommentary ? game.commentary.slice(0, 2).map((line, index) => <p key={index}>{line}</p>) : <p>Bel lavoro, squadra! Ecco i punti accumulati nei {game.totalRounds} round.</p>}<p className={styles.smallCopy}>Questa è la classifica della Fase 1. La vittoria della partita si deciderà nelle fasi successive, che arriveranno con un prossimo aggiornamento.</p></>
+      case 'bonus_intro': return <><p>Adesso voglio vedervi sbagliare. E farlo bene!</p><ol className={styles.rules}><li>Scegliete la risposta falsa per 21 domande consecutive. Un tocco invia subito.</li><li>Avete 60 secondi comuni e 5 secondi per ogni domanda.</li><li>Una risposta vera o 5 secondi senza risposta azzerano la catena. Il minuto continua.</li><li>Dopo un reset ritrovate le stesse domande e opzioni nello stesso ordine.</li><li>Conta solo la catena finale. Chi arriva a 21 aspetta gli altri; fra chi completa vince il tempo minore.</li><li>Bonus da 3.000 a 500 punti secondo la posizione. Pari merito, stesso premio. Catena zero o ritiro: zero punti.</li></ol><p className={styles.smallCopy}>Niente poteri. Leggete con calma: il tempo parte solo con uno swipe.</p></>
+      case 'bonus_results': return <><p>{game.bonus?.completedCount ? 'Qualcuno ha imparato a sbagliare con stile. Era ora!' : 'Il minuto è finito. Vediamo chi ha resistito alla tentazione di rispondere bene!'}</p><p className={styles.smallCopy}>I bonus sono assegnati. La classifica resta qui finché un concorrente apre il riepilogo con uno swipe.</p></>
+      case 'phase_complete': return <><p>{game.bonus?.results ? 'Cinque domande e una bella prova al contrario. Ecco il totale della Fase 1!' : `Bel lavoro, squadra! Ecco i punti accumulati nei ${game.totalRounds} round.`}</p><p className={styles.smallCopy}>Questa è la classifica della Fase 1. La vittoria della partita si deciderà nelle fasi successive, che arriveranno con un prossimo aggiornamento.</p></>
       case 'suspended': return <><p>Ci servono almeno due concorrenti connessi per continuare.</p><p className={styles.smallCopy}>I punti sono conservati. Aspettiamo chi sta rientrando.</p></>
       case 'aborted': return <><p>Questa fase è stata interrotta. Nessuna vittoria assegnata.</p><p className={styles.smallCopy}>I risultati già confermati restano nel riepilogo.</p></>
       default: return null
@@ -167,13 +181,13 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
           : !connected && <div role="status" className={`daisy-alert ${styles.connectionAlert}`}><Radio size={19} aria-hidden="true" /><span>{manualPhase ? 'Riconnessione in corso. Il gruppo sceglie quando proseguire.' : 'Riconnessione in corso. Il timer della stanza continua.'}</span></div>}
         {error && <div role="alert" className={`daisy-alert ${styles.errorAlert}`}>{error}</div>}
 
-        <section key={sceneKey} className={`${styles.scene} ${isInteractive ? styles.interactiveScene : ''}`} aria-labelledby="game-scene-title">
-          <div className={styles.sceneMeta}><span className={`daisy-badge ${styles.phaseBadge}`}>{game.phase === 'round_ready' ? `PROSSIMO ROUND ${game.round + 1} / ${game.totalRounds}` : game.round ? `ROUND ${game.round} / ${game.totalRounds}` : 'FASE 1 · TRIVIA'}</span><span className={styles.onAir}><Radio size={13} aria-hidden="true" /> {connected ? 'IN ONDA' : 'OFFLINE'}</span></div>
+        <section key={sceneKey} className={`${styles.scene} ${isInteractive || isBonusPlaying ? styles.interactiveScene : ''}`} aria-labelledby="game-scene-title">
+          <div className={styles.sceneMeta}><span className={`daisy-badge ${styles.phaseBadge}`}>{isBonus ? 'FASE 1 · BONUS' : game.phase === 'round_ready' ? `PROSSIMO ROUND ${game.round + 1} / ${game.totalRounds}` : game.round ? `ROUND ${game.round} / ${game.totalRounds}` : 'FASE 1 · TRIVIA'}</span><span className={styles.onAir}><Radio size={13} aria-hidden="true" /> {connected ? 'IN ONDA' : 'OFFLINE'}</span></div>
           <h1 id="game-scene-title" ref={heading} tabIndex={-1} aria-describedby={isQuestion && game.question ? 'current-question-prompt' : undefined} className={styles.title}>{sceneTitle}</h1>
 
-          {game.deadline !== null && game.phase !== 'countdown' && <div className={styles.timerBlock}><div className={styles.timerLabel}><span>{isVoting ? 'Tempo per votare' : isQuestion ? 'Tempo per rispondere' : game.phase === 'category_reveal' ? 'Tempo per giocare un potere' : game.phase === 'suspended' ? 'Attesa di riconnessione' : 'Tra poco…'}</span><span className={styles.timerNumber}><Clock3 size={15} aria-hidden="true" /><span role="timer" aria-label={`${clock.seconds} secondi rimanenti`} aria-live="off">{clock.seconds}<small>s</small></span></span></div><progress className={`daisy-progress ${styles.timerProgress}`} value={clock.remainingPercent} max={100} aria-label="Tempo residuo" /></div>}
+          {game.deadline !== null && game.phase !== 'countdown' && <div className={styles.timerBlock}><div className={styles.timerLabel}><span>{isVoting ? 'Tempo per votare' : isQuestion ? 'Tempo per rispondere' : isBonusPlaying ? 'Tempo complessivo' : game.phase === 'category_reveal' ? 'Tempo per giocare un potere' : game.phase === 'suspended' ? 'Attesa di riconnessione' : 'Tra poco…'}</span><span className={styles.timerNumber}><Clock3 size={15} aria-hidden="true" /><span role="timer" aria-label={`${clock.seconds} secondi rimanenti`} aria-live="off">{clock.seconds}<small>s</small></span></span></div><progress className={`daisy-progress ${styles.timerProgress}`} value={clock.remainingPercent} max={100} aria-label="Tempo residuo" /></div>}
 
-          {isInteractive ? (
+          {isBonusPlaying && game.bonus ? <BonusPlay bonus={game.bonus} now={Math.max(clock.now, game.serverNow)} disabled={!connected || controlConflict || !clock.isOpen || !self || self.retired} pending={pending} onAnswer={(optionId, questionInstanceId) => void send('game:bonus-answer', { optionId, questionInstanceId, bonusRunId: game.bonus!.runId })} /> : isInteractive ? (
             <form onSubmit={submitSelection} className={styles.selectionForm} aria-describedby={isVoting ? 'category-vote-rule' : undefined}>
               {isVoting ? <div id="category-vote-rule" className={styles.votingRule}>
                 <span className={`daisy-badge ${styles.votingBadge}`}>Voto democratico</span>
@@ -211,14 +225,15 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
                 ? <CategoryVoteResult game={game} selfId={selfId} elapsedMs={Math.max(clock.now, game.serverNow) - game.opensAt} />
                 : <JerryPresenter compact={game.phase !== 'intro'}>{panelMessage()}</JerryPresenter>}
               {manualPhase && <div className="my-6">
-                <SwipeToContinue label={manualPhase === 'intro' ? 'Scorri per iniziare' : 'Scorri per il prossimo round'}
-                  pending={pending} disabled={!connected || controlConflict || !self || self.retired || !enoughPlayers}
+                <SwipeToContinue label={manualPhase === 'intro' ? 'Scorri per iniziare' : manualPhase === 'bonus_intro' ? 'Scorri per iniziare il bonus' : manualPhase === 'bonus_results' ? 'Scorri per il riepilogo' : 'Scorri per il prossimo round'}
+                  pending={pending} disabled={!connected || controlConflict || !self || self.retired || (manualPhase !== 'bonus_results' && !enoughPlayers)}
                   onContinue={() => send('game:continue', { expectedPhase: manualPhase })} />
-                <p className={styles.smallCopy} role="status">{enoughPlayers ? 'Può farlo qualsiasi giocatore: uno swipe fa proseguire tutti.' : 'Aspettiamo almeno due concorrenti connessi. Poi potrete proseguire con uno swipe.'}</p>
+                <p className={styles.smallCopy} role="status">{enoughPlayers || manualPhase === 'bonus_results' ? 'Può farlo qualsiasi giocatore: uno swipe fa proseguire tutti.' : 'Aspettiamo almeno due concorrenti connessi. Poi potrete proseguire con uno swipe.'}</p>
               </div>}
               {game.phase === 'category_reveal' && <PowerPreparation game={game} selfId={selfId} disabled={!connected || controlConflict || !clock.isOpen || !self || self.retired} pending={pending} onCommand={send} />}
+              {game.phase === 'bonus_results' && game.bonus?.results && <BonusResults results={game.bonus.results} players={game.players} selfId={selfId} target={game.bonus.target} />}
               {isReveal && game.question && game.reveal && <div className={styles.resultCard}><span className={styles.eyebrow}>Risposta corretta</span><p className={styles.correctAnswer}><CheckCircle2 size={23} aria-hidden="true" />{game.question.options.find((option) => option.id === game.reveal?.correctOptionId)?.text ?? 'Soluzione disponibile nello studio'}</p>{game.reveal.explanation && <p className={styles.explanation}>{game.reveal.explanation}</p>}<ScoreBurst active={Boolean(self?.roundPoints)} trigger={`${game.id}:${game.round}`}><p className={styles.roundGain}>+{numberFormatter.format(self?.roundPoints ?? 0)}<span> punti per te</span></p></ScoreBurst><p className={styles.answerFeedback}>{!game.selfAnswer ? 'Nessuna risposta confermata entro il termine.' : game.selfAnswer === game.reveal.correctOptionId ? 'Risposta giusta. Bel colpo!' : 'Questa volta non era quella giusta. Nessuna penalità.'}</p><p className={styles.source}>Fonte: <a href={game.reveal.sourceUrl} target="_blank" rel="noopener noreferrer">{game.reveal.sourceName}</a> · {game.reveal.license}</p></div>}
-              {['intro', 'round_reveal', 'scoreboard', 'round_ready', 'phase_complete', 'suspended', 'aborted'].includes(game.phase) && <section className={styles.board} aria-labelledby="board-heading"><div className={styles.boardHeading}><Trophy size={20} aria-hidden="true" /><h2 id="board-heading">{game.phase === 'phase_complete' ? 'Classifica della Fase 1' : 'La classifica'}</h2></div><GameLeaderboard players={game.players} selfId={selfId} showGains={isReveal || game.phase === 'scoreboard' || game.phase === 'round_ready'} /></section>}
+              {['intro', 'round_reveal', 'scoreboard', 'round_ready', 'phase_complete', 'suspended', 'aborted'].includes(game.phase) && <section className={styles.board} aria-labelledby="board-heading"><div className={styles.boardHeading}><Trophy size={20} aria-hidden="true" /><h2 id="board-heading">{game.phase === 'phase_complete' ? 'Classifica della Fase 1' : 'La classifica'}</h2></div><GameLeaderboard players={game.players} selfId={selfId} showGains={isReveal || game.phase === 'scoreboard' || game.phase === 'round_ready'} showBreakdown={game.phase === 'phase_complete' && Boolean(game.bonus?.results)} /></section>}
               {game.phase === 'round_ready' && <p className={powerStyles.inventory}><strong>Poteri in tasca ({game.powers.inventory.length}/2):</strong> {game.powers.inventory.length ? game.powers.inventory.map(card => POWERS.find(item => item.kind === card.kind)?.name).join(', ') : 'nessuno. Potresti riceverne un altro nel prossimo round.'}</p>}
               {game.message && <p className={styles.serverMessage} role="status">{game.message}</p>}
               {(game.phase === 'phase_complete' || game.phase === 'aborted') && <div className={styles.endActions}>{isHost ? <button type="button" className={`daisy-btn ${styles.confirmButton}`} disabled={pending || !connected || controlConflict} onClick={() => void send('game:return-lobby')}>{pending ? 'Rientro in corso…' : 'Torna in stanza con il gruppo'}</button> : <p className={styles.smallCopy}>L’organizzatore può riportare il gruppo nella stanza.</p>}</div>}

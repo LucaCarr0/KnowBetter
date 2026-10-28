@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
+import { getBonusCatalog } from '../content/bonus-catalog'
 import { answer, advance, continueGame, createGame, GameRuleError, isPlayableQuestion, recoverGame, retire, snapshot, vote, type GameContent, type GameState, type TriviaQuestion } from './engine'
 
 const roster = [
@@ -15,7 +16,7 @@ function content(questionCount = 8): GameContent {
     options: ['a', 'b', 'c', 'd'].map(id => ({ id, text: `Option ${id}` })), correctOptionId: 'a',
     difficulty: 'easy', language: 'it', sourceName: 'Fixture catalog', sourceUrl: 'https://example.test/catalog', license: 'CC0', sourceId: `${index}`, explanation: 'A verified explanation.',
   })))
-  return { categories, questions }
+  return { categories, questions, bonusQuestions: getBonusCatalog().questions }
 }
 
 const shortConfig = { countdownMs: 50, voteMs: 120, categoryRevealMs: 30, questionMs: 1000, roundRevealMs: 50, scoreboardMs: 50, suspensionMs: 900 }
@@ -310,9 +311,10 @@ test('early closure uses the full configured duration and assigns each result on
   assert.equal(game.rounds[0].questionInstances[0].answers[roster[0].id].points, 1000)
 })
 
-test('five rounds include five votes, never repeat a question, and end without a sixth round', () => {
+test('legacy games include five votes, never repeat a question, and end without a bonus or sixth round', () => {
   const catalog = content(5)
   const game = createGame(roster, catalog, 0, shortConfig)
+  delete game.bonus
   reachVote(game, catalog)
   for (let round = 1; round <= 5; round++) {
     assert.equal(game.round, round)

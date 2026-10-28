@@ -1,8 +1,8 @@
 import type { AvatarId } from '../rooms/data/avatars'
 import type { PowerCard, PowerEffect } from './powers'
 
-export type GameContinuePhase = 'intro' | 'round_ready'
-export type GamePhase = 'countdown' | GameContinuePhase | 'category_vote' | 'category_reveal' | 'question' | 'round_reveal' | 'scoreboard' | 'phase_complete' | 'suspended' | 'aborted'
+export type GameContinuePhase = 'intro' | 'round_ready' | 'bonus_intro' | 'bonus_results'
+export type GamePhase = 'countdown' | GameContinuePhase | 'category_vote' | 'category_reveal' | 'question' | 'bonus_playing' | 'round_reveal' | 'scoreboard' | 'phase_complete' | 'suspended' | 'aborted'
 
 export interface GameCategory { id: string; name: string; icon?: string }
 export interface GameOption { id: string; text: string }
@@ -12,9 +12,38 @@ export interface GamePlayer {
   avatarId: AvatarId
   points: number
   roundPoints: number
+  triviaPoints?: number
+  bonusPoints?: number
   rank: number
   connected: boolean
   retired: boolean
+}
+
+export interface BonusResult {
+  playerId: string
+  rank: number
+  chain: number
+  completedMs: number | null
+  bonusPoints: number
+  triviaPoints: number
+  totalPoints: number
+  retired: boolean
+}
+
+export interface BonusSnapshot {
+  runId: string
+  target: number
+  questionMs: number
+  participantCount: number
+  completedCount: number
+  startedAt: number | null
+  chain: number
+  question: { instanceId: string; prompt: string; options: GameOption[] } | null
+  questionDeadline: number | null
+  completedMs: number | null
+  lastConsumedInstanceId: string | null
+  lastOutcome: 'advanced' | 'reset' | 'timeout' | null
+  results: BonusResult[] | null
 }
 
 export interface GameSnapshot {
@@ -40,6 +69,7 @@ export interface GameSnapshot {
   reveal: { correctOptionId: string; explanation?: string; sourceName: string; sourceUrl: string; license: string } | null
   message: string | null
   commentary: string[]
+  bonus?: BonusSnapshot | null
   powers: {
     inventory: PowerCard[]
     effect: PowerEffect | null
@@ -51,13 +81,14 @@ export interface GameSnapshot {
   }
 }
 
-export type GameAction = 'game:start' | 'game:continue' | 'game:vote-category' | 'game:answer' | 'game:use-power' | 'game:ready-question' | 'game:clear-power' | 'game:resume' | 'game:return-lobby'
+export type GameAction = 'game:start' | 'game:continue' | 'game:vote-category' | 'game:answer' | 'game:bonus-answer' | 'game:use-power' | 'game:ready-question' | 'game:clear-power' | 'game:resume' | 'game:return-lobby'
 export interface GameCommandFields {
   roomId?: string
   matchId?: string
   roundId?: number
   expectedPhase?: GameContinuePhase
   questionInstanceId?: string
+  bonusRunId?: string
   categoryId?: string
   optionId?: string
   powerCardId?: string

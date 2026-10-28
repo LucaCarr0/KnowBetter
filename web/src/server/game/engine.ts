@@ -3,6 +3,8 @@ import { GAME_DEFAULTS, type GameCategory, type GameConfig, type GameContinuePha
 import type { AvatarId } from '../../features/rooms/data/avatars'
 import { MAX_POWER_CARDS, POWERS, powerDropProbability, type PowerCard, type PowerEffect } from '../../features/game/powers'
 import { buildJerryCommentary } from './commentary'
+import type { BonusQuestion } from '../content/bonus-catalog'
+import { advanceBonus, bonusSnapshot, consumeBonusAnswer, createBonus, selectBonusQuestions, startBonus, validBonusQuestions, type BonusState } from './bonus'
 
 /** Private server content. Never import this module into a client component. */
 export interface TriviaQuestion {
@@ -22,7 +24,7 @@ export interface TriviaQuestion {
   explanation?: string
 }
 
-export interface GameContent { categories: GameCategory[]; questions: TriviaQuestion[] }
+export interface GameContent { categories: GameCategory[]; questions: TriviaQuestion[]; bonusQuestions?: BonusQuestion[] }
 export interface GameRosterPlayer {
   id: string
   nickname: string
@@ -76,6 +78,8 @@ export interface GameState {
   suspension: Suspension | null
   message: string | null
   powerInventories?: Record<string, PowerCard[]>
+  /** Absent in matches created before the bonus was introduced. */
+  bonus?: BonusState
 }
 
 export class GameRuleError extends Error {
@@ -178,7 +182,10 @@ function durationFor(game: GameState, phase: ResumablePhase): number | null {
   switch (phase) {
     case 'countdown': return game.config.countdownMs
     case 'intro':
-    case 'round_ready': return null
+    case 'round_ready':
+    case 'bonus_intro':
+    case 'bonus_results': return null
+    case 'bonus_playing': return game.bonus?.config.durationMs ?? 60_000
     case 'category_vote': return game.config.voteMs
     case 'category_reveal': return game.config.categoryRevealMs
     case 'question': return game.config.questionMs
@@ -277,6 +284,9 @@ export function createGame(players: { id: string; nickname: string; avatarId: Av
   // candidates in every normal round, even if the same category always wins.
   game.categoryIds = [...new Set(content.categories.filter(category => availableQuestions(game, content, category.id).length >= settings.rounds).map(category => category.id))]
   if (game.categoryIds.length < 3) throw new GameRuleError('INSUFFICIENT_CONTENT', `Servono almeno 3 categorie con ${settings.rounds} domande valide ciascuna per iniziare.`)
+  const bonusQuestions = validBonusQuestions(content.bonusQuestions)
+  if (bonusQuestions.length < 21) throw new GameRuleError('INSUFFICIENT_BONUS_CONTENT', 'Servono almeno 21 domande binarie valide e distinte per iniziare il bonus finale.')
+  game.bonus = createBonus(bonusQuestions)
   return game
 }
 
@@ -296,10 +306,25 @@ export function continueGame(game: GameState, playerId: string, content: GameCon
   assertActor(game, playerId)
   if (!connectedIds.has(playerId)) throw new GameRuleError('PLAYER_OFFLINE', 'Ricollegati alla partita prima di continuare.')
   if (roundId !== game.round) throw new GameRuleError('STALE_ROUND', 'Questo round è già terminato. Attendi la schermata aggiornata.')
-  if (!['intro', 'round_ready'].includes(expectedPhase) || game.phase !== expectedPhase) throw new GameRuleError('WRONG_GAME_PHASE', 'Questa schermata è già terminata. Attendi l’aggiornamento della partita.')
+  if (!['intro', 'round_ready', 'bonus_intro', 'bonus_results'].includes(expectedPhase) || game.phase !== expectedPhase) throw new GameRuleError('WRONG_GAME_PHASE', 'Questa schermata è già terminata. Attendi l’aggiornamento della partita.')
   if (now < game.opensAt) throw new GameRuleError('ACTION_TOO_EARLY', 'Questa schermata non è ancora iniziata.')
+  if (expectedPhase === 'bonus_results') {
+    enter(game, 'phase_complete', now, null)
+    return
+  }
   if (connectedCount(game, connectedIds) < 2) throw new GameRuleError('NOT_ENOUGH_PLAYERS', 'Aspettiamo almeno 2 giocatori connessi per continuare.')
-  openRound(game, content, connectedIds, now)
+  if (expectedPhase === 'bonus_intro') {
+    const bonus = game.bonus
+    if (!bonus) throw new GameRuleError('WRONG_GAME_PHASE', 'Questa partita non prevede il bonus finale.')
+    if (!bonus.questions.length) {
+      const questions = validBonusQuestions(content.bonusQuestions)
+      if (questions.length < bonus.config.target) throw new GameRuleError('INSUFFICIENT_BONUS_CONTENT', 'Il catalogo del bonus non contiene abbastanza domande valide.')
+      bonus.questions = selectBonusQuestions(questions, bonus.config.target)
+    }
+    startBonus(game, now)
+    game.message = null
+    enter(game, 'bonus_playing', now, bonus.config.durationMs)
+  } else openRound(game, content, connectedIds, now)
 }
 
 /** Old persisted introductions and pending next-round checkpoints had timers. */
@@ -313,10 +338,10 @@ function recoverManualPause(game: GameState, now: number): boolean | null {
       enter(game, phase === 'intro' || game.round === 0 ? 'intro' : 'round_ready', now, null)
     }
   }
-  if (game.phase === 'intro' || game.phase === 'round_ready') {
+  if (game.phase === 'intro' || game.phase === 'round_ready' || game.phase === 'bonus_intro' || game.phase === 'bonus_results') {
     // Offline players can still return; retired players cannot rejoin the fixed
     // roster. Release an unplayable pause so the remaining group can use lobby.
-    if (activePlayers(game).length < 2) abort(game, now, 'Partita interrotta: sono rimasti meno di 2 concorrenti in gara. I punti sono conservati.')
+    if (game.phase !== 'bonus_results' && activePlayers(game).length < 2) abort(game, now, 'Partita interrotta: sono rimasti meno di 2 concorrenti in gara. I punti sono conservati.')
     else if (game.deadline !== null) {
       game.deadline = null
       game.version++
@@ -347,6 +372,20 @@ export function answer(game: GameState, playerId: string, optionId: string, ques
   if (effect?.kind === 'fog' && !effect.revealedOptionIds.includes(optionId)) throw new GameRuleError('POWER_BLOCKED', 'Scopri questa risposta prima di sceglierla.')
   instance.answers[playerId] = { optionId, receivedAt: now, points: null, correct: null }
   game.version++
+}
+
+export function bonusAnswer(game: GameState, playerId: string, optionId: string, questionInstanceId: string, bonusRunId: string, now: number): void {
+  assertActor(game, playerId)
+  const bonus = game.bonus
+  if (!bonus || bonus.runId !== bonusRunId) throw new GameRuleError('STALE_BONUS', 'Questa esecuzione del bonus non è più attiva.')
+  assertWindow(game, 'bonus_playing', now)
+  const progress = bonus.progress[playerId]
+  if (!progress) throw new GameRuleError('NOT_IN_GAME', 'Non partecipi a questa prova bonus.')
+  if (progress.completedMs !== null) throw new GameRuleError('BONUS_COMPLETED', 'Hai già completato tutte le 21 risposte.')
+  if (progress.questionInstanceId !== questionInstanceId) throw new GameRuleError('STALE_QUESTION', 'Questa domanda non è più attiva. Attendi l’aggiornamento della prova.')
+  if (now >= progress.questionDeadline) throw new GameRuleError('ACTION_TOO_LATE', 'I cinque secondi di questa domanda sono scaduti.')
+  if (!bonus.questions[progress.chain].options.some(option => option.id === optionId)) throw new GameRuleError('INVALID_OPTION', 'Scegli una delle due risposte proposte.')
+  consumeBonusAnswer(game, playerId, optionId, now)
 }
 
 function assertPreparation(game: GameState, playerId: string, questionInstanceId: string, now: number): GameRound {
@@ -399,6 +438,7 @@ export function advance(game: GameState, content: GameContent, connectedIds: Set
   if (game.phase === 'aborted' || game.phase === 'phase_complete') return false
   const manualPause = recoverManualPause(game, now)
   if (manualPause !== null) return manualPause
+  if (game.phase === 'bonus_playing') return advanceBonus(game, now)
   if (game.phase === 'countdown' && connectedCount(game, connectedIds) < 2) {
     abort(game, now, 'Avvio annullato: servono almeno 2 giocatori connessi.')
     return true
@@ -435,7 +475,7 @@ export function advance(game: GameState, content: GameContent, connectedIds: Set
     case 'question': closeQuestion(game, now); break
     case 'round_reveal': enter(game, 'scoreboard', now, game.config.scoreboardMs); break
     case 'scoreboard':
-      if (game.round >= game.config.rounds) enter(game, 'phase_complete', now, null)
+      if (game.round >= game.config.rounds) enter(game, game.bonus ? 'bonus_intro' : 'phase_complete', now, null)
       else enter(game, 'round_ready', now, null)
       break
   }
@@ -450,6 +490,17 @@ export function recoverGame(game: GameState, now: number): boolean {
     if ((power.kind as string) === 'locks') { power.kind = 'shuffle'; powersUpdated = true }
   }
   if (powersUpdated) game.version++
+  if (game.phase === 'bonus_playing' && game.bonus) {
+    game.bonus.runId = randomUUID()
+    game.bonus.questions = []
+    game.bonus.participantIds = []
+    game.bonus.startedAt = null
+    game.bonus.progress = {}
+    game.bonus.results = null
+    game.message = 'Le risposte trivia sono salve. Il server è ripartito: il bonus ricomincia con una nuova sequenza e 60 secondi per tutti.'
+    enter(game, 'bonus_intro', now, null)
+    return true
+  }
   const manualPause = recoverManualPause(game, now)
   if (manualPause !== null) return manualPause || powersUpdated
   if (game.phase === 'phase_complete' || game.phase === 'aborted' || game.phase === 'suspended') return powersUpdated
@@ -492,7 +543,10 @@ export function snapshot(game: GameState, selfId: string, connectedIds: Set<stri
   let rank = 1
   const players = sorted.map(({ player }, index) => {
     if (index > 0 && player.points < sorted[index - 1].player.points) rank = index + 1
-    return { ...player, roundPoints: revealed ? instance.answers[player.id]?.points ?? 0 : 0, rank, connected: connectedIds.has(player.id) && !player.retired }
+    const bonusResult = game.bonus?.results?.find(result => result.playerId === player.id)
+    return { ...player, roundPoints: revealed ? instance.answers[player.id]?.points ?? 0 : 0, rank, connected: connectedIds.has(player.id) && !player.retired,
+      ...(game.bonus ? { triviaPoints: bonusResult?.triviaPoints ?? player.points, bonusPoints: bonusResult?.bonusPoints ?? 0 } : {}),
+    }
   })
   return {
     id: game.id, phase: game.phase, round: game.round, totalRounds: game.config.rounds, version: game.version,
@@ -509,6 +563,7 @@ export function snapshot(game: GameState, selfId: string, connectedIds: Set<stri
     votedCount: round ? Object.keys(round.votes).length : 0,
     reveal: revealed ? { correctOptionId: instance.question.correctOptionId, ...(instance.question.explanation ? { explanation: instance.question.explanation } : {}), sourceName: instance.question.sourceName, sourceUrl: instance.question.sourceUrl, license: instance.question.license } : null,
     message: game.message,
+    bonus: bonusSnapshot(game, selfId),
     commentary: revealed ? [...round?.commentary ?? []] : [],
     powers: {
       inventory: copy(game.powerInventories?.[selfId] ?? []),

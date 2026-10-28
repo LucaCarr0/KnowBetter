@@ -8,7 +8,7 @@ import {
 import type { PlayerIdentity, RoomAction, RoomCommand, RoomError, RoomPreview, RoomResponse, RoomSnapshot } from '../features/rooms/types'
 import type { LobbyDatabase, Queryable } from './database'
 import type { GameConfig } from '../features/game/types'
-import { createGame, continueGame, vote, answer, usePower, readyQuestion, clearPower, advance, snapshot as gameSnapshot, recoverGame, retire, GameRuleError, type GameContent, type GameState } from './game/engine'
+import { createGame, continueGame, vote, answer, bonusAnswer, usePower, readyQuestion, clearPower, advance, snapshot as gameSnapshot, recoverGame, retire, GameRuleError, type GameContent, type GameState } from './game/engine'
 
 interface GuestRow extends Record<string, unknown> { id: string; expires_at: number | string }
 interface RoomRow extends Record<string, unknown> {
@@ -158,6 +158,7 @@ export class LobbyService extends EventEmitter {
       const fingerprint = createHash('sha256').update(JSON.stringify({
         action, code: command.code, roomId: command.roomId, matchId: command.matchId,
         roundId: command.roundId, questionInstanceId: command.questionInstanceId, categoryId: command.categoryId, optionId: command.optionId,
+        ...(command.bonusRunId !== undefined ? { bonusRunId: command.bonusRunId } : {}),
         ...(command.expectedPhase !== undefined ? { expectedPhase: command.expectedPhase } : {}),
         powerCardId: command.powerCardId, targetId: command.targetId, powerStep: command.powerStep,
         identity: identityInput ? { nickname: identityInput.nickname, avatarId: identityInput.avatarId } : command.identity,
@@ -294,14 +295,20 @@ export class LobbyService extends EventEmitter {
     }
     if (command.roundId !== game.round) return fail('STALE_ROUND', 'Questo round è già terminato. Attendi la schermata aggiornata.')
     if (action === 'game:continue') {
-      if (command.expectedPhase !== 'intro' && command.expectedPhase !== 'round_ready') return fail('INVALID_REQUEST', 'Indica la schermata da cui vuoi continuare.')
-      continueGame(game, member.id, this.content, await this.connectedIds(db, room.id), command.roundId, command.expectedPhase, receivedAt)
+      if (!['intro', 'round_ready', 'bonus_intro', 'bonus_results'].includes(command.expectedPhase ?? '')) return fail('INVALID_REQUEST', 'Indica la schermata da cui vuoi continuare.')
+      continueGame(game, member.id, this.content, await this.connectedIds(db, room.id), command.roundId, command.expectedPhase!, receivedAt)
     } else if (action === 'game:vote-category') {
       if (typeof command.categoryId !== 'string' || command.categoryId.length > 100) return fail('INVALID_CATEGORY', 'Scegli una delle categorie disponibili.')
       vote(game, member.id, command.categoryId, receivedAt)
     } else if (action === 'game:answer') {
       if (typeof command.optionId !== 'string' || command.optionId.length > 100 || typeof command.questionInstanceId !== 'string' || command.questionInstanceId.length > 100) return fail('INVALID_OPTION', 'Scegli una risposta valida.')
       answer(game, member.id, command.optionId, command.questionInstanceId, receivedAt)
+    } else if (action === 'game:bonus-answer') {
+      if (advance(game, this.content, await this.connectedIds(db, room.id), receivedAt)) await this.saveGame(db, room.id, game)
+      if (typeof command.optionId !== 'string' || !command.optionId.length || command.optionId.length > 100
+        || typeof command.questionInstanceId !== 'string' || !command.questionInstanceId.length || command.questionInstanceId.length > 100
+        || typeof command.bonusRunId !== 'string' || !command.bonusRunId.length || command.bonusRunId.length > 100) return fail('INVALID_REQUEST', 'Indica la prova, la domanda e una risposta valida.')
+      bonusAnswer(game, member.id, command.optionId, command.questionInstanceId, command.bonusRunId, receivedAt)
     } else if (action === 'game:use-power' || action === 'game:ready-question' || action === 'game:clear-power') {
       if (typeof command.questionInstanceId !== 'string' || command.questionInstanceId.length > 100) return fail('INVALID_REQUEST', 'Indica la domanda attuale.')
       if (action === 'game:use-power') {
