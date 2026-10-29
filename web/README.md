@@ -90,6 +90,7 @@ Verificati tutti i 30 PNG e la licenza rispetto agli originali dell'archivio. Su
 - `src/server/`: coordinatore, sessioni, persistenza e test del dominio e delle connessioni reali.
 - `src/server/game/`: motore autorevole; `src/server/content/`: cataloghi privati e importazione; `src/server/trivia.ts`: seed e lettura dal database.
 - `src/components/ui/`, `src/lib/`, `public/`: risorse generiche e asset esistenti.
+- `src/texts.ts`: tutte le frasi mostrate a schermo; come modificarle in [docs/modificare-testi.md](../docs/modificare-testi.md).
 
 ## Verifiche
 
