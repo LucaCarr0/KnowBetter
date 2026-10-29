@@ -1,31 +1,26 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { getBonusCatalog, validateBonusCatalog, validateBonusQuestion } from './bonus-catalog'
+import { importBonus } from './import-trivia'
 
-test('the bonus ships 105 original short Italian binary questions with versioned verification', () => {
+test('the bonus ships short Italian binary questions adapted from verified OpenTDB trivia', () => {
   const catalog = getBonusCatalog()
   validateBonusCatalog(catalog)
-  assert.equal(catalog.questions.length, 105)
-  assert.equal(new Set(catalog.questions.map(question => question.id)).size, 105)
-  assert.equal(new Set(catalog.questions.map(question => question.prompt)).size, 105)
-  assert.equal(catalog.questions.filter(question => question.calculation).length, 30)
+  assert.equal(catalog.questions.length, 286)
+  assert.equal(new Set(catalog.questions.map(question => question.id)).size, 286)
+  assert.equal(new Set(catalog.questions.map(question => question.prompt)).size, 286)
+  assert.equal(catalog.questions.filter(question => question.calculation).length, 0)
   assert.ok(catalog.questions.every(question => question.prompt.length <= 90 && question.options.length === 2 &&
     question.options.every(option => option.text.length <= 30) && question.format === 'binary' &&
-    question.language === 'it' && question.catalogVersion === catalog.version && question.verification.checkedAt === '2026-10-28'))
-  assert.equal(catalog.questions.filter(question => question.correctOptionId === 'A').length, 53)
-  assert.equal(catalog.questions.filter(question => question.correctOptionId === 'B').length, 52)
+    question.language === 'it' && question.catalogVersion === catalog.version && question.verification.checkedAt === '2026-10-29' &&
+    question.license === 'CC-BY-SA-4.0' && question.sourceId.startsWith('opentdb:')))
+  assert.equal(catalog.questions.filter(question => question.correctOptionId === 'A').length, 154)
+  assert.equal(catalog.questions.filter(question => question.correctOptionId === 'B').length, 132)
 })
 
-test('the original arithmetic has exactly one true result and one false distractor', () => {
-  for (const question of getBonusCatalog().questions.filter(question => question.calculation)) {
-    const { operator, left, right } = question.calculation!
-    const result = operator === '+' ? left + right : operator === '−' ? left - right : left * right
-    assert.equal(question.options.filter(option => Number(option.text) === result).length, 1)
-    assert.equal(question.options.find(option => option.id === question.correctOptionId)!.text, String(result))
-    const bad = structuredClone(question)
-    bad.correctOptionId = bad.options.find(option => option.id !== bad.correctOptionId)!.id
-    assert.throws(() => validateBonusQuestion(bad), /Incorrect bonus calculation/)
-  }
+test('the shipped bonus catalog is reproducible from the pinned OpenTDB snapshot and translations', async () => {
+  assert.deepEqual(await importBonus(), getBonusCatalog())
+  assert.ok(getBonusCatalog().questions.every(question => !/^Quanto fa \d/.test(question.prompt)))
 })
 
 test('binary validation rejects ambiguity, limits, missing answer keys and missing verification', () => {
@@ -49,7 +44,8 @@ test('binary validation rejects ambiguity, limits, missing answer keys and missi
 test('a truncated, duplicated or mismatched bonus catalog fails before database writes', () => {
   const original = getBonusCatalog()
   const short = structuredClone(original)
-  short.questions.pop()
+  short.questions.length = 104
+  short.metadata.questionCount = 104
   assert.throws(() => validateBonusCatalog(short), /at least 105/)
   const duplicate = structuredClone(original)
   duplicate.questions[1] = duplicate.questions[0]

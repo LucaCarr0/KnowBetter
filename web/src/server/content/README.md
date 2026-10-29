@@ -63,10 +63,11 @@ una distribuzione pubblica; nessuna garanzia di attualità è stata aggiunta.
 ## Supplemento italiano: OpenTriviaQA
 
 La fonte italiana principale non contiene categorie autonome per animali, cinema
-e sport. Il supplemento aggiunge **36 adattamenti italiani**, 12 per categoria,
-selezionati da [OpenTriviaQA](https://github.com/uberspot/OpenTriviaQA) di **uberspot
-e contributori**. È una selezione dichiarata, non l'importazione dell'intero
-catalogo OpenTriviaQA. Il catalogo principale ITALIC rimane integralmente importato
+e sport. Il supplemento aggiunge **562 adattamenti italiani** (Animali 259, Cinema 94,
+Sport 209) selezionati da tutto il file di [OpenTriviaQA](https://github.com/uberspot/OpenTriviaQA)
+di **uberspot e contributori**, scartando citazioni, statistiche datate e domande
+ambigue. È una selezione dichiarata, non l'importazione dell'intero catalogo
+OpenTriviaQA. Il catalogo principale ITALIC rimane integralmente importato
 per tutta la parte compatibile.
 
 - Commit originale: `dcc1cdf36c2985ed5c849d1f2265c5041ffcdfb9`.
@@ -96,38 +97,51 @@ I quesiti non sono una traduzione revisionata da un redattore umano: le fonti e 
 righe sono disponibili per tale revisione. Non sono state trasferite le domande
 del resto del catalogo inglese nelle partite italiane.
 
+## Supplemento italiano: Open Trivia Database
+
+[Open Trivia Database](https://opentdb.com/) (PixelTail Games e contributori),
+licenza **CC BY-SA 4.0**. Il 29 ottobre 2026 sono state scaricate dall'API pubblica
+tutte le domande **verificate** delle categorie General Knowledge, Film, Science &
+Nature, Mythology, Sports, Geography, History, Art e Animals: 2.266 domande in
+`sources/opentdb/opentdb-verified.json` (testo decodificato, ID = primi 10 caratteri
+esadecimali dello SHA-256 della domanda inglese, SHA-256 del file in `OPENTDB_SHA256`).
+
+`opentdb-translations.json` contiene **407 adattamenti italiani** a quattro opzioni:
+Cinema 220, Sport 129, Animali 58. La risposta corretta viene dalla fonte; la sua
+posizione è ricavata dall'ID, il motore poi mescola le opzioni. Titoli italiani dei
+film quando noti; alcuni distrattori palesemente scherzosi o con refusi sono stati
+corretti. Difficoltà: quella dichiarata da OpenTDB.
+
+Con questo supplemento ogni categoria votabile supera le 300 domande estraibili,
+soglia confermata dal proprietario e applicata da `loadTrivia()`.
+
 Attribuzione sintetica da mantenere nell'interfaccia/fonti del gioco:
-**«Domande ITALIC — CRISP/Milano-Bicocca (MIT). Supplemento OpenTriviaQA — uberspot
-e contributori, adattamento italiano Know Better (CC BY-SA 4.0).»**
+**«Domande ITALIC — CRISP/Milano-Bicocca (MIT). Supplementi OpenTriviaQA — uberspot
+e contributori, e Open Trivia Database — PixelTail Games e contributori, adattamenti
+italiani Know Better (CC BY-SA 4.0).»**
 Ogni domanda conserva anche il link alla riga originale per la relativa attribuzione.
 
 ## Totali e riproducibilità
 
-Il catalogo normalizzato contiene **7.497 domande italiane**, 10 categorie
-archiviate, **7.415 domande attive** in 9 categorie; «Cultura e società» contiene
-attualmente soltanto gli 82 quesiti di attualità disattivati. Ogni categoria attiva
-ha almeno 12 domande, abbastanza per cinque round e alcune sostituzioni dopo un
-riavvio. Gli ID delle domande sono stabili a parità di contenuto/versione della
-fonte.
+Il catalogo normalizzato contiene **8.430 domande italiane**, 10 categorie archiviate.
+«Cultura e società» contiene soltanto gli 82 quesiti di attualità disattivati. Il
+filtro di leggibilità del motore (testo ≤300 caratteri, opzione ≤120, totale ≤600)
+lascia **8.088 domande estraibili**; tutte restano nel database.
 
-Il motore applica anche il filtro di leggibilità per la domanda da 15 secondi:
-testo entro 300 caratteri, ogni opzione entro 120 e totale entro 600. Sono quindi
-**7.155 le domande effettivamente estraibili** nella configurazione iniziale; tutte
-le 7.497 rimangono nel database. Le 7.415 indicate sopra hanno il solo requisito
-editoriale `playable !== false`; 260 di queste superano i limiti di lunghezza.
+| Categoria | Estraibili nel gioco |
+| --- | ---: |
+| Animali | 317 |
+| Arte | 438 |
+| Cinema | 314 |
+| Cultura e società | 0 |
+| Educazione civica | 719 |
+| Geografia | 653 |
+| Letteratura | 968 |
+| Lingua italiana | 3.688 |
+| Sport | 338 |
+| Storia | 653 |
 
-| Categoria | Archiviate nel database | Estraibili nel gioco |
-| --- | ---: | ---: |
-| Animali | 12 | 12 |
-| Arte | 442 | 438 |
-| Cinema | 12 | 12 |
-| Cultura e società | 82 | 0 |
-| Educazione civica | 792 | 719 |
-| Geografia | 682 | 653 |
-| Letteratura | 982 | 968 |
-| Lingua italiana | 3.770 | 3.688 |
-| Sport | 12 | 12 |
-| Storia | 711 | 653 |
+Una categoria con meno di 300 domande estraibili non viene proposta nel voto.
 
 Per rigenerare il normalizzato dagli originali già conservati, senza rete:
 
@@ -136,7 +150,7 @@ node --import tsx src/server/content/import-trivia.ts
 ```
 
 Il comando verifica gli SHA-256 prima di scrivere `catalog.json`,
-`supplement-it.json` ed `exclusions.json`. Non apre il database e non avvia server.
+`supplement-it.json`, `exclusions.json` e `bonus-catalog.json`. Non apre il database e non avvia server.
 L'importazione SQL è compito dello script dell'app e conserva **tutte** le domande;
 il filtro `playable !== false` va applicato quando si prepara il contenuto del
 motore di gioco, non al seed del database.
@@ -147,55 +161,31 @@ Per verificare riproducibilità, esclusioni, risposte, licenze e quantità:
 node --import tsx --test --test-isolation=none src/server/content/catalog.test.ts
 ```
 
-## Catalogo originale del bonus «21 al contrario»
+## Catalogo del bonus «21 al contrario»
 
-`bonus-catalog.json`, versione **`bonus-21-it-20261028-v1`**, contiene **105 domande
-italiane originali**, con due alternative: una vera e una falsa. La soluzione
+`bonus-catalog.json`, versione **`bonus-21-it-20261029-v2`**, contiene **286 domande
+italiane** con due alternative, una vera e una falsa, adattate da domande verificate
+di Open Trivia Database (CC BY-SA 4.0): cultura generale, scienza, geografia e
+storia. `bonus-translations.json` conserva testo, alternativa vera e alternativa
+falsa; `importBonus()` genera il catalogo dall'istantanea OpenTDB. La soluzione
 `correctOptionId` identifica l'alternativa **vera**; nel bonus occorre scegliere
-l'altra. Non riutilizzare questo catalogo nelle domande ordinarie a quattro opzioni.
+l'altra. Il distrattore è scelto fra quelli della fonte o scritto per Know Better
+perché sia plausibile.
 
-Il catalogo comprende 30 calcoli interi, 15 quesiti di geometria, 20 simboli
-chimici, 20 quesiti sul Sistema solare e 20 capitali europee. Ogni domanda conserva
-versione, fonte HTTPS, data di controllo **28 ottobre 2026** e nota sul fatto
-verificato. I calcoli includono operatore e operandi per ripetere la verifica nei
-validatori e nei test; nessuna espressione viene valutata come codice.
-
-Le formulazioni e i distrattori sono stati scritti per Know Better. Le fonti
-seguenti verificano i fatti; i loro testi non sono stati importati o tradotti nel
-catalogo. `license: "Originale Know Better"` indica l'origine del testo, senza
-attribuire al progetto licenze sui testi delle fonti o scegliere una nuova
-licenza di distribuzione del progetto.
-
-- [NIST, tavola periodica 2024](https://www.nist.gov/document/periodic-table-2024),
-  pagina 1: simboli degli elementi.
-- [NASA, pianeti](https://science.nasa.gov/solar-system/planets/),
-  [Venere](https://science.nasa.gov/venus/venus-facts/),
-  [Marte](https://science.nasa.gov/mars/facts/),
-  [Sole](https://science.nasa.gov/sun/facts/) e
-  [asteroidi](https://science.nasa.gov/solar-system/asteroids/): ordine,
-  classificazione e proprietà elementari del Sistema solare.
-- [Michigan State University, Connected Mathematics Project](https://connectedmath.msu.edu/families/helping-with-math/7-1-shapes-and-designs.aspx):
-  numero di lati dei poligoni.
-- [Wolfram MathWorld, quadrato](https://mathworld.wolfram.com/Square.html),
-  [cubo](https://mathworld.wolfram.com/Cube.html),
-  [addizione](https://mathworld.wolfram.com/Addition.html),
-  [sottrazione](https://mathworld.wolfram.com/Subtraction.html) e
-  [moltiplicazione](https://mathworld.wolfram.com/Multiplication.html):
-  proprietà geometriche e definizioni delle operazioni, applicate ai calcoli originali.
-- [Unione europea, schede ufficiali dei paesi](https://european-union.europa.eu/principles-countries-history/eu-countries_en):
-  campo `Capital` di ciascuna delle 20 schede citate individualmente nei record.
-  Per i Paesi Bassi la domanda indica la capitale Amsterdam; il distrattore
-  Rotterdam evita l'ambiguità fra capitale e sede del governo all'Aia.
+Sostituisce la versione `bonus-21-it-20261028-v1` (105 calcoli, geometria, simboli,
+pianeti e capitali), giudicata troppo banale dal proprietario. All'importazione di
+una nuova versione, le righe dello stesso formato non più presenti restano nel
+database con `playable: false` e non vengono più estratte.
 
 `getBonusCatalog()` è sincrono e privato al server. Il caricamento verifica almeno
 105 ID e testi distinti, limite di 90 caratteri per domanda, 30 per alternativa,
-due opzioni distinte, chiave vera presente e riferimenti di verifica. `easy` è una
-stima editoriale iniziale; facilità, ritmo e bilanciamento richiedono prove giocate.
-La verifica con fonti e calcoli non sostituisce una revisione editoriale umana.
+due opzioni distinte, chiave vera presente e riferimenti di verifica. La difficoltà
+è quella di OpenTDB; facilità, ritmo e bilanciamento richiedono prove giocate.
+Le traduzioni non sostituiscono una revisione editoriale umana.
 
 `importTrivia()` importa entrambi i cataloghi nella stessa transazione e nelle
 tabelle esistenti; registra due versioni in `kb_content_imports`. Il database
-conterrà **7.602 domande e 11 categorie archiviate** dopo l'importazione del bonus,
+conterrà **8.716 domande attuali e 11 categorie archiviate** dopo l'importazione del bonus,
 senza migrazioni SQL aggiuntive. `format: "binary"` nel JSONB separa il bonus:
 `loadTrivia()` restituisce `bonusQuestions` e conserva in `questions` solo il
 formato ordinario, compresi i record precedenti senza `format`. Nessuna domanda

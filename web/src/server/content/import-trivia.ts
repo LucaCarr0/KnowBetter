@@ -3,6 +3,7 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
 import { validateCatalog, type CatalogCategory, type CatalogQuestion, type TriviaCatalog } from './catalog'
+import { validateBonusCatalog, type BonusCatalog, type BonusQuestion } from './bonus-catalog'
 
 export const ITALIC_COMMIT = '92df420ff686babeea54e217b9f90f8471374916'
 export const ITALIC_SHA256 = 'ca877846f19a6d781ba151382e4f43b10efad1a7e375b5e0c50b047a3917e0af'
@@ -99,7 +100,7 @@ export async function importCatalog(): Promise<void> {
   if (createHash('sha256').update(source).digest('hex') !== ITALIC_SHA256) throw new Error('ITALIC source checksum differs from the pinned upstream snapshot.')
   const { catalog, exclusions } = normalizeItalic(source)
   const supplemental = await importSupplement()
-  catalog.version += '-otqa-it-v1'
+  catalog.version += '-otqa-it-v2-otdb-it-v1'
   catalog.categories.push(...supplemental.categories)
   catalog.questions.push(...supplemental.questions)
   catalog.metadata.sourceRows += supplemental.questions.length
@@ -109,6 +110,7 @@ export async function importCatalog(): Promise<void> {
   await writeFile(new URL('./supplement-it.json', import.meta.url), `${JSON.stringify(supplemental, null, 2)}\n`)
   await writeFile(new URL('./catalog.json', import.meta.url), `${JSON.stringify(catalog, null, 2)}\n`)
   await writeFile(new URL('./exclusions.json', import.meta.url), `${JSON.stringify(exclusions, null, 2)}\n`)
+  await writeFile(new URL('./bonus-catalog.json', import.meta.url), `${JSON.stringify(await importBonus(), null, 2)}\n`)
   console.log(JSON.stringify({ version: catalog.version, sourceRows: catalog.metadata.sourceRows, importedRows: catalog.questions.length, excludedRows: exclusions.length }))
 }
 
@@ -119,6 +121,74 @@ const otqaHashes: Record<string, string> = {
   movies: '774945aa764551247a81ca50404e869bd09175534eee2ad8f920485f0442b6e8',
   sports: '5d8dbb522356780f3b1a3bedea02c27768fe24cb9a8d60c7d70485143cbfcc7a',
 }
+interface OpenTdbQuestion { id: string; categoryId: number; type: 'multiple' | 'boolean'; difficulty: string; question: string; correctAnswer: string; incorrectAnswers: string[] }
+interface OpenTdbTranslation { category: string; source: string; prompt: string; correct: string; incorrect: string[] }
+interface BonusTranslation { source: string; prompt: string; true: string; false: string }
+export const OPENTDB_SHA256 = 'da152b71a8ca8e4a3e903f8e7314693d6e6622615b977981c278e592dafafb2c'
+const otdbSourceName = 'Open Trivia Database — PixelTail Games e contributori; adattamento italiano Know Better'
+
+async function openTdbSource(): Promise<Map<string, OpenTdbQuestion>> {
+  const raw = await readFile(new URL('./sources/opentdb/opentdb-verified.json', import.meta.url))
+  if (createHash('sha256').update(raw).digest('hex') !== OPENTDB_SHA256) throw new Error('OpenTDB snapshot checksum changed.')
+  const snapshot = JSON.parse(raw.toString('utf8')) as { questions: OpenTdbQuestion[] }
+  return new Map(snapshot.questions.map((question) => [question.id, question]))
+}
+
+// The snapshot ID is a content hash, so its first hex digit gives a stable, source-independent answer position.
+const stablePosition = (id: string, count: number) => parseInt(id[0], 16) % count
+
+export async function importOpenTdb(): Promise<CatalogQuestion[]> {
+  const sources = await openTdbSource()
+  const translations = JSON.parse(await readFile(new URL('./opentdb-translations.json', import.meta.url), 'utf8')) as OpenTdbTranslation[]
+  return translations.map((translation): CatalogQuestion => {
+    const source = sources.get(translation.source)
+    if (!source || source.type !== 'multiple' || source.incorrectAnswers.length !== 3 || translation.incorrect.length !== 3) {
+      throw new Error(`OpenTDB translation ${translation.source} needs a four-choice verified source.`)
+    }
+    const texts = [...translation.incorrect]
+    const position = stablePosition(source.id, 4)
+    texts.splice(position, 0, translation.correct)
+    return {
+      id: `otdb-it-${source.id}`, categoryId: translation.category, prompt: translation.prompt,
+      options: texts.map((text, index) => ({ id: String.fromCharCode(65 + index), text })),
+      correctOptionId: String.fromCharCode(65 + position), difficulty: source.difficulty, language: 'it',
+      sourceUrl: 'https://opentdb.com/', sourceName: otdbSourceName, license: 'CC-BY-SA-4.0',
+      sourceId: `opentdb:${source.id}`, sourceCategory: `opentdb:${source.categoryId}`, playable: true,
+    }
+  })
+}
+
+export const BONUS_VERSION = 'bonus-21-it-20261029-v2'
+export async function importBonus(): Promise<BonusCatalog> {
+  const sources = await openTdbSource()
+  const translations = JSON.parse(await readFile(new URL('./bonus-translations.json', import.meta.url), 'utf8')) as BonusTranslation[]
+  const questions = translations.map((translation): BonusQuestion => {
+    const source = sources.get(translation.source)
+    if (!source) throw new Error(`Missing OpenTDB source for bonus ${translation.source}.`)
+    const trueFirst = stablePosition(source.id, 2) === 0
+    return {
+      id: `bonus21-otdb-${source.id}`, categoryId: 'bonus-21', format: 'binary', catalogVersion: BONUS_VERSION,
+      prompt: translation.prompt,
+      options: [{ id: 'A', text: trueFirst ? translation.true : translation.false }, { id: 'B', text: trueFirst ? translation.false : translation.true }],
+      correctOptionId: trueFirst ? 'A' : 'B', difficulty: source.difficulty, language: 'it',
+      sourceUrl: 'https://opentdb.com/', sourceName: otdbSourceName, license: 'CC-BY-SA-4.0',
+      sourceId: `opentdb:${source.id}`, playable: true,
+      verification: { url: 'https://opentdb.com/', checkedAt: '2026-10-29', note: `Domanda verificata OpenTDB; risposta originale: ${source.correctAnswer}.` },
+    }
+  })
+  const catalog: BonusCatalog = {
+    version: BONUS_VERSION, categories: [{ id: 'bonus-21', name: '21 al contrario', icon: '🔄' }], questions,
+    metadata: {
+      createdAt: '2026-10-29', author: 'Know Better, da Open Trivia Database (CC BY-SA 4.0)', questionCount: questions.length,
+      format: 'binary', factCheckedAt: '2026-10-29',
+      verificationPolicy: 'Solo domande verificate dalla comunità OpenTDB; adattamento italiano e distrattore scelti per il formato a due opzioni.',
+      difficultyPolicy: 'Difficoltà dichiarata da OpenTDB; ritmo e bilanciamento richiedono prove giocate.',
+    },
+  }
+  validateBonusCatalog(catalog)
+  return catalog
+}
+
 export async function importSupplement(): Promise<{ categories: CatalogCategory[]; questions: CatalogQuestion[] }> {
   const translations = JSON.parse(await readFile(new URL('./supplement-translations.json', import.meta.url), 'utf8')) as Translation[]
   const sources = new Map<string, string[]>()
@@ -148,6 +218,7 @@ export async function importSupplement(): Promise<{ categories: CatalogCategory[
       sourceCategory: translation.category, playable: true,
     }
   })
+  questions.push(...await importOpenTdb())
   return {
     categories: [
       { id: 'animals', name: 'Animali', icon: '🐾' },

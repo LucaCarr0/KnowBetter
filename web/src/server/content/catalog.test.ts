@@ -4,6 +4,8 @@ import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import { getCatalog, validateCatalog } from './catalog'
 import { ITALIC_SHA256, importSupplement, normalizeItalic, normalizeText } from './import-trivia'
+import { isPlayableQuestion } from '../game/engine'
+import { MIN_CATEGORY_QUESTIONS } from '../trivia'
 
 test('the pinned Italian source is complete and every exclusion reconciles', () => {
   const source = readFileSync(new URL('./sources/italic/italic.jsonl', import.meta.url), 'utf8')
@@ -23,8 +25,8 @@ test('the pinned Italian source is complete and every exclusion reconciles', () 
 test('the shipped catalog reproduces all compatible Italian rows and all translated supplement rows', async () => {
   const catalog = getCatalog()
   validateCatalog(catalog)
-  assert.equal(catalog.questions.length, 7_497)
-  assert.equal(catalog.metadata.sourceRows, 10_036)
+  assert.equal(catalog.questions.length, 8_430)
+  assert.equal(catalog.metadata.sourceRows, 10_969)
   assert.equal(catalog.metadata.excludedRows, 2_539)
   assert.equal(catalog.metadata.independentlyFactChecked, false)
   assert.ok(catalog.questions.every((question) => question.language === 'it'))
@@ -33,20 +35,21 @@ test('the shipped catalog reproduces all compatible Italian rows and all transla
   const supplement = await importSupplement()
   assert.deepEqual(catalog.questions.filter((question) => question.license === 'CC-BY-SA-4.0'), supplement.questions)
   assert.deepEqual(supplement, JSON.parse(readFileSync(new URL('./supplement-it.json', import.meta.url), 'utf8')))
-  for (const categoryId of ['animals', 'movies', 'sports']) {
-    assert.equal(supplement.questions.filter((question) => question.categoryId === categoryId).length, 12)
-  }
+  assert.deepEqual(Object.fromEntries(['animals', 'movies', 'sports'].map((categoryId) => [categoryId, [
+    supplement.questions.filter((question) => question.categoryId === categoryId && question.license === 'CC-BY-SA-4.0' && question.id.startsWith('otqa-')).length,
+    supplement.questions.filter((question) => question.categoryId === categoryId && question.id.startsWith('otdb-')).length,
+  ]])), { animals: [259, 58], movies: [94, 220], sports: [209, 129] })
 })
 
-test('all playable categories have enough distinct questions for five rounds and a replacement', () => {
+test('every category players can vote for has at least 300 drawable questions', () => {
   const catalog = getCatalog()
   const counts = new Map<string, number>()
-  for (const question of catalog.questions.filter((entry) => entry.playable !== false)) {
+  for (const question of catalog.questions.filter((entry) => isPlayableQuestion(entry))) {
     counts.set(question.categoryId, (counts.get(question.categoryId) ?? 0) + 1)
   }
   assert.equal(counts.size, 9)
-  assert.ok([...counts.values()].every((count) => count >= 6))
-  assert.equal([...counts.values()].reduce((sum, count) => sum + count, 0), 7_415)
+  assert.ok([...counts.values()].every((count) => count >= MIN_CATEGORY_QUESTIONS), JSON.stringify(Object.fromEntries(counts)))
+  assert.equal([...counts.values()].reduce((sum, count) => sum + count, 0), 8_088)
 })
 
 test('text normalization decodes double-escaped content without executing markup', () => {

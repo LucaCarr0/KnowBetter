@@ -4,7 +4,8 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { createDatabase } from './database'
-import { importTrivia, loadTrivia } from './trivia'
+import { MIN_CATEGORY_QUESTIONS, importTrivia, loadTrivia } from './trivia'
+import { isPlayableQuestion } from './game/engine'
 import { getCatalog } from './content/catalog'
 import { getBonusCatalog } from './content/bonus-catalog'
 
@@ -29,9 +30,9 @@ test('the complete compatible catalog is imported by category, idempotently, wit
     for (const question of held) assert.equal(content.questions.some(entry => entry.id === question.id), false)
     const storedHeld = await database.transaction(db => db.query("SELECT count(*)::integer AS count FROM kb_trivia_questions WHERE question->>'playable'='false'"))
     assert.equal(storedHeld.rows[0].count, held.length)
+    assert.equal(content.categories.length, 9)
     for (const category of content.categories) {
-      const eligible = catalog.questions.filter(question => question.categoryId === category.id && question.playable !== false)
-      if (eligible.length) assert.ok(content.questions.filter(question => question.categoryId === category.id).length >= 5, category.name)
+      assert.ok(content.questions.filter(question => question.categoryId === category.id && isPlayableQuestion(question)).length >= MIN_CATEGORY_QUESTIONS, category.name)
     }
     const imports = await database.transaction(db => db.query('SELECT count(*)::integer AS count FROM kb_content_imports'))
     assert.equal(imports.rows[0].count, 2)
@@ -45,15 +46,38 @@ test('the complete compatible catalog is imported by category, idempotently, wit
     assert.equal((await importTrivia(database)).imported, true)
     const restored = await loadTrivia(database)
     assert.equal(restored.questions.length, content.questions.length)
-    assert.equal(restored.bonusQuestions!.length, 105)
+    assert.equal(restored.bonusQuestions!.length, bonus.questions.length)
     assert.equal((await importTrivia(database)).imported, false)
 
     await database.transaction(db => db.query("UPDATE kb_trivia_questions SET question=jsonb_set(question,'{playable}','false'::jsonb) WHERE id=$1", [bonus.questions[0].id]))
     const filtered = await loadTrivia(database)
-    assert.equal(filtered.bonusQuestions!.length, 104)
+    assert.equal(filtered.bonusQuestions!.length, bonus.questions.length - 1)
     assert.equal(filtered.questions.length, content.questions.length)
     await database.transaction(db => db.query("UPDATE kb_trivia_questions SET question=jsonb_set(question,'{options}',$2::jsonb) WHERE id=$1", [bonus.questions[1].id, JSON.stringify([{ id: 'A', text: 'unica' }])]))
     await assert.rejects(() => loadTrivia(database), /Invalid or ambiguous binary options/)
+  } finally { await database.close() }
+})
+
+test('a newer catalog version retires rows it no longer ships and hides thin categories from the vote', async () => {
+  const database = await createDatabase({ dataDir: 'memory://' })
+  try {
+    await importTrivia(database)
+    const bonus = getBonusCatalog()
+    const retired = { ...structuredClone(bonus.questions[0]), id: 'bonus21-addition-2-3', prompt: 'Quanto fa 2 + 3?', catalogVersion: 'bonus-21-it-20261028-v1' }
+    await database.transaction(async db => {
+      await db.query("INSERT INTO kb_trivia_questions(id,category_id,language,question) VALUES($1,'bonus-21','it',$2::jsonb)", [retired.id, JSON.stringify(retired)])
+      await db.query("INSERT INTO kb_trivia_categories(id,name,icon) VALUES('thin','Poche domande','?')")
+      await db.query("INSERT INTO kb_trivia_questions(id,category_id,language,question) SELECT 'thin-'||id,'thin','it',jsonb_set(question,'{categoryId}','\"thin\"') FROM kb_trivia_questions WHERE category_id='movies' LIMIT 5")
+      await db.query('DELETE FROM kb_content_imports WHERE version=$1', [bonus.version])
+    })
+    assert.equal((await loadTrivia(database)).bonusQuestions!.some(question => question.id === retired.id), true)
+    await importTrivia(database)
+    const content = await loadTrivia(database)
+    assert.equal(content.bonusQuestions!.length, bonus.questions.length)
+    assert.equal(content.bonusQuestions!.some(question => question.id === retired.id), false)
+    assert.equal(content.categories.some(category => category.id === 'thin'), false)
+    const stored = await database.transaction(db => db.query("SELECT question->>'playable' AS playable FROM kb_trivia_questions WHERE id=$1", [retired.id]))
+    assert.equal(stored.rows[0].playable, 'false')
   } finally { await database.close() }
 })
 
