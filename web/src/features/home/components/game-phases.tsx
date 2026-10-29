@@ -1,35 +1,18 @@
 import { Zap } from 'lucide-react'
+import { TEXTS } from '../../../texts'
 
-const phases = [
-  {
-    number: '01',
-    title: 'Warm up',
-    copy: 'Answer five trivia rounds and fight for the fastest fingers.',
-    color: 'bg-[#ffd166]',
-  },
-  {
-    number: '02',
-    title: 'Level up',
-    copy: 'Beat a mini-challenge to unlock your question in each of five rounds.',
-    color: 'bg-[#b8e36d]',
-  },
-  {
-    number: '03',
-    title: 'Make your move',
-    copy: 'Race to the finish and curse your way past the competition.',
-    color: 'bg-[#a6e7ff]',
-  },
-] as const
+const colors = ['bg-[#ffd166]', 'bg-[#b8e36d]', 'bg-[#a6e7ff]']
+const phases = TEXTS.home.phases.map((phase, index) => ({ ...phase, number: `0${index + 1}`, color: colors[index % colors.length] }))
 
 export function GamePhases() {
   return (
     <section id="how-it-works" aria-labelledby="game-phases-heading" className="border-t border-white/10 py-12 lg:py-16">
       <div className="mb-7 flex items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-[#ff7657]">The game plan</p>
-          <h2 id="game-phases-heading" className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Three phases. One winner.</h2>
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-[#ff7657]">{TEXTS.home.phasesEyebrow}</p>
+          <h2 id="game-phases-heading" className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">{TEXTS.home.phasesTitle}</h2>
         </div>
-        <span className="hidden text-sm font-semibold text-[#abb1d0] sm:block">Ready when your crew is.</span>
+        <span className="hidden text-sm font-semibold text-[#abb1d0] sm:block">{TEXTS.home.phasesAside}</span>
       </div>
       <div className="grid gap-3 md:grid-cols-3">
         {phases.map(({ number, title, copy, color }) => (

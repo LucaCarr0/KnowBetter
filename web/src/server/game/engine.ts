@@ -5,6 +5,7 @@ import { MAX_POWER_CARDS, POWERS, powerDropProbability, type PowerCard, type Pow
 import { buildJerryCommentary } from './commentary'
 import type { BonusQuestion } from '../content/bonus-catalog'
 import { advanceBonus, bonusSnapshot, consumeBonusAnswer, createBonus, selectBonusQuestions, startBonus, validBonusQuestions, type BonusState } from './bonus'
+import { TEXTS } from '../../texts'
 
 /** Private server content. Never import this module into a client component. */
 export interface TriviaQuestion {
@@ -199,7 +200,7 @@ function prepareQuestion(game: GameState, content: GameContent, now: number): bo
   if (!round?.category) throw new Error('Round category is missing')
   const questions = availableQuestions(game, content, round.category.id)
   if (!questions.length) {
-    abort(game, now, 'Non ci sono altre domande disponibili per questa categoria. I punti già assegnati sono conservati.')
+    abort(game, now, TEXTS.serverMessages.noMoreQuestions)
     return false
   }
   const question = copy(choose(questions))
@@ -217,12 +218,12 @@ function prepareQuestion(game: GameState, content: GameContent, now: number): bo
 
 function openRound(game: GameState, content: GameContent, connectedIds: Set<string>, now: number): void {
   if (connectedCount(game, connectedIds) < 2) {
-    suspend(game, now, { target: 'next_round' }, 'Aspettiamo almeno 2 giocatori connessi per continuare.')
+    suspend(game, now, { target: 'next_round' }, TEXTS.serverMessages.waitingPlayers)
     return
   }
   const categories = content.categories.filter(category => game.categoryIds.includes(category.id) && availableQuestions(game, content, category.id).length > 0)
   if (categories.length < 3) {
-    abort(game, now, 'Il catalogo non ha più tre categorie disponibili. I punti già assegnati sono conservati.')
+    abort(game, now, TEXTS.serverMessages.noMoreCategories)
     return
   }
   game.round++
@@ -273,8 +274,8 @@ function closeQuestion(game: GameState, now: number): void {
 
 export function createGame(players: { id: string; nickname: string; avatarId: AvatarId }[], content: GameContent, now: number, config: Partial<GameConfig> = {}): GameState {
   const settings = { ...GAME_DEFAULTS, ...config }
-  if (Object.values(settings).some(value => !Number.isSafeInteger(value) || value <= 0)) throw new GameRuleError('INVALID_GAME_CONFIG', 'La configurazione della partita non è valida.')
-  if (players.length < 2 || players.length > 10 || new Set(players.map(player => player.id)).size !== players.length) throw new GameRuleError('NOT_ENOUGH_PLAYERS', 'Servono da 2 a 10 giocatori distinti per iniziare.')
+  if (Object.values(settings).some(value => !Number.isSafeInteger(value) || value <= 0)) throw new GameRuleError('INVALID_GAME_CONFIG', TEXTS.errors.invalidGameConfig)
+  if (players.length < 2 || players.length > 10 || new Set(players.map(player => player.id)).size !== players.length) throw new GameRuleError('NOT_ENOUGH_PLAYERS', TEXTS.errors.wrongPlayerCount)
   const game: GameState = {
     id: randomUUID(), schemaVersion: 1, config: settings, phase: 'countdown', round: 0, version: 1, opensAt: now, deadline: now + settings.countdownMs,
     players: players.map(player => ({ ...player, points: 0, retired: false })), categoryIds: [], rounds: [], usedQuestionIds: [], suspension: null, message: null,
@@ -283,42 +284,42 @@ export function createGame(players: { id: string; nickname: string; avatarId: Av
   // Requiring five unique questions in each eligible category guarantees three
   // candidates in every normal round, even if the same category always wins.
   game.categoryIds = [...new Set(content.categories.filter(category => availableQuestions(game, content, category.id).length >= settings.rounds).map(category => category.id))]
-  if (game.categoryIds.length < 3) throw new GameRuleError('INSUFFICIENT_CONTENT', `Servono almeno 3 categorie con ${settings.rounds} domande valide ciascuna per iniziare.`)
+  if (game.categoryIds.length < 3) throw new GameRuleError('INSUFFICIENT_CONTENT', TEXTS.errors.insufficientContent(settings.rounds))
   const bonusQuestions = validBonusQuestions(content.bonusQuestions)
-  if (bonusQuestions.length < 21) throw new GameRuleError('INSUFFICIENT_BONUS_CONTENT', 'Servono almeno 21 domande binarie valide e distinte per iniziare il bonus finale.')
+  if (bonusQuestions.length < 21) throw new GameRuleError('INSUFFICIENT_BONUS_CONTENT', TEXTS.errors.insufficientBonusStart)
   game.bonus = createBonus(bonusQuestions)
   return game
 }
 
 function assertActor(game: GameState, playerId: string): void {
   const player = game.players.find(entry => entry.id === playerId)
-  if (!player || player.retired) throw new GameRuleError('NOT_IN_GAME', 'Non fai parte dei concorrenti attivi di questa partita.')
+  if (!player || player.retired) throw new GameRuleError('NOT_IN_GAME', TEXTS.errors.notActivePlayer)
 }
 
 function assertWindow(game: GameState, phase: GamePhase, now: number): void {
-  if (game.phase !== phase) throw new GameRuleError('WRONG_GAME_PHASE', 'Questa azione non è disponibile nella fase attuale.')
-  if (now < game.opensAt) throw new GameRuleError('ACTION_TOO_EARLY', 'Il tempo per questa azione non è ancora iniziato.')
-  if (game.deadline === null || now >= game.deadline) throw new GameRuleError('ACTION_TOO_LATE', 'Il tempo disponibile è scaduto.')
+  if (game.phase !== phase) throw new GameRuleError('WRONG_GAME_PHASE', TEXTS.errors.wrongPhase)
+  if (now < game.opensAt) throw new GameRuleError('ACTION_TOO_EARLY', TEXTS.errors.tooEarly)
+  if (game.deadline === null || now >= game.deadline) throw new GameRuleError('ACTION_TOO_LATE', TEXTS.errors.tooLate)
 }
 
 /** Any active player may release a manual pause, only for the scene they saw. */
 export function continueGame(game: GameState, playerId: string, content: GameContent, connectedIds: Set<string>, roundId: number, expectedPhase: GameContinuePhase, now: number): void {
   assertActor(game, playerId)
-  if (!connectedIds.has(playerId)) throw new GameRuleError('PLAYER_OFFLINE', 'Ricollegati alla partita prima di continuare.')
-  if (roundId !== game.round) throw new GameRuleError('STALE_ROUND', 'Questo round è già terminato. Attendi la schermata aggiornata.')
-  if (!['intro', 'round_ready', 'bonus_intro', 'bonus_results'].includes(expectedPhase) || game.phase !== expectedPhase) throw new GameRuleError('WRONG_GAME_PHASE', 'Questa schermata è già terminata. Attendi l’aggiornamento della partita.')
-  if (now < game.opensAt) throw new GameRuleError('ACTION_TOO_EARLY', 'Questa schermata non è ancora iniziata.')
+  if (!connectedIds.has(playerId)) throw new GameRuleError('PLAYER_OFFLINE', TEXTS.errors.playerOffline)
+  if (roundId !== game.round) throw new GameRuleError('STALE_ROUND', TEXTS.errors.staleRound)
+  if (!['intro', 'round_ready', 'bonus_intro', 'bonus_results'].includes(expectedPhase) || game.phase !== expectedPhase) throw new GameRuleError('WRONG_GAME_PHASE', TEXTS.errors.screenEnded)
+  if (now < game.opensAt) throw new GameRuleError('ACTION_TOO_EARLY', TEXTS.errors.screenNotStarted)
   if (expectedPhase === 'bonus_results') {
     enter(game, 'phase_complete', now, null)
     return
   }
-  if (connectedCount(game, connectedIds) < 2) throw new GameRuleError('NOT_ENOUGH_PLAYERS', 'Aspettiamo almeno 2 giocatori connessi per continuare.')
+  if (connectedCount(game, connectedIds) < 2) throw new GameRuleError('NOT_ENOUGH_PLAYERS', TEXTS.serverMessages.waitingPlayers)
   if (expectedPhase === 'bonus_intro') {
     const bonus = game.bonus
-    if (!bonus) throw new GameRuleError('WRONG_GAME_PHASE', 'Questa partita non prevede il bonus finale.')
+    if (!bonus) throw new GameRuleError('WRONG_GAME_PHASE', TEXTS.errors.noBonus)
     if (!bonus.questions.length) {
       const questions = validBonusQuestions(content.bonusQuestions)
-      if (questions.length < bonus.config.target) throw new GameRuleError('INSUFFICIENT_BONUS_CONTENT', 'Il catalogo del bonus non contiene abbastanza domande valide.')
+      if (questions.length < bonus.config.target) throw new GameRuleError('INSUFFICIENT_BONUS_CONTENT', TEXTS.errors.insufficientBonus)
       bonus.questions = selectBonusQuestions(questions, bonus.config.target)
     }
     startBonus(game, now)
@@ -341,7 +342,7 @@ function recoverManualPause(game: GameState, now: number): boolean | null {
   if (game.phase === 'intro' || game.phase === 'round_ready' || game.phase === 'bonus_intro' || game.phase === 'bonus_results') {
     // Offline players can still return; retired players cannot rejoin the fixed
     // roster. Release an unplayable pause so the remaining group can use lobby.
-    if (game.phase !== 'bonus_results' && activePlayers(game).length < 2) abort(game, now, 'Partita interrotta: sono rimasti meno di 2 concorrenti in gara. I punti sono conservati.')
+    if (game.phase !== 'bonus_results' && activePlayers(game).length < 2) abort(game, now, TEXTS.serverMessages.tooFewPlayers)
     else if (game.deadline !== null) {
       game.deadline = null
       game.version++
@@ -355,8 +356,8 @@ export function vote(game: GameState, playerId: string, categoryId: string, now:
   assertActor(game, playerId)
   assertWindow(game, 'category_vote', now)
   const round = currentRound(game)
-  if (Object.hasOwn(round.votes, playerId)) throw new GameRuleError('ALREADY_VOTED', 'Hai già confermato il voto per questo round.')
-  if (!round.candidates.some(category => category.id === categoryId)) throw new GameRuleError('INVALID_CATEGORY', 'Scegli una delle categorie proposte.')
+  if (Object.hasOwn(round.votes, playerId)) throw new GameRuleError('ALREADY_VOTED', TEXTS.errors.alreadyVoted)
+  if (!round.candidates.some(category => category.id === categoryId)) throw new GameRuleError('INVALID_CATEGORY', TEXTS.errors.categoryNotProposed)
   round.votes[playerId] = { categoryId, receivedAt: now }
   game.version++
 }
@@ -364,12 +365,12 @@ export function vote(game: GameState, playerId: string, categoryId: string, now:
 export function answer(game: GameState, playerId: string, optionId: string, questionInstanceId: string, now: number): void {
   assertActor(game, playerId)
   const instance = currentQuestion(game)
-  if (instance?.id !== questionInstanceId) throw new GameRuleError('STALE_QUESTION', 'Questa domanda non è più attiva. Attendi l’aggiornamento della partita.')
+  if (instance?.id !== questionInstanceId) throw new GameRuleError('STALE_QUESTION', TEXTS.errors.staleQuestion)
   assertWindow(game, 'question', now)
-  if (Object.hasOwn(instance.answers, playerId)) throw new GameRuleError('ALREADY_ANSWERED', 'Hai già confermato una risposta per questa domanda.')
-  if (!instance.question.options.some(option => option.id === optionId)) throw new GameRuleError('INVALID_OPTION', 'Scegli una delle risposte proposte.')
+  if (Object.hasOwn(instance.answers, playerId)) throw new GameRuleError('ALREADY_ANSWERED', TEXTS.errors.alreadyAnswered)
+  if (!instance.question.options.some(option => option.id === optionId)) throw new GameRuleError('INVALID_OPTION', TEXTS.errors.optionNotProposed)
   const effect = currentRound(game).powerPlays?.find(play => play.targetId === playerId)
-  if (effect?.kind === 'fog' && !effect.revealedOptionIds.includes(optionId)) throw new GameRuleError('POWER_BLOCKED', 'Scopri questa risposta prima di sceglierla.')
+  if (effect?.kind === 'fog' && !effect.revealedOptionIds.includes(optionId)) throw new GameRuleError('POWER_BLOCKED', TEXTS.errors.fogBlocked)
   instance.answers[playerId] = { optionId, receivedAt: now, points: null, correct: null }
   game.version++
 }
@@ -377,23 +378,23 @@ export function answer(game: GameState, playerId: string, optionId: string, ques
 export function bonusAnswer(game: GameState, playerId: string, optionId: string, questionInstanceId: string, bonusRunId: string, now: number): void {
   assertActor(game, playerId)
   const bonus = game.bonus
-  if (!bonus || bonus.runId !== bonusRunId) throw new GameRuleError('STALE_BONUS', 'Questa esecuzione del bonus non è più attiva.')
+  if (!bonus || bonus.runId !== bonusRunId) throw new GameRuleError('STALE_BONUS', TEXTS.errors.staleBonus)
   assertWindow(game, 'bonus_playing', now)
   const progress = bonus.progress[playerId]
-  if (!progress) throw new GameRuleError('NOT_IN_GAME', 'Non partecipi a questa prova bonus.')
-  if (progress.completedMs !== null) throw new GameRuleError('BONUS_COMPLETED', 'Hai già completato tutte le 21 risposte.')
-  if (progress.questionInstanceId !== questionInstanceId) throw new GameRuleError('STALE_QUESTION', 'Questa domanda non è più attiva. Attendi l’aggiornamento della prova.')
-  if (now >= progress.questionDeadline) throw new GameRuleError('ACTION_TOO_LATE', 'I cinque secondi di questa domanda sono scaduti.')
-  if (!bonus.questions[progress.chain].options.some(option => option.id === optionId)) throw new GameRuleError('INVALID_OPTION', 'Scegli una delle due risposte proposte.')
+  if (!progress) throw new GameRuleError('NOT_IN_GAME', TEXTS.errors.notInBonus)
+  if (progress.completedMs !== null) throw new GameRuleError('BONUS_COMPLETED', TEXTS.errors.bonusCompleted)
+  if (progress.questionInstanceId !== questionInstanceId) throw new GameRuleError('STALE_QUESTION', TEXTS.errors.staleBonusQuestion)
+  if (now >= progress.questionDeadline) throw new GameRuleError('ACTION_TOO_LATE', TEXTS.errors.bonusTooLate)
+  if (!bonus.questions[progress.chain].options.some(option => option.id === optionId)) throw new GameRuleError('INVALID_OPTION', TEXTS.errors.bonusOptionNotProposed)
   consumeBonusAnswer(game, playerId, optionId, now)
 }
 
 function assertPreparation(game: GameState, playerId: string, questionInstanceId: string, now: number): GameRound {
   assertActor(game, playerId)
   assertWindow(game, 'category_reveal', now)
-  if (currentQuestion(game)?.id !== questionInstanceId) throw new GameRuleError('STALE_QUESTION', 'Questa preparazione è già terminata.')
+  if (currentQuestion(game)?.id !== questionInstanceId) throw new GameRuleError('STALE_QUESTION', TEXTS.errors.preparationEnded)
   const round = currentRound(game)
-  if (round.powerReadyIds?.includes(playerId)) throw new GameRuleError('ALREADY_READY', 'Hai già concluso la preparazione.')
+  if (round.powerReadyIds?.includes(playerId)) throw new GameRuleError('ALREADY_READY', TEXTS.errors.alreadyReady)
   return round
 }
 
@@ -401,10 +402,10 @@ export function usePower(game: GameState, playerId: string, cardId: string, targ
   const round = assertPreparation(game, playerId, questionInstanceId, now)
   const inventory = game.powerInventories?.[playerId]
   const card = inventory?.find(card => card.id === cardId)
-  if (!card || !inventory) throw new GameRuleError('POWER_NOT_OWNED', 'Questo potere non è nel tuo inventario.')
-  if (round.powerPlays?.some(play => play.fromId === playerId)) throw new GameRuleError('POWER_ALREADY_USED', 'Puoi usare un solo potere per round.')
-  if (targetId === playerId || !game.players.some(player => player.id === targetId && !player.retired) || !connectedIds.has(targetId)) throw new GameRuleError('INVALID_TARGET', 'Scegli un altro concorrente connesso.')
-  if (round.powerPlays?.some(play => play.targetId === targetId)) throw new GameRuleError('TARGET_PROTECTED', 'Questo concorrente ha già ricevuto un potere per la domanda. Scegli un altro bersaglio.')
+  if (!card || !inventory) throw new GameRuleError('POWER_NOT_OWNED', TEXTS.errors.powerNotOwned)
+  if (round.powerPlays?.some(play => play.fromId === playerId)) throw new GameRuleError('POWER_ALREADY_USED', TEXTS.errors.powerAlreadyUsed)
+  if (targetId === playerId || !game.players.some(player => player.id === targetId && !player.retired) || !connectedIds.has(targetId)) throw new GameRuleError('INVALID_TARGET', TEXTS.errors.invalidTarget)
+  if (round.powerPlays?.some(play => play.targetId === targetId)) throw new GameRuleError('TARGET_PROTECTED', TEXTS.errors.targetProtected)
   round.powerPlays ??= []
   round.powerPlays.push({ cardId, kind: card.kind, fromId: playerId, targetId, revealedOptionIds: [] })
   inventory.splice(inventory.indexOf(card), 1)
@@ -422,13 +423,13 @@ export function clearPower(game: GameState, playerId: string, questionInstanceId
   assertActor(game, playerId)
   assertWindow(game, 'question', now)
   const instance = currentQuestion(game)
-  if (instance?.id !== questionInstanceId) throw new GameRuleError('STALE_QUESTION', 'Questa domanda non è più attiva.')
+  if (instance?.id !== questionInstanceId) throw new GameRuleError('STALE_QUESTION', TEXTS.errors.questionInactive)
   const effect = currentRound(game).powerPlays?.find(play => play.targetId === playerId)
   if (effect?.kind === 'fog') {
-    if (!instance.question.options.some(option => option.id === optionId)) throw new GameRuleError('INVALID_OPTION', 'Indica la risposta da scoprire.')
-    if (effect.revealedOptionIds.includes(optionId!)) throw new GameRuleError('POWER_ALREADY_CLEARED', 'Questa risposta è già scoperta.')
+    if (!instance.question.options.some(option => option.id === optionId)) throw new GameRuleError('INVALID_OPTION', TEXTS.errors.missingRevealOption)
+    if (effect.revealedOptionIds.includes(optionId!)) throw new GameRuleError('POWER_ALREADY_CLEARED', TEXTS.errors.alreadyRevealed)
     effect.revealedOptionIds.push(optionId!)
-  } else throw new GameRuleError('NO_CLEARABLE_POWER', 'Non hai un ostacolo da rimuovere con questa azione.')
+  } else throw new GameRuleError('NO_CLEARABLE_POWER', TEXTS.errors.nothingToClear)
   game.version++
 }
 
@@ -440,11 +441,11 @@ export function advance(game: GameState, content: GameContent, connectedIds: Set
   if (manualPause !== null) return manualPause
   if (game.phase === 'bonus_playing') return advanceBonus(game, now)
   if (game.phase === 'countdown' && connectedCount(game, connectedIds) < 2) {
-    abort(game, now, 'Avvio annullato: servono almeno 2 giocatori connessi.')
+    abort(game, now, TEXTS.serverMessages.startCancelled)
     return true
   }
   if (game.phase === 'suspended') {
-    if (game.deadline !== null && now >= game.deadline) abort(game, now, 'Partita interrotta: non sono rientrati almeno 2 giocatori in tempo. I punti sono conservati.')
+    if (game.deadline !== null && now >= game.deadline) abort(game, now, TEXTS.serverMessages.nobodyReturned)
     else if (connectedCount(game, connectedIds) >= 2 && game.suspension) {
       const suspension = game.suspension
       game.suspension = null
@@ -497,7 +498,7 @@ export function recoverGame(game: GameState, now: number): boolean {
     game.bonus.startedAt = null
     game.bonus.progress = {}
     game.bonus.results = null
-    game.message = 'Le risposte trivia sono salve. Il server è ripartito: il bonus ricomincia con una nuova sequenza e 60 secondi per tutti.'
+    game.message = TEXTS.serverMessages.bonusRestarted
     enter(game, 'bonus_intro', now, null)
     return true
   }
@@ -505,7 +506,7 @@ export function recoverGame(game: GameState, now: number): boolean {
   if (manualPause !== null) return manualPause || powersUpdated
   if (game.phase === 'phase_complete' || game.phase === 'aborted' || game.phase === 'suspended') return powersUpdated
   if (game.phase === 'countdown') {
-    abort(game, now, 'Avvio annullato dopo il riavvio del server. La stanza può iniziare una nuova partita.')
+    abort(game, now, TEXTS.serverMessages.startCancelledRestart)
     return true
   }
   const phase = game.phase
@@ -514,9 +515,9 @@ export function recoverGame(game: GameState, now: number): boolean {
     if (!instance || instance.status !== 'open') throw new Error('Interrupted question is missing')
     instance.status = 'voided'
     instance.closedAt = now
-    suspend(game, now, { target: 'replacement' }, 'Il server è ripartito. Riprenderemo con una nuova domanda della stessa categoria quando saremo almeno in 2.')
+    suspend(game, now, { target: 'replacement' }, TEXTS.serverMessages.restartReplacement)
   } else {
-    suspend(game, now, { target: 'phase', phase }, 'Il server è ripartito. Aspettiamo almeno 2 giocatori per riprendere la partita.')
+    suspend(game, now, { target: 'phase', phase }, TEXTS.serverMessages.restartPhase)
   }
   return true
 }

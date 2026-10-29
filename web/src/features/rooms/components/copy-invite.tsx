@@ -2,6 +2,7 @@
 
 import { Check, Copy } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { TEXTS } from '../../../texts'
 
 export function CopyInvite({ value, label }: { value: string; label: string }) {
   const [status, setStatus] = useState<'idle' | 'copied' | 'manual'>('idle')
@@ -33,13 +34,13 @@ export function CopyInvite({ value, label }: { value: string; label: string }) {
     <div className="min-w-0">
       <button type="button" onClick={copy} className="daisy-btn h-auto min-h-11 w-full gap-2 rounded-xl border-[#d8cfc3] bg-transparent px-3 py-2 text-xs font-bold text-[#10142f] shadow-none">
         {status === 'copied' ? <Check className="size-4" aria-hidden="true" /> : <Copy className="size-4" aria-hidden="true" />}
-        {status === 'copied' ? 'Copied' : label}
+        {status === 'copied' ? TEXTS.copy.copied : label}
       </button>
-      <span role="status" className="sr-only">{status === 'copied' ? `${label} copied.` : ''}</span>
+      <span role="status" className="sr-only">{status === 'copied' ? TEXTS.copy.copiedStatus(label) : ''}</span>
       {status === 'manual' && (
         <label className="mt-2 block text-xs leading-relaxed text-[#515570]">
-          Copy unavailable. Select and copy manually:
-          <input aria-label={`${label} manually`} readOnly value={value} onFocus={(event) => event.target.select()} className="daisy-input mt-1 h-10 w-full min-w-0 rounded-lg bg-white px-2 text-xs text-[#10142f]" />
+          {TEXTS.copy.manual}
+          <input aria-label={TEXTS.copy.manualLabel(label)} readOnly value={value} onFocus={(event) => event.target.select()} className="daisy-input mt-1 h-10 w-full min-w-0 rounded-lg bg-white px-2 text-xs text-[#10142f]" />
         </label>
       )}
     </div>

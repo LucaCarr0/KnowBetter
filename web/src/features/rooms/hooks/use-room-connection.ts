@@ -14,6 +14,7 @@ import {
 import type { PlayerIdentity, RoomAction, RoomCommand, RoomError, RoomResponse, RoomSnapshot } from '../types'
 import type { GameCommandFields } from '../../game/types'
 import { normalizeNickname, normalizeRoomCode } from '../lib/validation'
+import { TEXTS } from '../../../texts'
 
 export type RoomConnectionStatus = 'connecting' | 'connected' | 'reconnecting' | 'offline' | 'conflict'
 
@@ -61,15 +62,15 @@ export function confirmsCommand(operation: PendingCommand, snapshot: RoomSnapsho
 
 const unavailableError: RoomError = {
   code: 'CONNECTION_UNAVAILABLE',
-  message: 'The connection is not ready. Please wait or reconnect and try again.',
+  message: TEXTS.errors.connectionUnavailable,
 }
 const uncertainError: RoomError = {
   code: 'REQUEST_UNCERTAIN',
-  message: 'We could not confirm this action. Retry with the same details to check its result.',
+  message: TEXTS.errors.requestUncertain,
 }
 const conflictError: RoomError = {
   code: 'CONTROL_REQUIRED',
-  message: 'Another tab controls your player. Take control here to continue.',
+  message: TEXTS.errors.anotherTab,
 }
 
 export function useRoomConnection() {
@@ -189,7 +190,7 @@ export function useRoomConnection() {
             pendingRef.current = null
             applySnapshot(null)
             updateStatus('offline')
-            setError({ code: 'SESSION_EXPIRED', message: 'Your guest session expired. Reconnect to start a new session.' })
+            setError({ code: 'SESSION_EXPIRED', message: TEXTS.errors.sessionExpiredClient })
             return
           }
           if (!lifecycle.signal.aborted && statusRef.current !== 'conflict') {
@@ -247,7 +248,7 @@ export function useRoomConnection() {
     const lifecycle = lifecycleRef.current
     if (!socket || !lifecycle || lifecycle.signal.aborted) return { ok: false, error: unavailableError }
     if (statusRef.current === 'conflict') return { ok: false, error: conflictError }
-    if (busyRef.current) return { ok: false, error: { code: 'REQUEST_PENDING', message: 'Please wait for the current action to finish.' } }
+    if (busyRef.current) return { ok: false, error: { code: 'REQUEST_PENDING', message: TEXTS.errors.requestPending } }
 
     const fingerprint = JSON.stringify(input)
     const pending = pendingRef.current
@@ -289,7 +290,7 @@ export function useRoomConnection() {
     try {
       const confirmed = new Promise<RoomResponse>((resolve) => { operation.confirm = resolve })
       const response = await Promise.race([confirmed, sendRoomCommand(socket, action, operation.command, lifecycle.signal, () => {
-        if (!lifecycle.signal.aborted && pendingRef.current === operation) setError({ code: 'REQUEST_RETRYING', message: 'Still waiting for confirmation. Retrying the same action safely…' })
+        if (!lifecycle.signal.aborted && pendingRef.current === operation) setError({ code: 'REQUEST_RETRYING', message: TEXTS.errors.requestRetrying })
       })])
       if (lifecycle.signal.aborted) return response
       pendingRef.current = null

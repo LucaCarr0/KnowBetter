@@ -5,6 +5,7 @@ import { useId, useState, type CSSProperties } from 'react'
 import { PlayerAvatar } from '../../rooms/components/player-avatar'
 import type { GameSnapshot } from '../types'
 import styles from '../styles/category-vote-result.module.css'
+import { TEXTS } from '../../../texts'
 
 const ANIMATION_MS = 2_500
 const FRAGMENTS = [
@@ -25,20 +26,20 @@ export function CategoryVoteResult({ game, selfId, elapsedMs }: {
   const voters = game.categoryVoters
   const selectedVotes = game.categoryVotes?.[game.category?.id ?? ''] ?? 0
   const reason = game.selectionReason === 'tie'
-    ? 'Parità in testa: il sorteggio ha scelto tra le categorie più votate.'
+    ? TEXTS.voteResult.tie
     : game.selectionReason === 'abstention'
-      ? 'Nessun voto: categoria sorteggiata tra le tre proposte.'
+      ? TEXTS.voteResult.abstention
       : game.selectionReason === 'votes'
-        ? 'La maggioranza ha deciso: vince la categoria con più voti.'
-        : 'Ecco la categoria scelta per questo round.'
+        ? TEXTS.voteResult.votes
+        : TEXTS.voteResult.fallback
 
   return (
     <section className={styles.result} aria-labelledby={titleId} style={{
       '--vote-duration': `${ANIMATION_MS}ms`,
       '--vote-offset': `${-initialElapsed}ms`,
     } as CSSProperties}>
-      <h2 id={titleId} className={styles.heading}><Vote size={20} aria-hidden="true" />Un giocatore, un voto</h2>
-      <p className={styles.rule}>Il voto è democratico: vince la categoria più votata. In parità, si sorteggia tra le prime.</p>
+      <h2 id={titleId} className={styles.heading}><Vote size={20} aria-hidden="true" />{TEXTS.voteResult.heading}</h2>
+      <p className={styles.rule}>{TEXTS.voteResult.rule}</p>
       <div className={styles.stage} aria-hidden="true">
         {game.candidates.map(category => {
           const selected = category.id === game.category?.id
@@ -51,16 +52,16 @@ export function CategoryVoteResult({ game, selfId, elapsedMs }: {
                 <div className={`daisy-card ${styles.card}`}>
                   <div className={styles.cardHeading}>
                     <h3>{category.name}</h3>
-                    <span className={`daisy-badge ${styles.count}`}>{count} {count === 1 ? 'voto' : 'voti'}</span>
+                    <span className={`daisy-badge ${styles.count}`}>{TEXTS.voteResult.count(count)}</span>
                   </div>
                   <div className={styles.voters}>
-                    {categoryVoters.map(player => <span key={player.id} className={`${styles.voter} ${player.id === selfId ? styles.self : ''}`} title={`${player.nickname}${player.id === selfId ? ' (Tu)' : ''}`}>
+                    {categoryVoters.map(player => <span key={player.id} className={`${styles.voter} ${player.id === selfId ? styles.self : ''}`} title={`${player.nickname}${player.id === selfId ? TEXTS.voteResult.youSuffix : ''}`}>
                       <PlayerAvatar avatarId={player.avatarId} className={styles.avatar} />
-                      {player.id === selfId && <span className={styles.you}>Tu</span>}
+                      {player.id === selfId && <span className={styles.you}>{TEXTS.voteResult.you}</span>}
                     </span>)}
-                    {!count && <span className={styles.empty}>Nessun voto</span>}
-                    {count > 0 && !categoryVoters.length && <span className={styles.empty}>Voti confermati</span>}
-                    {selected && <span className={styles.winnerLabel}><Trophy size={13} />{game.selectionReason === 'votes' ? 'La più votata' : 'Sorteggiata'}</span>}
+                    {!count && <span className={styles.empty}>{TEXTS.voteResult.noVotes}</span>}
+                    {count > 0 && !categoryVoters.length && <span className={styles.empty}>{TEXTS.voteResult.confirmedVotes}</span>}
+                    {selected && <span className={styles.winnerLabel}><Trophy size={13} />{game.selectionReason === 'votes' ? TEXTS.voteResult.mostVoted : TEXTS.voteResult.drawn}</span>}
                   </div>
                 </div>
               </div>
@@ -76,14 +77,14 @@ export function CategoryVoteResult({ game, selfId, elapsedMs }: {
           </div>
         })}
       </div>
-      <p className={styles.outcome} role="status"><strong>{game.category?.name ?? 'Categoria scelta'} · {selectedVotes} {selectedVotes === 1 ? 'voto' : 'voti'}</strong><span>{reason}</span></p>
+      <p className={styles.outcome} role="status"><strong>{game.category?.name ?? TEXTS.voteResult.chosenFallback} · {TEXTS.voteResult.count(selectedVotes)}</strong><span>{reason}</span></p>
       <details className={styles.summary}>
-        <summary>Riepilogo di tutti i voti</summary>
+        <summary>{TEXTS.voteResult.summary}</summary>
         <ul>
           {game.candidates.map(category => {
             const count = game.categoryVotes?.[category.id] ?? 0
-            const names = (voters?.[category.id] ?? []).map(id => game.players.find(player => player.id === id)).filter(player => player !== undefined).map(player => `${player.nickname}${player.id === selfId ? ' (Tu)' : ''}`)
-            return <li key={category.id}><strong>{category.name}: {count} {count === 1 ? 'voto' : 'voti'}.</strong> {names.join(', ') || (count ? 'Voti confermati.' : 'Nessun voto.')}{category.id === game.category?.id && ' Categoria scelta.'}</li>
+            const names = (voters?.[category.id] ?? []).map(id => game.players.find(player => player.id === id)).filter(player => player !== undefined).map(player => `${player.nickname}${player.id === selfId ? TEXTS.voteResult.youSuffix : ''}`)
+            return <li key={category.id}><strong>{category.name}: {TEXTS.voteResult.count(count)}.</strong> {names.join(', ') || (count ? TEXTS.voteResult.summaryConfirmed : TEXTS.voteResult.summaryNoVotes)}{category.id === game.category?.id && TEXTS.voteResult.summaryChosen}</li>
           })}
         </ul>
       </details>

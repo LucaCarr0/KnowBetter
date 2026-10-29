@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState, type PointerEvent } from 'react'
 import { ArrowRight } from 'lucide-react'
 import styles from '../styles/swipe-to-continue.module.css'
+import { TEXTS } from '../../../texts'
 
 interface SwipeToContinueProps {
   label: string
@@ -62,7 +63,7 @@ export function SwipeToContinue({ label, disabled = false, pending = false, onCo
     try {
       await onContinue()
     } catch {
-      setError('Invio non riuscito. Riprova quando la connessione è disponibile.')
+      setError(TEXTS.swipe.failed)
     } finally {
       inFlight.current = false
       setSubmitting(false)
@@ -108,7 +109,7 @@ export function SwipeToContinue({ label, disabled = false, pending = false, onCo
       <div className={styles.track}>
         <div ref={rail} className={styles.rail}>
           <span className={styles.fill} style={{ width: `calc(3.25rem + ${distance}px)` }} aria-hidden="true" />
-          <span className={styles.label} aria-hidden="true">{busy ? 'Invio in corso…' : label}</span>
+          <span className={styles.label} aria-hidden="true">{busy ? TEXTS.game.sending : label}</span>
           <button
             ref={handle}
             type="button"
@@ -137,8 +138,8 @@ export function SwipeToContinue({ label, disabled = false, pending = false, onCo
           </button>
         </div>
       </div>
-      <p id={instructionsId} className={styles.instructions}>Trascina la freccia fino in fondo e rilasciala per continuare.<span className="sr-only"> Con la tastiera premi Invio o Spazio. Con un lettore schermo attiva il pulsante.</span></p>
-      <p className={`${styles.status} ${error ? styles.error : ''}`} role="status" aria-live="polite">{error || (busy ? 'Invio in corso…' : '')}</p>
+      <p id={instructionsId} className={styles.instructions}>{TEXTS.swipe.instructions}<span className="sr-only">{TEXTS.swipe.screenReader}</span></p>
+      <p className={`${styles.status} ${error ? styles.error : ''}`} role="status" aria-live="polite">{error || (busy ? TEXTS.game.sending : '')}</p>
     </div>
   )
 }

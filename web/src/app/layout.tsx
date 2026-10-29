@@ -1,10 +1,11 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { TEXTS } from '@/texts'
 
 export const metadata: Metadata = {
-  title: 'Know Better',
-  description: 'A fast, chaotic trivia party for friends near and far.',
+  title: TEXTS.meta.title,
+  description: TEXTS.meta.description,
   generator: 'v0.app',
   icons: {
     icon: [

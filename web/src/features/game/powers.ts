@@ -1,3 +1,5 @@
+import { TEXTS } from '../../texts'
+
 export type PowerKind = 'scramble' | 'fog' | 'shuffle' | 'spotlight'
 export interface PowerCard { id: string; kind: PowerKind }
 export interface PowerEffect {
@@ -7,10 +9,10 @@ export interface PowerEffect {
 }
 
 export const POWERS = [
-  { kind: 'scramble', name: 'Lettere ribelli', description: 'Inverte le lettere interne delle parole nelle risposte. Prima e ultima restano al loro posto.' },
-  { kind: 'fog', name: 'Nebbia', description: 'Copre le quattro risposte: un tocco su ciascuna per scoprirla, poi puoi sceglierla.' },
-  { kind: 'shuffle', name: 'Shuffle', description: 'Scambia la posizione delle quattro risposte ogni secondo. Occhio a dove tocchi!' },
-  { kind: 'spotlight', name: 'Riflettore', description: 'Mostra una risposta alla volta. Scorri tra le quattro prima di scegliere.' },
+  { kind: 'scramble', ...TEXTS.powers.scramble },
+  { kind: 'fog', ...TEXTS.powers.fog },
+  { kind: 'shuffle', ...TEXTS.powers.shuffle },
+  { kind: 'spotlight', ...TEXTS.powers.spotlight },
 ] as const
 
 export const MAX_POWER_CARDS = 2

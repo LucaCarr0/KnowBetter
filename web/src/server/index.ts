@@ -6,11 +6,12 @@ import { createDatabase, type LobbyDatabase } from './database'
 import { LobbyService, type Connection, type LobbyOptions } from './lobby'
 import { createShutdown, registerShutdownSignals } from './shutdown'
 import { importTrivia, loadTrivia } from './trivia'
+import { TEXTS } from '../texts'
 
 export const GUEST_COOKIE = 'kb_guest'
 const actions: RoomAction[] = ['room:create', 'room:join', 'room:resume', 'room:update', 'room:leave', 'game:start', 'game:continue', 'game:vote-category', 'game:answer', 'game:bonus-answer', 'game:use-power', 'game:ready-question', 'game:clear-power', 'game:resume', 'game:return-lobby']
-const internalError = { ok: false, error: { code: 'SERVER_ERROR', message: 'The server could not complete this request. Please try again.' } } as const
-const rateError = { ok: false, error: { code: 'RATE_LIMITED', message: 'Too many attempts. Wait a moment and try again.' } } as const
+const internalError = { ok: false, error: { code: 'SERVER_ERROR', message: TEXTS.errors.serverError } } as const
+const rateError = { ok: false, error: { code: 'RATE_LIMITED', message: TEXTS.errors.rateLimited } } as const
 
 export function readGuestCookie(cookie: string | undefined): string | undefined {
   // Do not accept duplicate credential cookies, even when their paths differ.

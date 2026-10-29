@@ -9,6 +9,7 @@ import type { PlayerIdentity, RoomAction, RoomCommand, RoomError, RoomPreview, R
 import type { LobbyDatabase, Queryable } from './database'
 import type { GameConfig } from '../features/game/types'
 import { createGame, continueGame, vote, answer, bonusAnswer, usePower, readyQuestion, clearPower, advance, snapshot as gameSnapshot, recoverGame, retire, GameRuleError, type GameContent, type GameState } from './game/engine'
+import { TEXTS } from '../texts'
 
 interface GuestRow extends Record<string, unknown> { id: string; expires_at: number | string }
 interface RoomRow extends Record<string, unknown> {
@@ -29,9 +30,9 @@ export type PreviewResponse = { ok: true; preview: RoomPreview } | { ok: false; 
 function fail(code: string, message: string, field?: RoomError['field']): RoomResponse & { ok: false } {
   return { ok: false, error: { code, message, ...(field ? { field } : {}) } }
 }
-const expiredSession = () => fail('SESSION_EXPIRED', 'Your guest session has expired. Reload the page to continue.')
-const controlRequired = () => fail('CONTROL_REQUIRED', 'This session is open in another tab. Take control here to continue.')
-const roomMissing = () => fail('ROOM_NOT_FOUND', 'This room does not exist or has expired.', 'roomCode')
+const expiredSession = () => fail('SESSION_EXPIRED', TEXTS.errors.sessionExpired)
+const controlRequired = () => fail('CONTROL_REQUIRED', TEXTS.errors.controlRequired)
+const roomMissing = () => fail('ROOM_NOT_FOUND', TEXTS.errors.roomMissing, 'roomCode')
 const tokenHash = (token: string) => createHash('sha256').update(token).digest('hex')
 const iso = (value: number | string) => new Date(Number(value)).toISOString()
 
@@ -149,10 +150,10 @@ export class LobbyService extends EventEmitter {
       if (!(await this.validGuest(db, connection.guestId))) return expiredSession()
       if (this.controllers.get(connection.guestId) !== connection.socketId) return controlRequired()
       await this.cleanup(db)
-      if (!input || typeof input !== 'object' || Array.isArray(input)) return fail('INVALID_REQUEST', 'Invalid room request.')
+      if (!input || typeof input !== 'object' || Array.isArray(input)) return fail('INVALID_REQUEST', TEXTS.errors.invalidRequest)
       const command = input as RoomCommand
       if (typeof command.requestId !== 'string' || !/^[a-zA-Z0-9_-]{8,100}$/.test(command.requestId)) {
-        return fail('INVALID_REQUEST', 'A valid request identifier is required.')
+        return fail('INVALID_REQUEST', TEXTS.errors.requestIdRequired)
       }
       const identityInput = command.identity && typeof command.identity === 'object' ? command.identity : undefined
       const fingerprint = createHash('sha256').update(JSON.stringify({
@@ -168,7 +169,7 @@ export class LobbyService extends EventEmitter {
         [connection.guestId, command.requestId],
       )).rows[0]
       if (previous) {
-        if (previous.action !== action || previous.fingerprint !== fingerprint) return fail('REQUEST_REUSED', 'This request was already used with different details. Try again.')
+        if (previous.action !== action || previous.fingerprint !== fingerprint) return fail('REQUEST_REUSED', TEXTS.errors.requestReused)
         if (!previous.result.ok) return previous.result
         const member = previous.membership_id ? (await db.query<MemberRow>(
           'SELECT * FROM kb_members WHERE id = $1 AND guest_id = $2 AND active', [previous.membership_id, connection.guestId],
@@ -199,12 +200,12 @@ export class LobbyService extends EventEmitter {
       if (!(await this.validGuest(db, guestId))) return expiredSession()
       await this.cleanup(db)
       const value = input && typeof input === 'object' ? (input as { code?: unknown }).code : undefined
-      if (typeof value !== 'string') return { ok: false, error: { code: 'INVALID_CODE', message: 'Enter the 6-character room code.', field: 'roomCode' } }
+      if (typeof value !== 'string') return { ok: false, error: { code: 'INVALID_CODE', message: TEXTS.errors.invalidCode, field: 'roomCode' } }
       const error = validateRoomCode(value)
       if (error) return { ok: false, error }
       const room = await this.roomByCode(db, normalizeRoomCode(value))
       if (!room || room.status === 'closed') return roomMissing()
-      if (room.status !== 'waiting') return fail('GAME_STARTED', 'La partita è già iniziata. Possono rientrare soltanto i concorrenti già presenti.', 'roomCode')
+      if (room.status !== 'waiting') return fail('GAME_STARTED', TEXTS.errors.gameStartedJoin, 'roomCode')
       const members = await this.members(db, room.id)
       return { ok: true, preview: { code: room.code, memberCount: members.length, maxPlayers: MAX_PLAYERS } }
     })
@@ -260,13 +261,13 @@ export class LobbyService extends EventEmitter {
   }
 
   private async gameCommand(db: Queryable, member: MemberRow | undefined, action: RoomAction, command: RoomCommand, receivedAt: number): Promise<RoomResponse> {
-    if (!member) return fail('NOT_IN_ROOM', 'Entra in una stanza prima di iniziare a giocare.')
+    if (!member) return fail('NOT_IN_ROOM', TEXTS.errors.notInRoomPlay)
     const room = (await db.query<RoomRow>('SELECT * FROM kb_rooms WHERE id=$1', [member.room_id])).rows[0]
     if (!room || room.status === 'closed') return roomMissing()
     if (action === 'game:start') {
-      if (command.roomId !== room.id) return fail('STALE_ROOM', 'La stanza è cambiata. Riprova dalla lobby attuale.')
-      if (room.host_id !== member.id) return fail('HOST_REQUIRED', 'Soltanto l’organizzatore può iniziare la partita.')
-      if (room.status !== 'waiting') return fail('GAME_STARTED', 'La partita è già iniziata.')
+      if (command.roomId !== room.id) return fail('STALE_ROOM', TEXTS.errors.staleRoom)
+      if (room.host_id !== member.id) return fail('HOST_REQUIRED', TEXTS.errors.hostRequiredStart)
+      if (room.status !== 'waiting') return fail('GAME_STARTED', TEXTS.errors.gameStarted)
       const connected = await this.connectedIds(db, room.id)
       const members = await this.members(db, room.id)
       const roster = members.filter(entry => connected.has(entry.id)).map(entry => ({ id: entry.id, nickname: entry.nickname, avatarId: getAvatar(entry.avatar_id).id }))
@@ -279,11 +280,11 @@ export class LobbyService extends EventEmitter {
       return { ok: true, room: await this.snapshot(db, member) }
     }
     const game = await this.gameForRoom(db, room.id)
-    if (!game || !game.players.some(player => player.id === member.id && !player.retired)) return fail('NOT_IN_GAME', 'Non partecipi alla partita attuale.')
-    if (command.matchId !== game.id) return fail('STALE_GAME', 'Questa partita non è più attiva. Attendi il nuovo stato.')
+    if (!game || !game.players.some(player => player.id === member.id && !player.retired)) return fail('NOT_IN_GAME', TEXTS.errors.notInGame)
+    if (command.matchId !== game.id) return fail('STALE_GAME', TEXTS.errors.staleGame)
     if (action === 'game:return-lobby') {
-      if (room.host_id !== member.id) return fail('HOST_REQUIRED', 'Soltanto l’organizzatore può riportare il gruppo nella lobby.')
-      if (!['phase_complete', 'aborted'].includes(game.phase)) return fail('GAME_NOT_FINISHED', 'La fase di gioco non è ancora conclusa.')
+      if (room.host_id !== member.id) return fail('HOST_REQUIRED', TEXTS.errors.hostRequiredReturn)
+      if (!['phase_complete', 'aborted'].includes(game.phase)) return fail('GAME_NOT_FINISHED', TEXTS.errors.gameNotFinished)
       await db.query('UPDATE kb_matches SET active=false WHERE id=$1', [game.id])
       await db.query("UPDATE kb_rooms SET status='waiting',version=version+1,expires_at=$1 WHERE id=$2", [this.now() + this.roomTtlMs, room.id])
       await this.reconcileRoom(db, room.id)
@@ -293,34 +294,34 @@ export class LobbyService extends EventEmitter {
       await this.restore(db, member)
       return { ok: true, room: await this.snapshot(db, member) }
     }
-    if (command.roundId !== game.round) return fail('STALE_ROUND', 'Questo round è già terminato. Attendi la schermata aggiornata.')
+    if (command.roundId !== game.round) return fail('STALE_ROUND', TEXTS.errors.staleRound)
     if (action === 'game:continue') {
-      if (!['intro', 'round_ready', 'bonus_intro', 'bonus_results'].includes(command.expectedPhase ?? '')) return fail('INVALID_REQUEST', 'Indica la schermata da cui vuoi continuare.')
+      if (!['intro', 'round_ready', 'bonus_intro', 'bonus_results'].includes(command.expectedPhase ?? '')) return fail('INVALID_REQUEST', TEXTS.errors.missingPhase)
       continueGame(game, member.id, this.content, await this.connectedIds(db, room.id), command.roundId, command.expectedPhase!, receivedAt)
     } else if (action === 'game:vote-category') {
-      if (typeof command.categoryId !== 'string' || command.categoryId.length > 100) return fail('INVALID_CATEGORY', 'Scegli una delle categorie disponibili.')
+      if (typeof command.categoryId !== 'string' || command.categoryId.length > 100) return fail('INVALID_CATEGORY', TEXTS.errors.invalidCategory)
       vote(game, member.id, command.categoryId, receivedAt)
     } else if (action === 'game:answer') {
-      if (typeof command.optionId !== 'string' || command.optionId.length > 100 || typeof command.questionInstanceId !== 'string' || command.questionInstanceId.length > 100) return fail('INVALID_OPTION', 'Scegli una risposta valida.')
+      if (typeof command.optionId !== 'string' || command.optionId.length > 100 || typeof command.questionInstanceId !== 'string' || command.questionInstanceId.length > 100) return fail('INVALID_OPTION', TEXTS.errors.invalidOption)
       answer(game, member.id, command.optionId, command.questionInstanceId, receivedAt)
     } else if (action === 'game:bonus-answer') {
       if (advance(game, this.content, await this.connectedIds(db, room.id), receivedAt)) await this.saveGame(db, room.id, game)
       if (typeof command.optionId !== 'string' || !command.optionId.length || command.optionId.length > 100
         || typeof command.questionInstanceId !== 'string' || !command.questionInstanceId.length || command.questionInstanceId.length > 100
-        || typeof command.bonusRunId !== 'string' || !command.bonusRunId.length || command.bonusRunId.length > 100) return fail('INVALID_REQUEST', 'Indica la prova, la domanda e una risposta valida.')
+        || typeof command.bonusRunId !== 'string' || !command.bonusRunId.length || command.bonusRunId.length > 100) return fail('INVALID_REQUEST', TEXTS.errors.invalidBonusRequest)
       bonusAnswer(game, member.id, command.optionId, command.questionInstanceId, command.bonusRunId, receivedAt)
     } else if (action === 'game:use-power' || action === 'game:ready-question' || action === 'game:clear-power') {
-      if (typeof command.questionInstanceId !== 'string' || command.questionInstanceId.length > 100) return fail('INVALID_REQUEST', 'Indica la domanda attuale.')
+      if (typeof command.questionInstanceId !== 'string' || command.questionInstanceId.length > 100) return fail('INVALID_REQUEST', TEXTS.errors.missingQuestion)
       if (action === 'game:use-power') {
-        if (typeof command.powerCardId !== 'string' || command.powerCardId.length > 100 || typeof command.targetId !== 'string' || command.targetId.length > 100) return fail('INVALID_REQUEST', 'Scegli un potere e un avversario.')
+        if (typeof command.powerCardId !== 'string' || command.powerCardId.length > 100 || typeof command.targetId !== 'string' || command.targetId.length > 100) return fail('INVALID_REQUEST', TEXTS.errors.missingPower)
         usePower(game, member.id, command.powerCardId, command.targetId, command.questionInstanceId, await this.connectedIds(db, room.id), receivedAt)
       } else if (action === 'game:ready-question') readyQuestion(game, member.id, command.questionInstanceId, receivedAt)
       else {
         if (command.optionId !== undefined && (typeof command.optionId !== 'string' || command.optionId.length > 100)
-          || command.powerStep !== undefined) return fail('INVALID_REQUEST', 'Indica un ostacolo valido da rimuovere.')
+          || command.powerStep !== undefined) return fail('INVALID_REQUEST', TEXTS.errors.invalidObstacle)
         clearPower(game, member.id, command.questionInstanceId, command.optionId, receivedAt)
       }
-    } else return fail('INVALID_REQUEST', 'Operazione di gioco non riconosciuta.')
+    } else return fail('INVALID_REQUEST', TEXTS.errors.unknownGameAction)
     advance(game, this.content, await this.connectedIds(db, room.id), this.now())
     await this.saveGame(db, room.id, game)
     return { ok: true, room: await this.snapshot(db, member) }
@@ -352,16 +353,16 @@ export class LobbyService extends EventEmitter {
     const identity = parsed.identity
 
     if (action === 'room:update') {
-      if (!existing) return fail('NOT_IN_ROOM', 'Join a room before changing your player details.')
+      if (!existing) return fail('NOT_IN_ROOM', TEXTS.errors.notInRoomEdit)
       const currentRoom = (await db.query<RoomRow>('SELECT * FROM kb_rooms WHERE id=$1', [existing.room_id])).rows[0]
-      if (currentRoom?.status !== 'waiting') return fail('GAME_STARTED', 'Nickname e avatar si possono modificare soltanto nella lobby.')
-      if (await this.nicknameTaken(db, existing.room_id, identity.nickname, existing.id)) return fail('NICKNAME_TAKEN', 'This nickname is already used in the room.', 'nickname')
+      if (currentRoom?.status !== 'waiting') return fail('GAME_STARTED', TEXTS.errors.editOnlyInLobby)
+      if (await this.nicknameTaken(db, existing.room_id, identity.nickname, existing.id)) return fail('NICKNAME_TAKEN', TEXTS.errors.nicknameTaken, 'nickname')
       await db.query('UPDATE kb_members SET nickname = $1, nickname_key = $2, avatar_id = $3 WHERE id = $4', [identity.nickname, nicknameKey(identity.nickname), identity.avatarId, existing.id])
       await this.restore(db, existing)
       await this.bump(db, existing.room_id, true)
       return { ok: true, room: await this.snapshot(db, existing) }
     }
-    if (existing) return fail('ALREADY_IN_ROOM', 'Leave your current room before creating or joining another room.')
+    if (existing) return fail('ALREADY_IN_ROOM', TEXTS.errors.alreadyInRoom)
     if (action === 'room:create') {
       let code: string
       do {
@@ -374,21 +375,21 @@ export class LobbyService extends EventEmitter {
       return { ok: true, room: await this.snapshot(db, member) }
     }
     if (action === 'room:join') {
-      if (typeof command.code !== 'string') return fail('INVALID_CODE', 'Enter the 6-character room code.', 'roomCode')
+      if (typeof command.code !== 'string') return fail('INVALID_CODE', TEXTS.errors.invalidCode, 'roomCode')
       const error = validateRoomCode(command.code)
       if (error) return { ok: false, error }
       const room = await this.roomByCode(db, normalizeRoomCode(command.code))
       if (!room || room.status === 'closed') return roomMissing()
-      if (room.status !== 'waiting') return fail('GAME_STARTED', 'La partita è già iniziata. Possono rientrare soltanto i concorrenti già presenti.', 'roomCode')
+      if (room.status !== 'waiting') return fail('GAME_STARTED', TEXTS.errors.gameStartedJoin, 'roomCode')
       const members = await this.members(db, room.id)
-      if (members.length >= MAX_PLAYERS) return fail('ROOM_FULL', 'This room already has 10 players.', 'roomCode')
-      if (await this.nicknameTaken(db, room.id, identity.nickname)) return fail('NICKNAME_TAKEN', 'This nickname is already used in the room.', 'nickname')
+      if (members.length >= MAX_PLAYERS) return fail('ROOM_FULL', TEXTS.errors.roomFull, 'roomCode')
+      if (await this.nicknameTaken(db, room.id, identity.nickname)) return fail('NICKNAME_TAKEN', TEXTS.errors.nicknameTaken, 'nickname')
       const member = await this.insertMember(db, guestId, room.id, identity)
       await this.reconcileRoom(db, room.id)
       await this.bump(db, room.id, true)
       return { ok: true, room: await this.snapshot(db, member) }
     }
-    return fail('INVALID_REQUEST', 'Unknown room operation.')
+    return fail('INVALID_REQUEST', TEXTS.errors.unknownRoomAction)
   }
 
   private async validGuest(db: Queryable, guestId: string): Promise<boolean> {
