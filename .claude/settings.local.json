@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//home/lucacarraturo/.codex/skills/**)",
+      "Read(//home/lucacarraturo/.codex/**)",
+      "Bash(mkdir -p ~/.claude/skills)",
+      "Bash(ln -s ~/.codex/skills/caveman ~/.codex/skills/ponytail ~/.codex/skills/daisyui ~/.claude/skills/)",
+      "Bash(mkdir -p /home/lucacarraturo/KnowBetter/.claude/skills)",
+      "Bash(ln -s ../../.agents/skills/graphify /home/lucacarraturo/KnowBetter/.claude/skills/graphify)",
+      "Read(//home/lucacarraturo/.claude/**)",
+      "Bash(graphify update *)",
+      "Bash(grep -n \"'[A-Z][a-zà-ù ,’']\\\\{12,\\\\}\" server/game/bonus.ts server/game/engine.ts server/index.ts server/shutdown.ts features/rooms/hooks/use-room-connection.ts features/rooms/services/room-client.ts)",
+      "Bash(python3 /tmp/claude-1000/-home-lucacarraturo-KnowBetter/6efda1bb-01d5-47f6-994d-0e08381f4b5e/scratchpad/replace_texts.py)",
+      "Bash(python3 -)",
+      "Bash(pnpm typecheck *)",
+      "Bash(pnpm test:unit)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  }
+}
