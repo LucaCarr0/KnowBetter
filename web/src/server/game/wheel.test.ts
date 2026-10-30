@@ -371,6 +371,95 @@ test('Bomba moves away from a disconnected holder', () => {
   assert.ok(online.has(state.holderId))
 })
 
+test('Rubapunti steals with cooldowns, shields stun the thief and ranks by final pot', () => {
+  const setup = startKind('steal')
+  const pots = () => (snapshot(setup.game, 'p0', setup.connected, setup.time).wheel!.minigame!.view as { pots: Record<string, number> }).pots
+  act(setup, 'p0', { type: 'steal', targetId: 'p1' }, setup.time + 1_000)
+  assert.deepEqual([pots().p0, pots().p1], [600, 400])
+  act(setup, 'p0', { type: 'steal', targetId: 'p1' }, setup.time + 2_000)
+  assert.equal(pots().p0, 600, 'in ricarica')
+  assert.throws(() => act(setup, 'p0', { type: 'steal', targetId: 'p0' }), { code: 'INVALID_MINIGAME_ACTION' })
+  act(setup, 'p1', { type: 'shield' }, setup.time + 3_000)
+  act(setup, 'p0', { type: 'steal', targetId: 'p1' }, setup.time + 3_500)
+  assert.deepEqual([pots().p0, pots().p1], [600, 400], 'lo scudo respinge')
+  act(setup, 'p0', { type: 'steal', targetId: 'p2' }, setup.time + 5_400)
+  assert.equal(pots().p2, 500, 'il ladro resta bloccato per 2 secondi')
+  act(setup, 'p0', { type: 'steal', targetId: 'p2' }, setup.time + 5_600)
+  assert.equal(pots().p2, 400)
+  const rows = finishedRows(setup, setup.time + 20_000)
+  assert.deepEqual(rows.map(row => [row.playerId, row.rank, row.points]), [['p0', 1, 1000], ['p1', 2, 733], ['p2', 3, 0], ['p3', 3, 0]])
+})
+
+test('Duello a sorpresa ranks inside each group, punishes early shots and makes a trio when odd', () => {
+  const setup = startKind('duel', 5)
+  const state = setup.run.state as { signalOffsetMs: number; groups: string[][] }
+  assert.deepEqual(state.groups.map(group => group.length).sort(), [2, 3])
+  state.groups = [['p0', 'p1'], ['p2', 'p3', 'p4']]
+  state.signalOffsetMs = 5_000
+  assert.equal((snapshot(setup.game, 'p0', setup.connected, setup.time).wheel!.minigame!.view as { opponentIds: string[] }).opponentIds[0], 'p1')
+  assert.throws(() => act(setup, 'p2', { type: 'shoot', reactionMs: 100 }, setup.time + 2_000), { code: 'INVALID_MINIGAME_ACTION' })
+  assert.throws(() => act(setup, 'p2', { type: 'shoot', reactionMs: 9_000 }, setup.time + 5_500), { code: 'INVALID_MINIGAME_ACTION' })
+  act(setup, 'p0', { type: 'early' }, setup.time + 1_000)
+  assert.throws(() => act(setup, 'p0', { type: 'shoot', reactionMs: 100 }, setup.time + 5_500), { code: 'MINIGAME_ALREADY_PLAYED' })
+  act(setup, 'p1', { type: 'shoot', reactionMs: 400 }, setup.time + 5_500)
+  act(setup, 'p2', { type: 'shoot', reactionMs: 300 }, setup.time + 5_500)
+  act(setup, 'p3', { type: 'shoot', reactionMs: 250 }, setup.time + 5_500)
+  act(setup, 'p4', { type: 'shoot', reactionMs: 500.4 }, setup.time + 5_600)
+  const rows = finishedRows(setup, setup.time + 5_600)
+  assert.deepEqual(Object.fromEntries(rows.map(row => [row.playerId, row.points])), { p0: 0, p1: 1000, p2: 600, p3: 1000, p4: 200 })
+  assert.equal(rows.find(row => row.playerId === 'p4')!.detail, 500)
+})
+
+test('Tiro alla fune weighs the smaller team and pays only those who pulled', () => {
+  const setup = startKind('tug', 3)
+  const state = setup.run.state as { teams: string[][] }
+  assert.deepEqual(state.teams.map(team => team.length), [2, 1])
+  state.teams = [['p0', 'p1'], ['p2']]
+  const at = setup.time + 5_000
+  act(setup, 'p0', { type: 'tug', count: 10 }, at)
+  act(setup, 'p2', { type: 'tug', count: 6 }, at)
+  assert.throws(() => act(setup, 'p2', { type: 'tug', count: 500 }, at), { code: 'INVALID_MINIGAME_ACTION' })
+  assert.deepEqual((snapshot(setup.game, 'p0', setup.connected, at).wheel!.minigame!.view as { scores: number[] }).scores, [10, 12])
+  assert.deepEqual(Object.fromEntries(finishedRows(setup, setup.time + 15_000).map(row => [row.playerId, row.points])), { p0: 200, p1: 0, p2: 1000 })
+
+  const tie = startKind('tug', 2)
+  ;(tie.run.state as { teams: string[][] }).teams = [['p0'], ['p1']]
+  for (const id of ['p0', 'p1']) act(tie, id, { type: 'tug', count: 5 }, tie.time + 5_000)
+  assert.ok(finishedRows(tie, tie.time + 15_000).every(row => row.points === 600))
+})
+
+test('Dividi o rubi pays by the pair of hidden choices, and Jerry takes the odd seat', () => {
+  const setup = startKind('split')
+  ;(setup.run.state as { pairs: string[][] }).pairs = [['p0', 'p1'], ['p2', 'p3']]
+  act(setup, 'p0', { type: 'pick', value: 'steal' })
+  assert.ok(!JSON.stringify(snapshot(setup.game, 'p1', setup.connected, setup.time).wheel!.minigame!.view).includes('steal'))
+  assert.throws(() => act(setup, 'p0', { type: 'pick', value: 'split' }), { code: 'MINIGAME_ALREADY_PLAYED' })
+  assert.throws(() => act(setup, 'p1', { type: 'pick', value: 'cash' }), { code: 'INVALID_MINIGAME_ACTION' })
+  act(setup, 'p1', { type: 'pick', value: 'split' })
+  act(setup, 'p2', { type: 'pick', value: 'split' })
+  act(setup, 'p3', { type: 'pick', value: 'split' })
+  assert.deepEqual(Object.fromEntries(finishedRows(setup).map(row => [row.playerId, row.points])), { p0: 1000, p1: 0, p2: 500, p3: 500 })
+
+  const both = startKind('split', 2)
+  for (const id of ['p0', 'p1']) act(both, id, { type: 'pick', value: 'steal' })
+  assert.ok(finishedRows(both).every(row => row.points === 0))
+
+  const absent = startKind('split', 2)
+  act(absent, 'p0', { type: 'pick', value: 'steal' })
+  assert.deepEqual(Object.fromEntries(finishedRows(absent, absent.time + 12_000).map(row => [row.playerId, row.points])), { p0: 1000, p1: 0 })
+
+  const odd = startKind('split', 3)
+  const state = odd.run.state as { pairs: string[][]; picks: Record<string, string> }
+  assert.ok(state.pairs.some(pair => pair.includes('jerry')))
+  state.picks.jerry = 'split'
+  const solo = state.pairs.find(pair => pair.includes('jerry'))!.find(id => id !== 'jerry')!
+  assert.equal((snapshot(odd.game, solo, odd.connected, odd.time).wheel!.minigame!.view as { opponentId: string | null }).opponentId, null)
+  for (const id of ids(3)) act(odd, id, { type: 'pick', value: id === solo ? 'steal' : 'split' })
+  const rows = finishedRows(odd)
+  assert.equal(rows.length, 3)
+  assert.equal(rows.find(row => row.playerId === solo)!.points, 1000)
+})
+
 test('flash for everyone scores all; personal flash accepts only the spinner', () => {
   const all = wheelGame(4)
   let time = land(all.game, all.connected, 'flash_all', all.now)

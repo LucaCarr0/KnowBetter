@@ -71,7 +71,7 @@ export function WheelStage(props: WheelStageProps) {
     case 'wheel_effect': return <EffectScene game={game} wheel={wheel} selfId={selfId} />
     case 'minigame_intro': return <PreviewScene {...props} wheel={wheel} disabled={blocked} />
     case 'minigame_playing': return wheel.minigame?.view ? <>
-      <MinigamePlay view={wheel.minigame.view} players={game.players} selfId={selfId} participantCount={wheel.minigame.participantIds.length} disabled={blocked || !wheel.minigame.participantIds.includes(selfId)} pending={pending}
+      <MinigamePlay view={wheel.minigame.view} players={game.players} selfId={selfId} participantCount={wheel.minigame.participantIds.length} disabled={blocked || !wheel.minigame.participantIds.includes(selfId)} pending={pending} now={props.now} startedAt={game.opensAt} clockOffsetMs={props.clockOffsetMs}
         onAction={action => send('game:minigame-action', { minigameRunId: wheel.minigame!.runId, actionId: createRequestId(), minigameAction: action })} />
     </> : null
     case 'minigame_results': return <ResultsScene game={game} wheel={wheel} selfId={selfId} />
@@ -221,6 +221,10 @@ function resultDetail(kind: MinigameKind, row: MinigameResult): string {
     case 'chests': return W.minigames.chests.detail(numberFormatter.format(row.detail))
     case 'highest': return W.minigames.highest.detail(row.detail)
     case 'bomb': return W.minigames.bomb.detail(row.detail)
+    case 'steal': return W.minigames.steal.detail(numberFormatter.format(row.detail))
+    case 'duel': return W.minigames.duel.detail((row.detail / 1000).toFixed(3).replace('.', ','))
+    case 'tug': return W.minigames.tug.detail(row.detail)
+    case 'split': return row.detail ? W.minigames.split.stole : W.minigames.split.shared
   }
 }
 

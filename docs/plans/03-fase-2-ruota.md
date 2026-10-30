@@ -26,7 +26,7 @@ Confermati dal proprietario il 30 ottobre 2026:
 | Giri a testa | 4 | 3 | 2 | 2 | 2 | 2 | 1 | 1 | 1 |
 | Giri totali | 8 | 9 | 8 | 10 | 12 | 14 | 8 | 9 | 10 |
 
-Fuori da questo piano: Fase 3, poteri nella Fase 2, audio, sensori di movimento e i 9 minigiochi non selezionati. Dopo la Fase 2 la partita si chiude con il riepilogo, come oggi avviene dopo la Fase 1.
+Fuori da questo piano: Fase 3, poteri nella Fase 2, audio, sensori di movimento e i minigiochi non selezionati. Il secondo gruppo è descritto nella sezione 7. Dopo la Fase 2 la partita si chiude con il riepilogo, come oggi avviene dopo la Fase 1.
 
 ## 2. Default proposti da approvare
 
@@ -66,7 +66,7 @@ Premio standard per posizione, con pari merito come nel bonus: `round(1000 − 8
 | **Il più alto unico** | 3+ | 12 s | Scelta nascosta di un numero da 1 a 20 | 1.000 punti al più alto scelto da uno solo; altrimenti nessuno |
 | **Bomba** | 3+ | 25 s | Tre esplosioni a orari nascosti. Si passa toccando un avatar, ma non a chi l'ha appena passata. Dopo ogni esplosione la bomba va a un giocatore a caso | −300 a ogni esplosione per chi la tiene, senza scendere sotto zero; +300 a chi non esplode mai |
 
-I forzieri sono scesi da 3.000/1.000/300 a 1.500/800/300 per restare in linea con il premio standard. Con 2 giocatori restano Stoppa il timer, Numeri in ordine e Palloncino.
+I forzieri sono scesi da 3.000/1.000/300 a 1.500/800/300 per restare in linea con il premio standard. Con 2 giocatori restano Stoppa il timer, Numeri in ordine e Palloncino, più quelli del secondo gruppo indicati nella sezione 7.
 
 ### Domande lampo
 
@@ -217,3 +217,31 @@ Test senza listener di rete, con `pnpm test:unit`, controllo TypeScript e build:
 - Partita completa simulata con 2, 4 e 10 giocatori.
 
 I test non possono giudicare fluidità e sensazione. Le prove sui telefoni, il ritmo e il bilanciamento restano al proprietario. Da guardare in particolare: la sensazione dello swipe sulla ruota, la fluidità su un telefono medio, la durata con 7 giocatori (14 giri) e il peso di x2 e ÷2 sul totale.
+
+## 7. Secondo gruppo di minigiochi
+
+Stato: scelti dal proprietario il 30 ottobre 2026 e implementati su sua richiesta nello stesso giorno; prove sui telefoni a cura del proprietario. Regole e numeri sono default proposti, da provare giocando.
+
+| Minigioco | Giocatori | Durata | Regole | Punti |
+| --- | --- | --- | --- | --- |
+| **Rubapunti** | 3+ | 20 s | Tutti partono da 500 punti di gioco. Toccare un avatar ruba 100 punti, con ricarica di 2 s. Lo scudo dura 1 s, con ricarica di 4 s: respinge il furto e blocca il ladro per 2 s | Standard, per punti di gioco finali; zero a chi non ha mai agito |
+| **Duello a sorpresa** | 2+ | 15 s | Coppie sorteggiate, con un trio se i giocatori sono dispari. «FUOCO!» compare dopo un'attesa casuale da 3 a 10 s, uguale per tutti. Toccare prima fa perdere | Standard all'interno del gruppo: in coppia 1.000 e 200; zero a chi tocca prima o non tocca |
+| **Tiro alla fune** | 2+ | 15 s | Due squadre sorteggiate, equilibrate nel numero, toccano per tirare. Con squadre disuguali, i tocchi della più piccola valgono `grande / piccola` | 1.000 ai vincitori e 200 agli sconfitti, 600 a tutti in parità; zero a chi non ha toccato |
+| **Dividi o rubi** | 2+ | 12 s | Coppie sorteggiate, scelta segreta. Se i giocatori sono dispari, chi resta gioca contro Jerry, che sceglie a caso. Chi non sceglie conta come «dividi» e prende zero | Dividi/dividi: 500 a testa. Rubi/dividi: 1.000 e 0. Rubi/rubi: 0 e 0 |
+
+- **Tolto dopo la prova:** Ultimo in piedi, un gioco a comandi gestuali, è stato implementato e rimosso il 30 ottobre 2026 perché il proprietario l'ha giudicato brutto. Il rimpiazzo è da decidere.
+- **Candidati assorbiti:** Duello a sorpresa sostituisce Mezzogiorno di fuoco.
+- **Due giocatori:** si aggiungono Duello a sorpresa, Tiro alla fune e Dividi o rubi. Rubapunti resta escluso.
+
+**Riuso.** Ogni gioco è un file in `server/game/minigames/`, registrato in `index.ts`, con vista in `features/game/wheel.ts`, componente in `minigame-play.tsx`, demo in `minigame-demo.tsx`, testi in `texts.ts` e dettaglio in `wheel-stage.tsx`. Nessuna migrazione SQL e nessuna nuova dipendenza.
+
+**Comandi e tempi.**
+
+- **Tiro alla fune:** tocchi a gruppi ogni 250 ms con limite al secondo, come il Palloncino.
+- **Duello a sorpresa:** il telefono riceve l'istante del segnale e misura la reazione con `performance.now()`, come Stoppa il timer. L'istante del segnale resta quindi leggibile da chi ispeziona il client: è un rischio accettato tra amici, come per Stoppa il timer.
+- **Rubapunti:** ogni furto o scudo è un comando; il server applica ricariche e blocchi.
+- **Dividi o rubi:** le scelte restano nello stato privato fino ai risultati.
+
+**Verifiche.** Per ogni gioco: punteggi, parità, gruppi con numero dispari, confini temporali, assenti, ritirati e nessun dato privato nello snapshot, oltre alla partita completa simulata già esistente.
+
+Tocchi e animazioni di Duello a sorpresa e Tiro alla fune girano sul telefono: i test del server non li coprono e restano alla prova del proprietario.

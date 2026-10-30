@@ -1,21 +1,11 @@
-import { randomInt } from 'node:crypto'
-import { alreadyPlayed, invalidAction, standardResults, type MinigameDefinition } from './types'
+import { alreadyPlayed, invalidAction, shuffled, standardResults, type MinigameDefinition } from './types'
 
 interface NumbersState { grid: number[]; finished: Record<string, number> }
-
-function shuffledGrid(): number[] {
-  const grid = Array.from({ length: 16 }, (_, index) => index + 1)
-  for (let index = grid.length - 1; index > 0; index--) {
-    const other = randomInt(index + 1)
-    ;[grid[index], grid[other]] = [grid[other], grid[index]]
-  }
-  return grid
-}
 
 /** The phone checks each tap and reports only the finish, to spare a transaction per tap. */
 export const numbersGame: MinigameDefinition<NumbersState> = {
   kind: 'numbers', minPlayers: 2, durationMs: 20_000,
-  create: () => ({ grid: shuffledGrid(), finished: {} }),
+  create: () => ({ grid: shuffled(Array.from({ length: 16 }, (_, index) => index + 1)), finished: {} }),
   act(state, context, playerId, action, now) {
     if (action.type !== 'finish') throw invalidAction()
     if (Object.hasOwn(state.finished, playerId)) throw alreadyPlayed()

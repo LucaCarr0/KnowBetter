@@ -12,5 +12,9 @@ export function MinigameDemo({ kind }: { kind: MinigameKind }) {
     case 'chests': return <div className={styles.demoStage}>{['1.500', '800', '300'].map((value, index) => <span key={value} className={styles.demoChest} style={{ animationDelay: `${index * .5}s` }}>🧰<small>{value}</small></span>)}</div>
     case 'highest': return <div className={styles.demoStage}>{[20, 20, 17, 9].map((value, index) => <span key={index} className={`${styles.demoNumber} ${value === 17 ? styles.demoNumberWin : ''}`} style={{ animationDelay: `${index * .25}s` }}>{value}</span>)}</div>
     case 'bomb': return <div className={styles.demoStage}><span className={styles.demoPlayer}>🐼</span><span className={styles.demoPlayer}>🦊</span><span className={styles.demoPlayer}>🐸</span><span className={styles.demoBomb}>💣</span></div>
+    case 'steal': return <div className={styles.demoStage}><span className={styles.demoPlayer}>🐼</span><span className={styles.demoPlayer}>🦊</span><span className={styles.demoPlayer}>🛡️</span><span className={styles.demoBomb}>💰</span></div>
+    case 'duel': return <div className={styles.demoStage}><span className={styles.demoPlayer}>🤠</span><span className={styles.demoStop}>FUOCO!</span><span className={styles.demoPlayer}>🐸</span></div>
+    case 'tug': return <div className={styles.demoStage}><span className={styles.demoPlayer}>🐼</span><span className={styles.demoRope}>🚩</span><span className={styles.demoPlayer}>🦊</span></div>
+    case 'split': return <div className={styles.demoStage}>{['🤝', '🗡️'].map((icon, index) => <span key={icon} className={styles.demoChest} style={{ animationDelay: `${index * .5}s` }}>{icon}</span>)}</div>
   }
 }

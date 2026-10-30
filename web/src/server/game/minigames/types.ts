@@ -1,3 +1,4 @@
+import { randomInt } from 'node:crypto'
 import type { MinigameKind, MinigameResult, MinigameView } from '../../../features/game/wheel'
 import { GameRuleError } from '../errors'
 import { TEXTS } from '../../../texts'
@@ -39,6 +40,35 @@ export function standardResults(entries: { playerId: string; value: number | nul
   })
   const unranked = entries.filter(entry => entry.value === null)
   return [...rows, ...unranked.map(entry => ({ playerId: entry.playerId, rank: ranked.length + 1, points: 0, detail: entry.detail }))]
+}
+
+/** Highest points first; equal points share a position, for games whose prize is not by rank. */
+export function rowsByPoints(rows: Omit<MinigameResult, 'rank'>[]): MinigameResult[] {
+  const sorted = [...rows].sort((left, right) => right.points - left.points)
+  const ranked: MinigameResult[] = []
+  sorted.forEach((row, index) => ranked.push({ ...row, rank: index > 0 && sorted[index - 1].points === row.points ? ranked[index - 1].rank : index + 1 }))
+  return ranked
+}
+
+export function shuffled<T>(items: readonly T[]): T[] {
+  const result = [...items]
+  for (let index = result.length - 1; index > 0; index--) {
+    const other = randomInt(index + 1)
+    ;[result[index], result[other]] = [result[other], result[index]]
+  }
+  return result
+}
+
+const MAX_TAPS_PER_SECOND = 15
+const MAX_BATCH = 20
+
+/** Taps arrive in batches; the rate cap keeps a script from outrunning the game. */
+export function acceptTaps(entry: { lastBatchAt: number | null }, action: Record<string, unknown>, type: string, startedAt: number, now: number): number {
+  if (action.type !== type || !Number.isSafeInteger(action.count) || (action.count as number) < 1 || (action.count as number) > MAX_BATCH) throw invalidAction()
+  const since = now - (entry.lastBatchAt ?? startedAt)
+  const allowed = Math.ceil(since / 1000 * MAX_TAPS_PER_SECOND) + 2
+  entry.lastBatchAt = now
+  return Math.min(action.count as number, allowed)
 }
 
 export function invalidAction(): GameRuleError {

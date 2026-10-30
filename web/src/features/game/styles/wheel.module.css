@@ -69,6 +69,7 @@
 .demoNumber { display: grid; place-items: center; width: 3.2rem; height: 3.2rem; border-radius: .6rem; background: #f8f1e6; color: #10142f; font-size: 1.3rem; font-weight: 950; animation: demo-hop 1.5s ease-in-out infinite; }
 .demoNumberWin { animation: demo-win 2s ease-in-out infinite; }
 .demoPlayer { font-size: 2.6rem; margin-inline: .7rem; }
+.demoRope { font-size: 2.2rem; animation: demo-rope 1.6s ease-in-out infinite; }
 .demoBomb { position: absolute; top: 1.2rem; left: 50%; font-size: 2rem; animation: demo-bomb 2.4s cubic-bezier(.5,0,.5,1) infinite; }
 
 /* Minigiochi */
@@ -86,6 +87,14 @@
 .numberTileWrong { background: #e0264f; color: #fff; }
 .balloonStage { display: grid; place-items: center; width: min(100%, 20rem); height: 15rem; overflow: hidden; border: 0; border-radius: 1rem; background: radial-gradient(circle at 50% 80%, #cfe9f7, #eef7fb); touch-action: manipulation; cursor: pointer; }
 .balloonFace { display: block; font-size: 5rem; line-height: 1; will-change: transform; }
+.tugTeams { display: flex; justify-content: space-between; gap: 1rem; width: min(100%, 20rem); }
+.tugTeam { display: flex; flex-wrap: wrap; gap: .2rem; flex: 1; font-size: .75rem; font-weight: 800; }
+.tugTeamRival { justify-content: flex-end; text-align: right; }
+.tugRope { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(#8a5a2b, #8a5a2b) center / 100% .5rem no-repeat; font-size: 3.5rem; }
+.duelFire { background: #ff7657; }
+.duelFace { font-size: 3rem; font-weight: 950; color: #10142f; }
+.seatPot { font-size: .8rem; font-weight: 950; font-variant-numeric: tabular-nums; }
+.seatShielded { border-color: #4f9ad6; }
 .chestRow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; width: 100%; max-width: 24rem; }
 .chest { display: grid; justify-items: center; gap: .25rem; padding: .9rem .25rem; border: 3px solid #10142f; border-radius: 1rem; background: #fff8ec; color: #10142f; }
 .chestChosen { background: #ffd166; }
@@ -133,12 +142,13 @@
 @keyframes demo-tile { 0%, 8% { transform: none; opacity: 1; } 14%, 92% { transform: scale(.6) rotate(10deg); opacity: .2; } 100% { transform: none; opacity: 1; } }
 @keyframes demo-balloon { 0% { transform: scale(.7); opacity: 1; } 76% { transform: scale(2.6); opacity: 1; } 78%, 100% { transform: scale(3); opacity: 0; } }
 @keyframes demo-pop { 0%, 76% { opacity: 0; transform: scale(.5); } 80% { opacity: 1; transform: scale(1.2); } 95%, 100% { opacity: 0; transform: scale(1.4); } }
+@keyframes demo-rope { 0%, 100% { transform: translateX(-1.6rem); } 50% { transform: translateX(1.6rem); } }
 @keyframes demo-hop { 50% { transform: translateY(-.35rem); } }
 @keyframes demo-win { 50% { transform: scale(1.25); background: #ffd166; } }
 @keyframes demo-bomb { 0%, 100% { transform: translateX(calc(-50% - 5.2rem)); } 33% { transform: translateX(-50%); } 66% { transform: translateX(calc(-50% + 5.2rem)); } }
 
 @media (prefers-reduced-motion: reduce) {
   .swipeArrow, .numberGridFrozen, .bombDanger, .bombSeatTarget, .tooSlow,
-  .demoDigits, .demoStop, .demoTile, .demoBalloon, .demoPop, .demoChest, .demoNumber, .demoNumberWin, .demoBomb, .fallingCoins span, .halfFall { animation: none; }
+  .demoDigits, .demoStop, .demoTile, .demoBalloon, .demoPop, .demoChest, .demoNumber, .demoNumberWin, .demoBomb, .demoRope, .fallingCoins span, .halfFall { animation: none; }
   .demoPop { display: none; }
 }

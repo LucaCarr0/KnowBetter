@@ -19,6 +19,10 @@ export interface MinigamePlayProps {
   participantCount: number
   disabled: boolean
   pending: boolean
+  /** Server time, ticking while the game is open. */
+  now: number
+  startedAt: number
+  clockOffsetMs: number
   onAction: (action: Record<string, unknown>) => void | Promise<void>
 }
 
@@ -93,23 +97,27 @@ function NumbersPlay({ view, participantCount, disabled, onAction }: MinigamePla
   )
 }
 
-function BalloonPlay({ view, disabled, pending, onAction }: MinigamePlayProps & { view: Extract<MinigameView, { kind: 'balloon' }> }) {
-  const [localPumps, setLocalPumps] = useState(view.pumps)
+/** Taps are grouped: every command is a database transaction on the coordinator. */
+function useTapBatches(type: string, active: boolean, pending: boolean, onAction: MinigamePlayProps['onAction']) {
   const unsent = useRef(0)
-  const live = useRef({ pending, onAction, status: view.status })
-  live.current = { pending, onAction, status: view.status }
-
-  // Taps are grouped: every command is a database transaction on the coordinator.
+  const live = useRef({ pending, onAction, active })
+  live.current = { pending, onAction, active }
   useEffect(() => {
     const flush = setInterval(() => {
-      const { pending: busy, onAction: send, status } = live.current
-      if (busy || status !== 'pumping' || unsent.current === 0) return
+      const { pending: busy, onAction: send, active: open } = live.current
+      if (busy || !open || unsent.current === 0) return
       const count = Math.min(20, unsent.current)
       unsent.current -= count
-      void send({ type: 'pump', count })
+      void send({ type, count })
     }, 250)
     return () => clearInterval(flush)
-  }, [])
+  }, [type])
+  return unsent
+}
+
+function BalloonPlay({ view, disabled, pending, onAction }: MinigamePlayProps & { view: Extract<MinigameView, { kind: 'balloon' }> }) {
+  const [localPumps, setLocalPumps] = useState(view.pumps)
+  const unsent = useTapBatches('pump', view.status === 'pumping', pending, onAction)
 
   const pumps = Math.max(localPumps, view.pumps)
   const pumping = view.status === 'pumping'
@@ -208,6 +216,129 @@ function BombPlay({ view, players, selfId, disabled, onAction }: MinigamePlayPro
   )
 }
 
+function StealPlay({ view, players, selfId, disabled, pending, now, onAction }: MinigamePlayProps & { view: Extract<MinigameView, { kind: 'steal' }> }) {
+  const nameOf = (id: string) => players.find(player => player.id === id)?.nickname ?? ''
+  const stunned = now < view.selfStunnedUntil
+  const shielded = now < view.selfShieldUntil
+  const canSteal = !disabled && !pending && !stunned && now >= view.selfStealReadyAt
+  const canShield = !disabled && !pending && !stunned && now >= view.selfShieldReadyAt
+  const hit = view.lastHit
+  return (
+    <div className={styles.playArea}>
+      <p role="status" className={styles.playHeadline}>{stunned ? M.steal.stunned : !hit ? M.steal.idle : hit.blocked ? M.steal.blocked(nameOf(hit.thiefId), nameOf(hit.targetId)) : M.steal.hit(nameOf(hit.thiefId), nameOf(hit.targetId))}</p>
+      <div className={styles.bombCircle}>
+        {players.filter(player => !player.retired).map(player => {
+          const pot = view.pots[player.id] ?? 0
+          const target = canSteal && player.id !== selfId
+          return <motion.button type="button" key={player.id} disabled={!target} aria-label={M.steal.stealFrom(player.nickname, numberFormatter.format(pot))} whileTap={{ scale: .85 }}
+            className={`${styles.bombSeat} ${target ? styles.bombSeatTarget : ''} ${player.id === selfId && shielded ? styles.seatShielded : ''}`} onClick={() => void onAction({ type: 'steal', targetId: player.id })}>
+            <PlayerAvatar avatarId={player.avatarId} className="size-12" />
+            <span className={styles.bombName}>{player.id === selfId ? TEXTS.leaderboard.you : player.nickname}</span>
+            <span className={styles.seatPot}>{numberFormatter.format(pot)}</span>
+          </motion.button>
+        })}
+      </div>
+      <button type="button" disabled={!canShield} className={`daisy-btn ${styles.bigAction}`} onClick={() => void onAction({ type: 'shield' })}>{shielded ? M.steal.shieldOn : canShield || stunned ? M.steal.shield : M.steal.shieldWait}</button>
+    </div>
+  )
+}
+
+function DuelPlay({ view, players, participantCount, disabled, startedAt, clockOffsetMs, onAction }: MinigamePlayProps & { view: Extract<MinigameView, { kind: 'duel' }> }) {
+  // shortcut: a reload restarts the local reaction clock, anchor it to the server if that gets abused.
+  const [firedAt, setFiredAt] = useState<number | null>(null)
+  const [localShot, setLocalShot] = useState<number | 'early' | null>(null)
+  const signalAt = startedAt + view.signalOffsetMs
+
+  useEffect(() => {
+    let frame = 0
+    const tick = () => {
+      if (Date.now() + clockOffsetMs >= signalAt) setFiredAt(performance.now())
+      else frame = requestAnimationFrame(tick)
+    }
+    frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
+  }, [signalAt, clockOffsetMs])
+
+  const early = view.selfEarly || localShot === 'early'
+  const reaction = view.selfReactionMs ?? (typeof localShot === 'number' ? localShot : null)
+  const done = early || reaction !== null
+  const names = view.opponentIds.map(id => players.find(player => player.id === id)?.nickname ?? '').join(', ')
+
+  function shoot() {
+    if (disabled || done) return
+    if (firedAt === null) {
+      setLocalShot('early')
+      navigator.vibrate?.(200)
+      void onAction({ type: 'early' })
+      return
+    }
+    const reactionMs = performance.now() - firedAt
+    setLocalShot(reactionMs)
+    void onAction({ type: 'shoot', reactionMs })
+  }
+
+  return (
+    <div className={styles.playArea}>
+      <p className={styles.playHeadline}>{M.duel.versus(names)}</p>
+      <button type="button" className={`${styles.balloonStage} ${firedAt !== null && !done ? styles.duelFire : ''}`} disabled={disabled || done} aria-label={firedAt === null ? M.duel.wait : M.duel.fire} onPointerDown={event => { event.preventDefault(); shoot() }}
+        onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); shoot() } }}>
+        <span className={styles.duelFace}>{early ? '🙈' : reaction !== null ? '🤠' : firedAt === null ? '🤫' : '🔥'}</span>
+      </button>
+      <p role="status" className={styles.playHeadline}>{early ? M.duel.early : reaction !== null ? M.duel.yours((reaction / 1000).toFixed(3).replace('.', ',')) : firedAt === null ? M.duel.wait : M.duel.fire}</p>
+      <p className={styles.playStatus}>{M.duel.waiting(view.shotCount, participantCount)}</p>
+    </div>
+  )
+}
+
+function TugPlay({ view, players, disabled, pending, onAction }: MinigamePlayProps & { view: Extract<MinigameView, { kind: 'tug' }> }) {
+  const [localTugs, setLocalTugs] = useState(view.selfTugs)
+  const unsent = useTapBatches('tug', true, pending, onAction)
+  const tugs = Math.max(localTugs, view.selfTugs)
+  const own = view.scores[view.selfTeam]
+  const rival = view.scores[1 - view.selfTeam]
+  const lead = own + rival ? (own - rival) / (own + rival) : 0
+
+  function pull() {
+    if (disabled) return
+    unsent.current++
+    setLocalTugs(tugs + 1)
+  }
+  const team = (ids: string[]) => ids.map(id => {
+    const player = players.find(entry => entry.id === id)
+    return player && <PlayerAvatar key={id} avatarId={player.avatarId} className="size-8" />
+  })
+
+  return (
+    <div className={styles.playArea}>
+      <div className={styles.tugTeams}>
+        <div className={styles.tugTeam}>{team(view.teams[view.selfTeam])}<span>{M.tug.yourTeam}</span></div>
+        <div className={`${styles.tugTeam} ${styles.tugTeamRival}`}>{team(view.teams[1 - view.selfTeam])}<span>{M.tug.rivalTeam}</span></div>
+      </div>
+      <button type="button" className={styles.balloonStage} disabled={disabled} aria-label={M.tug.pull} onPointerDown={event => { event.preventDefault(); pull() }}
+        onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); pull() } }}>
+        <span className={styles.tugRope}><motion.span animate={{ x: lead * -110 }} transition={{ type: 'spring', stiffness: 300, damping: 18 }}>🚩</motion.span></span>
+      </button>
+      <p role="status" className={styles.playHeadline}>{M.tug.tap(tugs)}</p>
+    </div>
+  )
+}
+
+function SplitPlay({ view, players, participantCount, disabled, onAction }: MinigamePlayProps & { view: Extract<MinigameView, { kind: 'split' }> }) {
+  const [picked, setPicked] = useState<'split' | 'steal' | null>(null)
+  const chosen = view.selfPick ?? picked
+  const opponent = players.find(player => player.id === view.opponentId)
+  const choose = (value: 'split' | 'steal') => { setPicked(value); void onAction({ type: 'pick', value }) }
+  return (
+    <div className={styles.playArea}>
+      {opponent && <PlayerAvatar avatarId={opponent.avatarId} className="size-16" />}
+      <p className={styles.playHeadline}>{opponent ? M.split.versus(opponent.nickname) : M.split.versusJerry}</p>
+      <button type="button" disabled={disabled || chosen !== null} aria-pressed={chosen === 'split'} className={`daisy-btn ${styles.bigAction}`} onClick={() => choose('split')}>{M.split.share}</button>
+      <button type="button" disabled={disabled || chosen !== null} aria-pressed={chosen === 'steal'} className={`daisy-btn ${styles.bigAction} ${styles.bigActionStop}`} onClick={() => choose('steal')}>{M.split.steal}</button>
+      <p role="status" className={styles.playStatus}>{chosen ? `${chosen === 'split' ? M.split.chosenShare : M.split.chosenSteal} ` : ''}{M.split.waiting(view.pickedCount, participantCount)}</p>
+    </div>
+  )
+}
+
 export function MinigamePlay(props: MinigamePlayProps) {
   const { view } = props
   switch (view.kind) {
@@ -217,5 +348,9 @@ export function MinigamePlay(props: MinigamePlayProps) {
     case 'chests': return <ChestsPlay {...props} view={view} />
     case 'highest': return <HighestPlay {...props} view={view} />
     case 'bomb': return <BombPlay {...props} view={view} />
+    case 'steal': return <StealPlay {...props} view={view} />
+    case 'duel': return <DuelPlay {...props} view={view} />
+    case 'tug': return <TugPlay {...props} view={view} />
+    case 'split': return <SplitPlay {...props} view={view} />
   }
 }

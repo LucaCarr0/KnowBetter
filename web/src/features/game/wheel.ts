@@ -48,7 +48,7 @@ export function sliceAtAngle(angle: number): number {
   return Math.floor(normalized / SLICE_DEGREES) % WHEEL_SLICES.length
 }
 
-export type MinigameKind = 'timer' | 'numbers' | 'balloon' | 'chests' | 'highest' | 'bomb'
+export type MinigameKind = 'timer' | 'numbers' | 'balloon' | 'chests' | 'highest' | 'bomb' | 'steal' | 'duel' | 'tug' | 'split'
 
 export type MinigameView =
   | { kind: 'timer'; targetMs: number; hideAfterMs: number; selfElapsedMs: number | null; stoppedCount: number }
@@ -57,12 +57,16 @@ export type MinigameView =
   | { kind: 'chests'; chests: number[]; selfPick: number | null; pickedCount: number }
   | { kind: 'highest'; max: number; selfPick: number | null; pickedCount: number }
   | { kind: 'bomb'; holderId: string; blockedId: string | null; blastsDone: number; totalBlasts: number; lastBlastId: string | null; selfHits: number }
+  | { kind: 'steal'; pots: Record<string, number>; selfStealReadyAt: number; selfShieldReadyAt: number; selfShieldUntil: number; selfStunnedUntil: number; lastHit: { thiefId: string; targetId: string; blocked: boolean } | null }
+  | { kind: 'duel'; signalOffsetMs: number; opponentIds: string[]; selfReactionMs: number | null; selfEarly: boolean; shotCount: number }
+  | { kind: 'tug'; teams: string[][]; scores: number[]; selfTeam: number; selfTugs: number }
+  | { kind: 'split'; opponentId: string | null; selfPick: 'split' | 'steal' | null; pickedCount: number }
 
 export interface MinigameResult {
   playerId: string
   rank: number
   points: number
-  /** Scarto, tempo, pompate, valore del forziere, numero o esplosioni, secondo il minigioco. */
+  /** Scarto, tempo, pompate, valore del forziere, numero, esplosioni, punti di gioco, reazione, tocchi, o 0 dividi / 1 rubi, secondo il minigioco. */
   detail: number | null
 }
 

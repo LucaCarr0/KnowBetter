@@ -1,11 +1,8 @@
 import { randomInt } from 'node:crypto'
-import { alreadyPlayed, invalidAction, standardResults, type MinigameDefinition } from './types'
+import { acceptTaps, alreadyPlayed, standardResults, type MinigameDefinition } from './types'
 
 interface BalloonEntry { pumps: number; status: 'pumping' | 'popped'; lastBatchAt: number | null }
 interface BalloonState { limit: number; entries: Record<string, BalloonEntry> }
-
-const MAX_PUMPS_PER_SECOND = 15
-const MAX_BATCH = 20
 
 const entryOf = (state: BalloonState, playerId: string): BalloonEntry => state.entries[playerId] ??= { pumps: 0, status: 'pumping', lastBatchAt: null }
 
@@ -15,12 +12,7 @@ export const balloonGame: MinigameDefinition<BalloonState> = {
   act(state, context, playerId, action, now) {
     const entry = entryOf(state, playerId)
     if (entry.status !== 'pumping') throw alreadyPlayed()
-    if (action.type !== 'pump' || !Number.isSafeInteger(action.count) || (action.count as number) < 1 || (action.count as number) > MAX_BATCH) throw invalidAction()
-    // Taps arrive in batches; the rate cap keeps a script from outrunning the balloon's fun.
-    const since = now - (entry.lastBatchAt ?? context.startedAt)
-    const allowed = Math.ceil(since / 1000 * MAX_PUMPS_PER_SECOND) + 2
-    entry.lastBatchAt = now
-    entry.pumps += Math.min(action.count as number, allowed)
+    entry.pumps += acceptTaps(entry, action, 'pump', context.startedAt, now)
     if (entry.pumps > state.limit) entry.status = 'popped'
   },
   advance: () => false,
