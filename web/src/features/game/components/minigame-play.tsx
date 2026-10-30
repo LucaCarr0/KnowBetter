@@ -95,30 +95,24 @@ function NumbersPlay({ view, participantCount, disabled, onAction }: MinigamePla
 
 function BalloonPlay({ view, disabled, pending, onAction }: MinigamePlayProps & { view: Extract<MinigameView, { kind: 'balloon' }> }) {
   const [localPumps, setLocalPumps] = useState(view.pumps)
-  const [cashing, setCashing] = useState(false)
   const unsent = useRef(0)
-  const live = useRef({ pending, disabled, onAction, cashing, status: view.status })
-  live.current = { pending, disabled, onAction, cashing, status: view.status }
+  const live = useRef({ pending, onAction, status: view.status })
+  live.current = { pending, onAction, status: view.status }
 
   // Taps are grouped: every command is a database transaction on the coordinator.
   useEffect(() => {
     const flush = setInterval(() => {
-      const { pending: busy, onAction: send, cashing: wantsCash, status } = live.current
-      if (busy || status !== 'pumping') return
-      if (unsent.current > 0) {
-        const count = Math.min(20, unsent.current)
-        unsent.current -= count
-        void send({ type: 'pump', count })
-      } else if (wantsCash) {
-        setCashing(false)
-        void send({ type: 'cash' })
-      }
+      const { pending: busy, onAction: send, status } = live.current
+      if (busy || status !== 'pumping' || unsent.current === 0) return
+      const count = Math.min(20, unsent.current)
+      unsent.current -= count
+      void send({ type: 'pump', count })
     }, 250)
     return () => clearInterval(flush)
   }, [])
 
   const pumps = Math.max(localPumps, view.pumps)
-  const pumping = view.status === 'pumping' && !cashing
+  const pumping = view.status === 'pumping'
   const scale = Math.min(2.6, .8 + pumps * .06)
 
   return (
@@ -138,10 +132,9 @@ function BalloonPlay({ view, disabled, pending, onAction }: MinigamePlayProps & 
         </AnimatePresence>
       </button>
       <div role="status" className={styles.playHeadline}>
-        {view.status === 'popped' ? M.balloon.popped : view.status === 'cashed' ? M.balloon.cashed(view.pumps) : M.balloon.tap}
+        {view.status === 'popped' ? M.balloon.popped : M.balloon.tap(pumps)}
       </div>
-      {view.status === 'pumping' && <button type="button" disabled={disabled || pumps === 0 || cashing} className={`daisy-btn ${styles.bigAction}`} onClick={() => setCashing(true)}>{M.balloon.cash(pumps)}</button>}
-      <p className={styles.playStatus}>{M.balloon.waiting(view.cashedCount, view.poppedCount)}</p>
+      <p className={styles.playStatus}>{M.balloon.waiting(view.poppedCount)}</p>
     </div>
   )
 }

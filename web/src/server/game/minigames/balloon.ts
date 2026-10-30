@@ -1,7 +1,7 @@
 import { randomInt } from 'node:crypto'
 import { alreadyPlayed, invalidAction, standardResults, type MinigameDefinition } from './types'
 
-interface BalloonEntry { pumps: number; status: 'pumping' | 'cashed' | 'popped'; lastBatchAt: number | null }
+interface BalloonEntry { pumps: number; status: 'pumping' | 'popped'; lastBatchAt: number | null }
 interface BalloonState { limit: number; entries: Record<string, BalloonEntry> }
 
 const MAX_PUMPS_PER_SECOND = 15
@@ -15,11 +15,6 @@ export const balloonGame: MinigameDefinition<BalloonState> = {
   act(state, context, playerId, action, now) {
     const entry = entryOf(state, playerId)
     if (entry.status !== 'pumping') throw alreadyPlayed()
-    if (action.type === 'cash') {
-      if (entry.pumps === 0) throw invalidAction()
-      entry.status = 'cashed'
-      return
-    }
     if (action.type !== 'pump' || !Number.isSafeInteger(action.count) || (action.count as number) < 1 || (action.count as number) > MAX_BATCH) throw invalidAction()
     // Taps arrive in batches; the rate cap keeps a script from outrunning the balloon's fun.
     const since = now - (entry.lastBatchAt ?? context.startedAt)
@@ -29,9 +24,9 @@ export const balloonGame: MinigameDefinition<BalloonState> = {
     if (entry.pumps > state.limit) entry.status = 'popped'
   },
   advance: () => false,
-  isComplete: (state, context) => context.activeIds.every(id => state.entries[id] && state.entries[id].status !== 'pumping'),
+  isComplete: (state, context) => context.activeIds.every(id => state.entries[id]?.status === 'popped'),
   results(state, participantIds, retiredIds) {
-    // Closest to the limit ranks first, even when time ran out before cashing in. A popped
+    // Closest to the limit when time runs out ranks first. A popped
     // balloon's value (its pumps, above the limit) ranks behind every intact one, or popping would win.
     return standardResults(participantIds.map(playerId => {
       const entry = state.entries[playerId]
@@ -44,7 +39,7 @@ export const balloonGame: MinigameDefinition<BalloonState> = {
     const self = state.entries[selfId]
     return {
       kind: 'balloon', pumps: self?.pumps ?? 0, status: self?.status ?? 'pumping',
-      cashedCount: entries.filter(entry => entry.status === 'cashed').length, poppedCount: entries.filter(entry => entry.status === 'popped').length,
+      poppedCount: entries.filter(entry => entry.status === 'popped').length,
     }
   },
   revealValue: state => state.limit,

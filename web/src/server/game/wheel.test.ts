@@ -261,9 +261,8 @@ test('Palloncino pops past the secret limit, which stays private until the end',
   state.limit = 10
   const at = setup.time + 5_000
   act(setup, 'p0', { type: 'pump', count: 10 }, at)
-  act(setup, 'p0', { type: 'cash' }, at)
   act(setup, 'p1', { type: 'pump', count: 11 }, at)
-  assert.throws(() => act(setup, 'p1', { type: 'cash' }, at), { code: 'MINIGAME_ALREADY_PLAYED' })
+  assert.throws(() => act(setup, 'p1', { type: 'pump', count: 1 }, at), { code: 'MINIGAME_ALREADY_PLAYED' })
   assert.throws(() => act(setup, 'p2', { type: 'cash' }, at), { code: 'INVALID_MINIGAME_ACTION' })
   assert.throws(() => act(setup, 'p2', { type: 'pump', count: 500 }, at), { code: 'INVALID_MINIGAME_ACTION' })
   const during = snapshot(setup.game, 'p2', setup.connected, at)
@@ -274,32 +273,34 @@ test('Palloncino pops past the secret limit, which stays private until the end',
   assert.equal(snapshot(setup.game, 'p2', setup.connected, setup.time + 15_000).wheel!.minigame!.revealValue, 10)
 })
 
-test('Palloncino ranks whoever cashed in by pumps, not by matching the limit', () => {
+test('Palloncino ranks by closeness to the limit when time runs out', () => {
   const setup = startKind('balloon')
   ;(setup.run.state as { limit: number }).limit = 30
   const at = setup.time + 5_000
   act(setup, 'p0', { type: 'pump', count: 12 }, at)
-  act(setup, 'p0', { type: 'cash' }, at)
   act(setup, 'p1', { type: 'pump', count: 8 }, at)
-  act(setup, 'p1', { type: 'cash' }, at)
   act(setup, 'p2', { type: 'pump', count: 8 }, at)
-  act(setup, 'p2', { type: 'cash' }, at)
   act(setup, 'p3', { type: 'pump', count: 3 }, at)
-  act(setup, 'p3', { type: 'cash' }, at)
-  assert.deepEqual(finishedRows(setup, at).map(row => [row.playerId, row.rank, row.points, row.detail]), [['p0', 1, 1000, 12], ['p1', 2, 733, 8], ['p2', 2, 733, 8], ['p3', 4, 200, 3]])
+  advance(setup.game, content, setup.connected, at)
+  assert.equal(setup.game.phase, 'minigame_playing', 'si gioca fino allo scadere del tempo')
+  assert.deepEqual(finishedRows(setup, setup.time + 15_000).map(row => [row.playerId, row.rank, row.points, row.detail]), [['p0', 1, 1000, 12], ['p1', 2, 733, 8], ['p2', 2, 733, 8], ['p3', 4, 200, 3]])
 })
 
-test('Palloncino rewards players who ran out of time and ranks popped balloons last', () => {
+test('Palloncino ranks popped balloons last and ends early only when all have popped', () => {
   const setup = startKind('balloon')
   ;(setup.run.state as { limit: number }).limit = 20
   const at = setup.time + 5_000
   act(setup, 'p0', { type: 'pump', count: 20 }, at + 2_000)
   act(setup, 'p0', { type: 'pump', count: 1 }, at + 4_000)
   act(setup, 'p1', { type: 'pump', count: 4 }, at)
-  act(setup, 'p1', { type: 'cash' }, at)
   act(setup, 'p2', { type: 'pump', count: 9 }, at)
   const rows = finishedRows(setup, setup.time + 15_000)
   assert.deepEqual(rows.map(row => [row.playerId, row.rank, row.points]), [['p2', 1, 1000], ['p1', 2, 733], ['p0', 3, 467], ['p3', 4, 0]])
+
+  const popped = startKind('balloon', 2)
+  ;(popped.run.state as { limit: number }).limit = 2
+  for (const id of ['p0', 'p1']) act(popped, id, { type: 'pump', count: 3 }, popped.time + 1_000)
+  assert.equal(finishedRows(popped, popped.time + 1_000).every(row => row.rank === 1 && row.points === 1000), true)
 })
 
 test('Palloncino caps the pump rate against scripted batches', () => {

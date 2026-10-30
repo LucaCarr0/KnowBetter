@@ -61,7 +61,7 @@ Premio standard per posizione, con pari merito come nel bonus: `round(1000 − 8
 | --- | --- | --- | --- | --- |
 | **Stoppa il timer** | 2+ | 20 s | Obiettivo uguale per tutti, da 5,0 a 10,0 s. Il timer parte da solo sul telefono all'inizio del gioco, per decisione del proprietario; il display si spegne dopo 2 s. Un solo tentativo | Standard, per scarto dall'obiettivo |
 | **Numeri in ordine** | 2+ | 20 s | Griglia da 16 uguale per tutti; un tocco sbagliato blocca per 1 s | Standard, per tempo; chi non finisce fa zero |
-| **Palloncino** | 2+ | 15 s | Limite segreto da 10 a 30 pompate, uguale per tutti. Si incassa quando si vuole | Standard, per vicinanza al limite anche se scade il tempo prima dell'incasso; chi lo fa scoppiare finisce dietro agli altri; zero solo senza pompate |
+| **Palloncino** | 2+ | 15 s | Limite segreto da 10 a 30 pompate, uguale per tutti. Si tocca solo il palloncino, senza incasso; il gioco finisce allo scadere del tempo | Standard, per vicinanza al limite; chi lo fa scoppiare finisce dietro agli altri; zero solo senza pompate |
 | **Dividi il bottino** | 3+ | 12 s | Scelta nascosta tra tre forzieri | 1.500, 800 e 300 punti, divisi tra chi ha scelto quel forziere |
 | **Il più alto unico** | 3+ | 12 s | Scelta nascosta di un numero da 1 a 20 | 1.000 punti al più alto scelto da uno solo; altrimenti nessuno |
 | **Bomba** | 3+ | 25 s | Tre esplosioni a orari nascosti. Si passa toccando un avatar, ma non a chi l'ha appena passata. Dopo ogni esplosione la bomba va a un giocatore a caso | −300 a ogni esplosione per chi la tiene, senza scendere sotto zero; +300 a chi non esplode mai |

@@ -53,7 +53,7 @@ export type MinigameKind = 'timer' | 'numbers' | 'balloon' | 'chests' | 'highest
 export type MinigameView =
   | { kind: 'timer'; targetMs: number; hideAfterMs: number; selfElapsedMs: number | null; stoppedCount: number }
   | { kind: 'numbers'; grid: number[]; selfFinishedMs: number | null; finishedCount: number }
-  | { kind: 'balloon'; pumps: number; status: 'pumping' | 'cashed' | 'popped'; cashedCount: number; poppedCount: number }
+  | { kind: 'balloon'; pumps: number; status: 'pumping' | 'popped'; poppedCount: number }
   | { kind: 'chests'; chests: number[]; selfPick: number | null; pickedCount: number }
   | { kind: 'highest'; max: number; selfPick: number | null; pickedCount: number }
   | { kind: 'bomb'; holderId: string; blockedId: string | null; blastsDone: number; totalBlasts: number; lastBlastId: string | null; selfHits: number }
