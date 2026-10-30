@@ -163,7 +163,7 @@ test('ten-client bonus commands share one durable queue through retries, timeout
     assert.ok(restored.players.every(player => player.points === 8000))
     assert.equal(JSON.stringify(await saved()), finalized)
     const summary = game(await command(connections[1], 'game:continue', { matchId, roundId: 5, expectedPhase: 'bonus_results' }))
-    assert.equal(summary.phase, 'phase_complete')
+    assert.equal(summary.phase, 'phase1_summary')
     assert.ok(summary.bonus!.results!.every(result => result.triviaPoints + result.bonusPoints === result.totalPoints))
   } finally {
     await service.drain()

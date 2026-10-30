@@ -9,7 +9,7 @@ import { importTrivia, loadTrivia } from './trivia'
 import { TEXTS } from '../texts'
 
 export const GUEST_COOKIE = 'kb_guest'
-const actions: RoomAction[] = ['room:create', 'room:join', 'room:resume', 'room:update', 'room:leave', 'game:start', 'game:continue', 'game:vote-category', 'game:answer', 'game:bonus-answer', 'game:use-power', 'game:ready-question', 'game:clear-power', 'game:resume', 'game:return-lobby']
+const actions: RoomAction[] = ['room:create', 'room:join', 'room:resume', 'room:update', 'room:leave', 'game:start', 'game:continue', 'game:vote-category', 'game:answer', 'game:bonus-answer', 'game:spin', 'game:minigame-confirm', 'game:minigame-action', 'game:flash-answer', 'game:use-power', 'game:ready-question', 'game:clear-power', 'game:resume', 'game:return-lobby']
 const internalError = { ok: false, error: { code: 'SERVER_ERROR', message: TEXTS.errors.serverError } } as const
 const rateError = { ok: false, error: { code: 'RATE_LIMITED', message: TEXTS.errors.rateLimited } } as const
 

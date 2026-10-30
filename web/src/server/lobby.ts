@@ -7,8 +7,9 @@ import {
 } from '../features/rooms/lib/validation'
 import type { PlayerIdentity, RoomAction, RoomCommand, RoomError, RoomPreview, RoomResponse, RoomSnapshot } from '../features/rooms/types'
 import type { LobbyDatabase, Queryable } from './database'
-import type { GameConfig } from '../features/game/types'
+import { GAME_CONTINUE_PHASES, type GameConfig } from '../features/game/types'
 import { createGame, continueGame, vote, answer, bonusAnswer, usePower, readyQuestion, clearPower, advance, snapshot as gameSnapshot, recoverGame, retire, GameRuleError, type GameContent, type GameState } from './game/engine'
+import { confirmMinigame, flashAnswer, minigameAction, spin } from './game/wheel'
 import { TEXTS } from '../texts'
 
 interface GuestRow extends Record<string, unknown> { id: string; expires_at: number | string }
@@ -77,7 +78,7 @@ export class LobbyService extends EventEmitter {
       for (const roomId of new Set(affected.rows.map((member) => member.room_id))) await this.bump(db, roomId)
       const matches = await db.query<{ room_id: string; state: GameState }>('SELECT room_id,state FROM kb_matches WHERE active')
       for (const row of matches.rows) {
-        if (recoverGame(row.state, this.now())) await this.saveGame(db, row.room_id, row.state)
+        if (recoverGame(row.state, this.now(), this.content)) await this.saveGame(db, row.room_id, row.state)
       }
     })
   }
@@ -296,7 +297,7 @@ export class LobbyService extends EventEmitter {
     }
     if (command.roundId !== game.round) return fail('STALE_ROUND', TEXTS.errors.staleRound)
     if (action === 'game:continue') {
-      if (!['intro', 'round_ready', 'bonus_intro', 'bonus_results'].includes(command.expectedPhase ?? '')) return fail('INVALID_REQUEST', TEXTS.errors.missingPhase)
+      if (!(GAME_CONTINUE_PHASES as readonly string[]).includes(command.expectedPhase ?? '')) return fail('INVALID_REQUEST', TEXTS.errors.missingPhase)
       continueGame(game, member.id, this.content, await this.connectedIds(db, room.id), command.roundId, command.expectedPhase!, receivedAt)
     } else if (action === 'game:vote-category') {
       if (typeof command.categoryId !== 'string' || command.categoryId.length > 100) return fail('INVALID_CATEGORY', TEXTS.errors.invalidCategory)
@@ -310,6 +311,24 @@ export class LobbyService extends EventEmitter {
         || typeof command.questionInstanceId !== 'string' || !command.questionInstanceId.length || command.questionInstanceId.length > 100
         || typeof command.bonusRunId !== 'string' || !command.bonusRunId.length || command.bonusRunId.length > 100) return fail('INVALID_REQUEST', TEXTS.errors.invalidBonusRequest)
       bonusAnswer(game, member.id, command.optionId, command.questionInstanceId, command.bonusRunId, receivedAt)
+    } else if (action === 'game:spin') {
+      if (advance(game, this.content, await this.connectedIds(db, room.id), receivedAt)) await this.saveGame(db, room.id, game)
+      if (typeof command.turnId !== 'string' || command.turnId.length > 100 || typeof command.spinStrength !== 'number' || !Number.isFinite(command.spinStrength)) return fail('INVALID_REQUEST', TEXTS.errors.invalidSpin)
+      spin(game, member.id, command.turnId, command.spinStrength, receivedAt)
+    } else if (action === 'game:minigame-confirm') {
+      if (typeof command.minigameRunId !== 'string' || command.minigameRunId.length > 100) return fail('INVALID_REQUEST', TEXTS.errors.invalidMinigameAction)
+      confirmMinigame(game, member.id, command.minigameRunId)
+    } else if (action === 'game:minigame-action') {
+      const connected = await this.connectedIds(db, room.id)
+      if (advance(game, this.content, connected, receivedAt)) await this.saveGame(db, room.id, game)
+      const payload = command.minigameAction
+      if (typeof command.minigameRunId !== 'string' || command.minigameRunId.length > 100 || typeof command.actionId !== 'string' || !command.actionId.length || command.actionId.length > 100
+        || !payload || typeof payload !== 'object' || Array.isArray(payload) || JSON.stringify(payload).length > 200) return fail('INVALID_REQUEST', TEXTS.errors.invalidMinigameAction)
+      minigameAction(game, member.id, command.minigameRunId, command.actionId, payload, connected, receivedAt)
+    } else if (action === 'game:flash-answer') {
+      if (advance(game, this.content, await this.connectedIds(db, room.id), receivedAt)) await this.saveGame(db, room.id, game)
+      if (typeof command.flashId !== 'string' || command.flashId.length > 100 || typeof command.optionId !== 'string' || command.optionId.length > 100) return fail('INVALID_REQUEST', TEXTS.errors.invalidOption)
+      flashAnswer(game, member.id, command.flashId, command.optionId, receivedAt)
     } else if (action === 'game:use-power' || action === 'game:ready-question' || action === 'game:clear-power') {
       if (typeof command.questionInstanceId !== 'string' || command.questionInstanceId.length > 100) return fail('INVALID_REQUEST', TEXTS.errors.missingQuestion)
       if (action === 'game:use-power') {

@@ -1,11 +1,15 @@
 import { randomInt, randomUUID } from 'node:crypto'
-import { GAME_DEFAULTS, type GameCategory, type GameConfig, type GameContinuePhase, type GameOption, type GamePhase, type GameSnapshot } from '../../features/game/types'
+import { GAME_CONTINUE_PHASES, GAME_DEFAULTS, type GameCategory, type GameConfig, type GameContinuePhase, type GameOption, type GamePhase, type GameSnapshot } from '../../features/game/types'
 import type { AvatarId } from '../../features/rooms/data/avatars'
 import { MAX_POWER_CARDS, POWERS, powerDropProbability, type PowerCard, type PowerEffect } from '../../features/game/powers'
 import { buildJerryCommentary } from './commentary'
 import type { BonusQuestion } from '../content/bonus-catalog'
 import { advanceBonus, bonusSnapshot, consumeBonusAnswer, createBonus, selectBonusQuestions, startBonus, validBonusQuestions, type BonusState } from './bonus'
+import { advanceWheel, beginTurn, createWheel, isWheelPhase, recoverWheel, startWheel, wheelSnapshot, type WheelState } from './wheel'
+import { GameRuleError } from './errors'
 import { TEXTS } from '../../texts'
+
+export { GameRuleError }
 
 /** Private server content. Never import this module into a client component. */
 export interface TriviaQuestion {
@@ -81,13 +85,8 @@ export interface GameState {
   powerInventories?: Record<string, PowerCard[]>
   /** Absent in matches created before the bonus was introduced. */
   bonus?: BonusState
-}
-
-export class GameRuleError extends Error {
-  constructor(public readonly code: string, message: string) {
-    super(message)
-    this.name = 'GameRuleError'
-  }
+  /** Absent in matches created before the wheel was introduced. */
+  wheel?: WheelState
 }
 
 const copy = <T>(value: T): T => structuredClone(value)
@@ -108,7 +107,7 @@ function choose<T>(items: T[]): T {
   return items[randomInt(items.length)]
 }
 
-function shuffle<T>(items: T[]): T[] {
+export function shuffle<T>(items: T[]): T[] {
   const result = [...items]
   for (let index = result.length - 1; index > 0; index--) {
     const other = randomInt(index + 1)
@@ -151,7 +150,7 @@ export function isPlayableQuestion(question: TriviaQuestion): boolean {
     && question.options.some(option => option.id === question.correctOptionId)
 }
 
-function availableQuestions(game: GameState, content: GameContent, categoryId: string): TriviaQuestion[] {
+export function availableQuestions(game: GameState, content: GameContent, categoryId: string): TriviaQuestion[] {
   const seen = new Set(game.usedQuestionIds)
   const unique = new Map<string, TriviaQuestion>()
   for (const question of content.questions) {
@@ -160,20 +159,20 @@ function availableQuestions(game: GameState, content: GameContent, categoryId: s
   return [...unique.values()]
 }
 
-function enter(game: GameState, phase: GamePhase, now: number, duration: number | null): void {
+export function enter(game: GameState, phase: GamePhase, now: number, duration: number | null): void {
   game.phase = phase
   game.opensAt = now
   game.deadline = duration === null ? null : now + duration
   game.version++
 }
 
-function abort(game: GameState, now: number, message: string): void {
+export function abort(game: GameState, now: number, message: string): void {
   game.message = message
   game.suspension = null
   enter(game, 'aborted', now, null)
 }
 
-function suspend(game: GameState, now: number, suspension: Suspension, message: string): void {
+export function suspend(game: GameState, now: number, suspension: Suspension, message: string): void {
   game.suspension = suspension
   game.message = message
   enter(game, 'suspended', now, game.config.suspensionMs)
@@ -185,13 +184,25 @@ function durationFor(game: GameState, phase: ResumablePhase): number | null {
     case 'intro':
     case 'round_ready':
     case 'bonus_intro':
-    case 'bonus_results': return null
+    case 'bonus_results':
+    case 'phase1_summary':
+    case 'wheel_intro':
+    case 'wheel_summary': return null
     case 'bonus_playing': return game.bonus?.config.durationMs ?? 60_000
     case 'category_vote': return game.config.voteMs
     case 'category_reveal': return game.config.categoryRevealMs
     case 'question': return game.config.questionMs
     case 'round_reveal': return game.config.roundRevealMs
     case 'scoreboard': return game.config.scoreboardMs
+    case 'wheel_turn': return game.config.wheelTurnMs
+    case 'wheel_spin': throw new Error('A saved spin moves on after a restart, it does not resume')
+    case 'wheel_effect': return game.config.wheelEffectMs
+    case 'minigame_intro': return game.config.minigamePreviewMs
+    case 'minigame_results': return game.config.minigameResultsMs
+    case 'flash_intro': return game.config.flashIntroMs
+    case 'flash_reveal': return game.config.flashRevealMs
+    case 'minigame_playing':
+    case 'flash_question': throw new Error('Interrupted plays are restarted, not resumed')
   }
 }
 
@@ -288,6 +299,7 @@ export function createGame(players: { id: string; nickname: string; avatarId: Av
   const bonusQuestions = validBonusQuestions(content.bonusQuestions)
   if (bonusQuestions.length < 21) throw new GameRuleError('INSUFFICIENT_BONUS_CONTENT', TEXTS.errors.insufficientBonusStart)
   game.bonus = createBonus(bonusQuestions)
+  game.wheel = createWheel()
   return game
 }
 
@@ -307,9 +319,13 @@ export function continueGame(game: GameState, playerId: string, content: GameCon
   assertActor(game, playerId)
   if (!connectedIds.has(playerId)) throw new GameRuleError('PLAYER_OFFLINE', TEXTS.errors.playerOffline)
   if (roundId !== game.round) throw new GameRuleError('STALE_ROUND', TEXTS.errors.staleRound)
-  if (!['intro', 'round_ready', 'bonus_intro', 'bonus_results'].includes(expectedPhase) || game.phase !== expectedPhase) throw new GameRuleError('WRONG_GAME_PHASE', TEXTS.errors.screenEnded)
+  if (!GAME_CONTINUE_PHASES.includes(expectedPhase) || game.phase !== expectedPhase) throw new GameRuleError('WRONG_GAME_PHASE', TEXTS.errors.screenEnded)
   if (now < game.opensAt) throw new GameRuleError('ACTION_TOO_EARLY', TEXTS.errors.screenNotStarted)
   if (expectedPhase === 'bonus_results') {
+    enter(game, game.wheel ? 'phase1_summary' : 'phase_complete', now, null)
+    return
+  }
+  if (expectedPhase === 'wheel_summary') {
     enter(game, 'phase_complete', now, null)
     return
   }
@@ -325,6 +341,12 @@ export function continueGame(game: GameState, playerId: string, content: GameCon
     startBonus(game, now)
     game.message = null
     enter(game, 'bonus_playing', now, bonus.config.durationMs)
+  } else if (expectedPhase === 'phase1_summary') {
+    if (!game.wheel) throw new GameRuleError('WRONG_GAME_PHASE', TEXTS.errors.screenEnded)
+    startWheel(game)
+    enter(game, 'wheel_intro', now, null)
+  } else if (expectedPhase === 'wheel_intro') {
+    beginTurn(game, now)
   } else openRound(game, content, connectedIds, now)
 }
 
@@ -339,10 +361,10 @@ function recoverManualPause(game: GameState, now: number): boolean | null {
       enter(game, phase === 'intro' || game.round === 0 ? 'intro' : 'round_ready', now, null)
     }
   }
-  if (game.phase === 'intro' || game.phase === 'round_ready' || game.phase === 'bonus_intro' || game.phase === 'bonus_results') {
+  if ((GAME_CONTINUE_PHASES as readonly GamePhase[]).includes(game.phase)) {
     // Offline players can still return; retired players cannot rejoin the fixed
     // roster. Release an unplayable pause so the remaining group can use lobby.
-    if (game.phase !== 'bonus_results' && activePlayers(game).length < 2) abort(game, now, TEXTS.serverMessages.tooFewPlayers)
+    if (game.phase !== 'bonus_results' && game.phase !== 'wheel_summary' && activePlayers(game).length < 2) abort(game, now, TEXTS.serverMessages.tooFewPlayers)
     else if (game.deadline !== null) {
       game.deadline = null
       game.version++
@@ -440,6 +462,7 @@ export function advance(game: GameState, content: GameContent, connectedIds: Set
   const manualPause = recoverManualPause(game, now)
   if (manualPause !== null) return manualPause
   if (game.phase === 'bonus_playing') return advanceBonus(game, now)
+  if (isWheelPhase(game.phase)) return advanceWheel(game, content, connectedIds, now)
   if (game.phase === 'countdown' && connectedCount(game, connectedIds) < 2) {
     abort(game, now, TEXTS.serverMessages.startCancelled)
     return true
@@ -484,7 +507,7 @@ export function advance(game: GameState, content: GameContent, connectedIds: Set
 }
 
 /** Preserve confirmed results; invalidate a question exposed before the restart. */
-export function recoverGame(game: GameState, now: number): boolean {
+export function recoverGame(game: GameState, now: number, content?: GameContent): boolean {
   let powersUpdated = false
   const savedPowers = [...Object.values(game.powerInventories ?? {}).flat(), ...game.rounds.flatMap(round => round.powerPlays ?? [])]
   for (const power of savedPowers) {
@@ -502,6 +525,7 @@ export function recoverGame(game: GameState, now: number): boolean {
     enter(game, 'bonus_intro', now, null)
     return true
   }
+  if (content && game.wheel && recoverWheel(game, content, now)) return true
   const manualPause = recoverManualPause(game, now)
   if (manualPause !== null) return manualPause || powersUpdated
   if (game.phase === 'phase_complete' || game.phase === 'aborted' || game.phase === 'suspended') return powersUpdated
@@ -540,13 +564,17 @@ export function snapshot(game: GameState, selfId: string, connectedIds: Set<stri
     ...option, text: !revealed && effect?.kind === 'scramble' ? scrambleAnswerWords(option.text)
       : !revealed && effect?.kind === 'fog' && !effect.revealedOptionIds.includes(option.id) ? '' : option.text,
   })) : []
-  const sorted = game.players.map((player, index) => ({ player, index })).sort((a, b) => b.player.points - a.player.points || a.index - b.index)
+  // While the wheel turns, its saved effect must not spoil the outcome on the board.
+  const spinning = game.phase === 'wheel_spin' ? game.wheel?.spin : null
+  const shownPoints = (player: GameRosterPlayer) => spinning?.playerId === player.id ? spinning.pointsBefore : player.points
+  const sorted = game.players.map((player, index) => ({ player: { ...player, points: shownPoints(player) }, index })).sort((a, b) => b.player.points - a.player.points || a.index - b.index)
   let rank = 1
   const players = sorted.map(({ player }, index) => {
     if (index > 0 && player.points < sorted[index - 1].player.points) rank = index + 1
     const bonusResult = game.bonus?.results?.find(result => result.playerId === player.id)
     return { ...player, roundPoints: revealed ? instance.answers[player.id]?.points ?? 0 : 0, rank, connected: connectedIds.has(player.id) && !player.retired,
       ...(game.bonus ? { triviaPoints: bonusResult?.triviaPoints ?? player.points, bonusPoints: bonusResult?.bonusPoints ?? 0 } : {}),
+      ...(game.wheel?.schedule.length ? { wheelDelta: player.points - (game.wheel.startPoints[player.id] ?? 0) } : {}),
     }
   })
   return {
@@ -565,6 +593,7 @@ export function snapshot(game: GameState, selfId: string, connectedIds: Set<stri
     reveal: revealed ? { correctOptionId: instance.question.correctOptionId, ...(instance.question.explanation ? { explanation: instance.question.explanation } : {}), sourceName: instance.question.sourceName, sourceUrl: instance.question.sourceUrl, license: instance.question.license } : null,
     message: game.message,
     bonus: bonusSnapshot(game, selfId),
+    wheel: wheelSnapshot(game, selfId),
     commentary: revealed ? [...round?.commentary ?? []] : [],
     powers: {
       inventory: copy(game.powerInventories?.[selfId] ?? []),

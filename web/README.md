@@ -1,6 +1,6 @@
 # Know Better
 
-Party game multiplayer con nickname e avatar, senza account: home, lobby privata e prima fase di cinque round trivia, con Jerry, votazioni e classifica sincronizzata.
+Party game multiplayer con nickname e avatar, senza account: home, lobby privata, prima fase di cinque round trivia e seconda fase con la ruota dei minigiochi, con Jerry, votazioni e classifica sincronizzata.
 
 ## Avvio locale
 
@@ -58,6 +58,16 @@ Una risposta giusta vale 500 punti più un bonus fino a 500 per la rapidità; er
 
 La connessione temporaneamente persa non cancella punti o partecipazione e non ferma il timer aperto. Nelle pause manuali servono almeno due concorrenti connessi per proseguire; l'attesa non scade e il rientro del secondo giocatore richiede comunque uno swipe. L'uscita esplicita ritira il concorrente conservandone la classifica. Dopo un riavvio, una domanda aperta viene annullata e sostituita mantenendo categoria e indice del round; gli esiti già confermati rimangono invariati. Le istruzioni e le pause prima dei round restano senza countdown; le altre fasi attendono fino a 90 secondi il rientro di almeno due concorrenti. Due schede dello stesso browser continuano a rappresentare lo stesso concorrente, con trasferimento esplicito del controllo.
 
+## Seconda fase: la ruota
+
+Dopo il riepilogo della Fase 1 i concorrenti girano a turno la ruota, tutti lo stesso numero di volte: `ceil(8 / giocatori)` giri a testa, quindi da 8 a 14 in totale. Si gira con uno swipe sulla ruota; dopo 15 secondi, o dopo 3 se chi deve girare è disconnesso, il server gira da solo. Lo spicchio lo decide il server: la forza dello swipe cambia solo l'animazione, e ogni telefono calcola l'angolo dallo stesso orologio.
+
+Su 40 spicchi: 17 minigiochi, 2 Domande lampo per tutti, 3 personali, 9 da +500, 7 da −500, 1 da x2 e 1 da ÷2. Bonus e malus colpiscono chi ha girato e non fanno rigirare; x2 e ÷2 valgono sul punteggio totale.
+
+I minigiochi sono Stoppa il timer, Numeri in ordine, Palloncino, Dividi il bottino, Il più alto unico e Bomba; gli ultimi tre richiedono almeno 3 giocatori. Ogni minigioco si apre con un'anteprima animata e le regole, e parte quando tutti i connessi hanno confermato con uno swipe verso l'alto, o dopo 45 secondi. Regole in `src/server/game/minigames/`, interfaccia in `src/features/game/components/`. Per aggiungerne uno: un file che implementa `MinigameDefinition`, una voce in `minigames/index.ts`, una vista in `minigame-play.tsx`, una demo in `minigame-demo.tsx` e i testi in `TEXTS.wheel.minigames`.
+
+Un riavvio del server non ripete un giro né il suo effetto; un minigioco o una Domanda lampo in corso riparte da capo. Le partite salvate prima della ruota finiscono ancora dopo il bonus. Dopo la Fase 2 la partita si chiude con il riepilogo: la corsa finale non esiste ancora. Dettagli in [`docs/plans/03-fase-2-ruota.md`](../docs/plans/03-fase-2-ruota.md).
+
 ## Catalogo delle domande
 
 Le domande, le opzioni e le soluzioni sono conservate nel database in `kb_trivia_categories` e `kb_trivia_questions`. Il catalogo sorgente normalizzato, gli originali, le licenze e i criteri d'importazione si trovano in [src/server/content/](src/server/content/README.md). Ogni domanda mantiene fonte, licenza, lingua e identificativo originale; tali informazioni sono visibili insieme alla soluzione.
@@ -110,4 +120,4 @@ Questo modulo usa **un singolo processo coordinatore**, anche con PostgreSQL est
 
 Per la produzione servono un ambiente Node con connessioni persistenti, HTTPS, `APP_ORIGIN` impostato all'origine pubblica e un database/volume durevole. I cookie di produzione sono Secure. Il servizio non è distribuibile come sole pagine statiche o come funzioni che terminano dopo una richiesta.
 
-Installazione PWA, account, stato «Pronto», jolly, minisfide e corsa finale rimangono fuori dal modulo attuale. Il conduttore usa una copia WebP lossless di `../Gerry.png`, conservato come originale; la provenienza dell'effetto punti da [OriginKit](https://www.originkit.dev/components/emojiburst) è documentata in `src/components/originkit/README.md`.
+Installazione PWA, account, stato «Pronto», jolly e corsa finale rimangono fuori dal modulo attuale. Il conduttore usa una copia WebP lossless di `../Gerry.png`, conservato come originale; la provenienza degli effetti da [OriginKit](https://www.originkit.dev/components/emojiburst) è documentata in `src/components/originkit/README.md`.

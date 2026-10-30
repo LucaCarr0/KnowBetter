@@ -1,0 +1,144 @@
+/* Ruota */
+.wheelBlock { display: grid; justify-items: center; gap: .5rem; }
+.wheelFrame { position: relative; width: min(100%, 22rem); aspect-ratio: 1; margin-top: .9rem; user-select: none; -webkit-user-select: none; touch-action: pan-y; }
+.wheelReady { cursor: grab; touch-action: none; filter: drop-shadow(0 0 .9rem #ffd16699); }
+.wheelReady:active { cursor: grabbing; }
+.wheelDisc { width: 100%; height: 100%; will-change: transform; transform-origin: 50% 50%; }
+.wheelSvg { display: block; width: 100%; height: 100%; pointer-events: none; }
+.flapper { position: absolute; z-index: 2; top: -.9rem; left: 50%; width: 1.5rem; height: 2.6rem; background: #f8f1e6; border: 3px solid #10142f; clip-path: polygon(0 0, 100% 0, 100% 45%, 50% 100%, 0 45%); transform: translateX(-50%); transform-origin: 50% 18%; filter: drop-shadow(0 2px 0 #10142f); will-change: transform; }
+.tooSlow { margin: 0; font-size: .85rem; font-weight: 850; color: #a42c3b; animation: pop 260ms ease-out both; }
+.miniWheel { width: min(100%, 13rem); margin-inline: auto; pointer-events: none; }
+.summaryCard { margin: 0; font-size: 4.5rem; line-height: 1.2; text-align: center; }
+
+.spinScene { display: grid; gap: .75rem; }
+.spinnerChip { display: inline-flex; align-items: center; justify-self: center; gap: .5rem; padding: .3rem .85rem .3rem .3rem; border: 2px solid #10142f; border-radius: 99rem; background: #ffd166; font-size: .85rem; }
+.spinCaption { min-height: 2.9rem; display: grid; place-items: center; text-align: center; font-weight: 750; font-size: .9rem; }
+.spinCaption p { margin: 0; }
+.landedName { padding: .5rem 1.1rem; border: 3px solid #10142f; border-radius: .7rem; color: #10142f; font-size: 1.15rem; font-weight: 950; box-shadow: 0 .25rem 0 #10142f; }
+
+.legend { font-size: .8rem; }
+.legend summary { display: inline-flex; align-items: center; gap: .35rem; min-height: 2.75rem; cursor: pointer; font-weight: 800; }
+.legend ul { display: grid; gap: .3rem; margin: .2rem 0 0; padding: 0; list-style: none; }
+.legend li { display: grid; grid-template-columns: 2rem 1fr auto; align-items: center; gap: .55rem; }
+.legend small { color: #515570; font-variant-numeric: tabular-nums; }
+.legendSwatch { display: grid; place-items: center; height: 1.5rem; border: 2px solid #10142f; border-radius: .35rem; font-size: .7rem; font-weight: 900; }
+
+/* Carta da trascinare */
+.swipeArea { display: grid; justify-items: center; gap: .45rem; margin-block: 1rem .4rem; }
+.swipeCard { width: 100%; max-width: 23rem; padding: .75rem; border: 3px solid #10142f; border-radius: 1.1rem; background: #fff8ec; box-shadow: 0 .35rem 0 #10142f; cursor: grab; touch-action: pan-x; }
+.swipeCard:active { cursor: grabbing; }
+.swipeCardDisabled { opacity: .6; cursor: default; }
+.swipeHint { display: flex; align-items: center; gap: .3rem; margin: 0; font-size: .85rem; font-weight: 850; }
+.swipeArrow { animation: nudge 1.1s ease-in-out infinite; }
+.swipeFallback { min-height: 2.75rem; color: inherit; }
+
+/* Effetti */
+.effectScene { position: relative; display: grid; justify-items: center; gap: .9rem; padding-block: .5rem; overflow: hidden; }
+.effectBadge { padding: .6rem 1.3rem; border: 3px solid #10142f; border-radius: .8rem; font-size: clamp(1.35rem, 6vw, 2rem); font-weight: 950; box-shadow: 0 .3rem 0 #10142f; color: #10142f; }
+.effectPlayer { display: grid; justify-items: center; gap: .3rem; font-weight: 850; }
+.effectScore { display: flex; align-items: baseline; justify-content: center; gap: .35rem; min-width: 12rem; min-height: 3.6rem; font-size: 3rem; line-height: 1.2; font-weight: 950; letter-spacing: -.04em; }
+.effectScore small { font-size: .8rem; letter-spacing: 0; font-weight: 700; }
+.fallingCoins { position: absolute; inset: 0; pointer-events: none; }
+.fallingCoins span { position: absolute; top: 45%; font-size: 1.4rem; opacity: 0; animation: coin-fall 1.2s cubic-bezier(.5,0,1,.7) both; }
+.halfSplit { position: relative; display: inline-block; }
+.halfKeep, .halfFall { display: block; }
+.halfKeep { clip-path: inset(0 0 50% 0); }
+.halfFall { position: absolute; inset: 0; clip-path: inset(50% 0 0 0); animation: half-fall 1s .35s cubic-bezier(.5,0,1,.7) both; }
+.celebrate { position: relative; overflow: hidden; }
+
+/* Anteprima */
+.previewScene { display: grid; gap: .75rem; }
+.previewCard { height: 12rem; border-radius: .75rem; background: radial-gradient(circle at 50% 30%, #3d416e, #10142f); overflow: hidden; }
+.previewRules { display: grid; gap: .35rem; margin: 0; padding: 0; list-style: none; font-size: .95rem; font-weight: 700; text-align: center; }
+.readyRow { display: flex; flex-wrap: wrap; justify-content: center; gap: .45rem; }
+.readySeat { position: relative; display: inline-flex; border-radius: 99rem; opacity: .45; filter: grayscale(.8); transition: opacity 200ms, filter 200ms; }
+.readySeatOn { opacity: 1; filter: none; box-shadow: 0 0 0 3px #b8e36d; }
+.readyMark { position: absolute; right: -.2rem; bottom: -.2rem; border-radius: 50%; background: #fff; color: #2c7a3d; }
+.previewScene > p { text-align: center; }
+
+/* Demo in CSS */
+.demoStage { position: relative; display: flex; align-items: center; justify-content: center; gap: .6rem; width: 100%; height: 100%; color: #f8f1e6; }
+.demoDigits { font-size: 3.5rem; font-weight: 950; font-variant-numeric: tabular-nums; animation: demo-fade 3s ease-in-out infinite; }
+.demoStop { position: absolute; bottom: 1rem; padding: .25rem .8rem; border-radius: .4rem; background: #ff7657; color: #10142f; font-weight: 950; animation: demo-press 3s ease-in-out infinite; }
+.demoGrid { display: grid; grid-template-columns: repeat(4, 3rem); align-content: center; justify-content: center; }
+.demoTile { display: grid; place-items: center; height: 3rem; border-radius: .5rem; background: #f8f1e6; color: #10142f; font-weight: 950; animation: demo-tile 4s linear infinite; }
+.demoBalloon { font-size: 3rem; animation: demo-balloon 2.6s ease-in infinite; }
+.demoPop { position: absolute; font-size: 5rem; opacity: 0; animation: demo-pop 2.6s linear infinite; }
+.demoChest { display: grid; justify-items: center; font-size: 2.8rem; animation: demo-hop 1.5s ease-in-out infinite; }
+.demoChest small { font-size: .8rem; font-weight: 900; }
+.demoNumber { display: grid; place-items: center; width: 3.2rem; height: 3.2rem; border-radius: .6rem; background: #f8f1e6; color: #10142f; font-size: 1.3rem; font-weight: 950; animation: demo-hop 1.5s ease-in-out infinite; }
+.demoNumberWin { animation: demo-win 2s ease-in-out infinite; }
+.demoPlayer { font-size: 2.6rem; margin-inline: .7rem; }
+.demoBomb { position: absolute; top: 1.2rem; left: 50%; font-size: 2rem; animation: demo-bomb 2.4s cubic-bezier(.5,0,.5,1) infinite; }
+
+/* Minigiochi */
+.playArea { position: relative; display: grid; justify-items: center; gap: .85rem; min-height: 18rem; align-content: center; user-select: none; -webkit-user-select: none; }
+.playHeadline { margin: 0; font-size: 1.15rem; font-weight: 900; text-align: center; }
+.playStatus { margin: 0; font-size: .8rem; font-weight: 700; color: #515570; text-align: center; }
+.bigClock { padding: .3rem 1.2rem; border: 3px solid #10142f; border-radius: .9rem; background: #10142f; color: #b8e36d; font-size: clamp(3rem, 16vw, 5rem); font-weight: 950; font-variant-numeric: tabular-nums; transition: color 300ms, filter 300ms; }
+.bigClockHidden { color: #4a4e72; filter: blur(3px); }
+.bigAction { min-height: 4rem; min-width: 13rem; border: 3px solid #10142f; border-radius: 1rem; background: #b8e36d; color: #10142f; font-size: 1.3rem; font-weight: 950; box-shadow: 0 .3rem 0 #10142f; touch-action: manipulation; }
+.bigAction:active { transform: translateY(.2rem); box-shadow: 0 .1rem 0 #10142f; }
+.bigActionStop { background: #ff7657; }
+.numberGrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .45rem; width: min(100%, 22rem); }
+.numberGridFrozen { animation: shake 350ms ease-in-out; }
+.numberTile { aspect-ratio: 1; border: 3px solid #10142f; border-radius: .7rem; background: #fff8ec; color: #10142f; font-size: 1.4rem; font-weight: 950; touch-action: manipulation; }
+.numberTileWrong { background: #e0264f; color: #fff; }
+.balloonStage { display: grid; place-items: center; width: min(100%, 20rem); height: 15rem; overflow: hidden; border: 0; border-radius: 1rem; background: radial-gradient(circle at 50% 80%, #cfe9f7, #eef7fb); touch-action: manipulation; cursor: pointer; }
+.balloonFace { display: block; font-size: 5rem; line-height: 1; will-change: transform; }
+.chestRow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .6rem; width: 100%; max-width: 24rem; }
+.chest { display: grid; justify-items: center; gap: .25rem; padding: .9rem .25rem; border: 3px solid #10142f; border-radius: 1rem; background: #fff8ec; color: #10142f; }
+.chestChosen { background: #ffd166; }
+.chestIcon { font-size: 3rem; line-height: 1.1; }
+.pickGrid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .4rem; width: min(100%, 22rem); }
+.pickTile { aspect-ratio: 1; border: 3px solid #10142f; border-radius: .6rem; background: #fff8ec; color: #10142f; font-size: 1.15rem; font-weight: 900; touch-action: manipulation; }
+.pickTileChosen { background: #ffd166; }
+.bombDanger { background: radial-gradient(circle, #ffd9cf 0%, transparent 72%); animation: danger 700ms ease-in-out infinite alternate; }
+.bombCircle { display: flex; flex-wrap: wrap; justify-content: center; gap: .6rem; width: 100%; max-width: 24rem; }
+.bombSeat { position: relative; display: grid; justify-items: center; gap: .15rem; width: 5rem; padding: .4rem .2rem; border: 3px solid transparent; border-radius: .9rem; background: transparent; color: inherit; }
+.bombSeatTarget { border-color: #10142f; background: #ffd166; animation: demo-hop 900ms ease-in-out infinite; }
+.bombSeatBlocked { opacity: .4; }
+.bombName { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .7rem; font-weight: 800; }
+.bombToken { position: absolute; top: -.4rem; right: .15rem; font-size: 1.6rem; filter: drop-shadow(0 2px 0 #10142f); }
+.blastFlash { position: fixed; inset: 0; z-index: 30; background: #fff3c4; pointer-events: none; }
+
+/* Risultati */
+.resultKind { margin: 0 0 .4rem; font-size: .8rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: #515570; }
+.resultReveal { margin: 0 0 .6rem; font-size: 1.05rem; font-weight: 900; }
+.resultList { display: grid; gap: .4rem; margin: 0 0 .8rem; padding: 0; list-style: none; }
+.resultRow { display: grid; grid-template-columns: 2rem auto 1fr auto; align-items: center; gap: .55rem; padding: .4rem .65rem; border: 2px solid #10142f; border-radius: .7rem; background: #fff8ec; }
+.resultTop { background: #ffd166; }
+.resultSelf { box-shadow: 0 0 0 2px #ff7657; }
+.resultRank { font-weight: 950; }
+.resultName { display: grid; min-width: 0; font-weight: 850; overflow-wrap: anywhere; }
+.resultName small { font-size: .7rem; font-weight: 650; color: #515570; }
+.resultLoss { color: #a42c3b; }
+
+/* Domanda lampo */
+.flashIntro { display: grid; justify-items: center; gap: .4rem; min-height: 16rem; align-content: center; text-align: center; }
+.flashBolt { font-size: 5.5rem; line-height: 1; }
+.flashCategory { margin: 0; font-size: 1.7rem; font-weight: 950; letter-spacing: -.03em; }
+.flashScene { display: grid; gap: .75rem; }
+.flashCorrect { background: #b8e36d !important; color: #10142f !important; }
+.flashWrong { background: #e0264f !important; color: #fff !important; }
+
+@keyframes pop { from { transform: scale(.7); opacity: 0; } }
+@keyframes nudge { 50% { transform: translateY(-.25rem); } }
+@keyframes shake { 25% { transform: translateX(-.4rem); } 75% { transform: translateX(.4rem); } }
+@keyframes danger { to { background-size: 120%; opacity: .92; } }
+@keyframes coin-fall { 0% { opacity: 1; transform: translateY(0) rotate(0); } 100% { opacity: 0; transform: translateY(14rem) rotate(240deg); } }
+@keyframes half-fall { to { transform: translateY(6rem) rotate(9deg); opacity: 0; } }
+@keyframes demo-fade { 0%, 25% { filter: none; opacity: 1; } 45%, 75% { filter: blur(6px); opacity: .55; } 100% { filter: none; opacity: 1; } }
+@keyframes demo-press { 0%, 78%, 100% { transform: none; } 84% { transform: scale(.82); } }
+@keyframes demo-tile { 0%, 8% { transform: none; opacity: 1; } 14%, 92% { transform: scale(.6) rotate(10deg); opacity: .2; } 100% { transform: none; opacity: 1; } }
+@keyframes demo-balloon { 0% { transform: scale(.7); opacity: 1; } 76% { transform: scale(2.6); opacity: 1; } 78%, 100% { transform: scale(3); opacity: 0; } }
+@keyframes demo-pop { 0%, 76% { opacity: 0; transform: scale(.5); } 80% { opacity: 1; transform: scale(1.2); } 95%, 100% { opacity: 0; transform: scale(1.4); } }
+@keyframes demo-hop { 50% { transform: translateY(-.35rem); } }
+@keyframes demo-win { 50% { transform: scale(1.25); background: #ffd166; } }
+@keyframes demo-bomb { 0%, 100% { transform: translateX(calc(-50% - 5.2rem)); } 33% { transform: translateX(-50%); } 66% { transform: translateX(calc(-50% + 5.2rem)); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .swipeArrow, .numberGridFrozen, .bombDanger, .bombSeatTarget, .tooSlow,
+  .demoDigits, .demoStop, .demoTile, .demoBalloon, .demoPop, .demoChest, .demoNumber, .demoNumberWin, .demoBomb, .fallingCoins span, .halfFall { animation: none; }
+  .demoPop { display: none; }
+}

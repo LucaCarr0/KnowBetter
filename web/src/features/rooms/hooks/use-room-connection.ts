@@ -42,6 +42,10 @@ export function confirmsCommand(operation: PendingCommand, snapshot: RoomSnapsho
     if (operation.action === 'game:continue') return snapshot.version > operation.previousVersion && (game.round !== command.roundId || game.phase !== command.expectedPhase)
     if (operation.action === 'game:vote-category') return game.round === command.roundId && game.selfVote === command.categoryId
     if (operation.action === 'game:bonus-answer') return Boolean(game.bonus && game.bonus.runId === command.bonusRunId && game.bonus.lastConsumedInstanceId === command.questionInstanceId)
+    if (operation.action === 'game:spin') return Boolean(game.wheel && game.wheel.turnId === command.turnId && game.wheel.spin)
+    if (operation.action === 'game:minigame-confirm') return Boolean(game.wheel?.minigame && (game.wheel.minigame.runId !== command.minigameRunId || game.phase !== 'minigame_intro' || game.wheel.minigame.confirmedIds.includes(snapshot.selfId)))
+    if (operation.action === 'game:minigame-action') return game.wheel?.minigame?.runId === command.minigameRunId && game.wheel?.minigame?.lastActionId === command.actionId
+    if (operation.action === 'game:flash-answer') return game.wheel?.flash?.id === command.flashId && game.wheel?.flash?.selfAnswer === command.optionId
     if (operation.action === 'game:answer') return game.question?.instanceId === command.questionInstanceId && game.selfAnswer === command.optionId
     if (operation.action === 'game:use-power') return game.round === command.roundId && game.powers.used && !game.powers.inventory.some(card => card.id === command.powerCardId)
     if (operation.action === 'game:ready-question') return game.round === command.roundId && game.powers.ready

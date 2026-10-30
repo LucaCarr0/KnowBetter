@@ -83,7 +83,7 @@ test('five trivia rounds lead to a manual bonus, then results and summary withou
   assert.equal(advance(game, catalog, connected, game.opensAt + 1_000_000), false)
   assert.deepEqual(game.players.map(player => player.points), [5000, 5000])
   continueGame(game, roster[0].id, catalog, connected, 5, 'bonus_results', game.opensAt + 1_000_000)
-  assert.equal(game.phase, 'phase_complete')
+  assert.equal(game.phase, 'phase1_summary')
   assert.equal(game.round, 5)
   assert.equal(game.rounds.length, 5)
   assert.ok(view(game).bonus!.results!.every(result => result.triviaPoints === 5000 && result.bonusPoints === 0 && result.totalPoints === 5000))
@@ -144,7 +144,7 @@ test('finishing 21 waits for active opponents and early closure excludes retired
   assert.equal(self.results!.find(result => result.playerId === roster[2].id)!.bonusPoints, 0)
   retire(game, roster[1].id, game.opensAt)
   continueGame(game, roster[0].id, catalog, online(game), 5, 'bonus_results', game.opensAt)
-  assert.equal(game.phase, 'phase_complete')
+  assert.equal(game.phase, 'phase1_summary')
 })
 
 test('personal timeouts run without input and delayed scheduler keeps the original five-second boundaries', () => {

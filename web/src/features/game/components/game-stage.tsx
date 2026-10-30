@@ -3,11 +3,12 @@
 import { ArrowLeft, ArrowRight, Check, CheckCircle2, Clock3, EyeOff, LogOut, Radio, Send, Trophy, WandSparkles, X } from 'lucide-react'
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { ScoreBurst } from '../../../components/originkit/score-burst'
+import { StaggerRise } from '../../../components/originkit/stagger-rise'
 import type { RoomResponse } from '../../rooms/types'
 import { PlayerAvatar } from '../../rooms/components/player-avatar'
 import { useGameClock } from '../hooks/use-game-clock'
 import { POWERS, shuffleAnswerOptions } from '../powers'
-import type { GameAction, GameCommandFields, GameSnapshot } from '../types'
+import { GAME_CONTINUE_PHASES, type GameAction, type GameCommandFields, type GamePhase, type GameSnapshot } from '../types'
 import { BonusPlay } from './bonus-play'
 import { BonusResults } from './bonus-results'
 import { CategoryVoteResult } from './category-vote-result'
@@ -15,6 +16,7 @@ import { GameLeaderboard } from './game-leaderboard'
 import { JerryPresenter } from './jerry-presenter'
 import { PowerPreparation } from './power-preparation'
 import { SwipeToContinue } from './swipe-to-continue'
+import { WheelStage } from './wheel-stage'
 import styles from '../styles/game-stage.module.css'
 import powerStyles from '../styles/powers.module.css'
 import { TEXTS } from '../../../texts'
@@ -33,11 +35,16 @@ export interface GameStageProps {
 }
 
 const numberFormatter = new Intl.NumberFormat('it-IT')
+const WHEEL_SCENES: GamePhase[] = ['phase1_summary', 'wheel_intro', 'wheel_summary', 'wheel_turn', 'wheel_spin', 'wheel_effect', 'minigame_intro', 'minigame_playing', 'minigame_results', 'flash_intro', 'flash_question', 'flash_reveal']
+const WHEEL_TIMERS: GamePhase[] = ['wheel_turn', 'minigame_playing', 'flash_question']
 
 export function GameStage({ game, selfId, roomCode, isHost, connected, controlConflict = false, serverClockOffsetMs, onCommand, onLeave, onTakeControl }: GameStageProps) {
   const self = game.players.find((player) => player.id === selfId)
-  const sceneKey = `${game.id}:${game.round}:${game.phase}:${game.phase.startsWith('bonus_') ? game.bonus?.runId ?? '' : game.question?.instanceId ?? game.powers.preparationId ?? ''}`
-  const interactionKey = `${sceneKey}:${game.phase === 'bonus_playing' ? game.bonus?.question?.instanceId ?? 'finished' : ''}`
+  const isWheelScene = WHEEL_SCENES.includes(game.phase)
+  // The wheel keeps turning across these two phases, so the scene must not remount.
+  const wheelScene = game.phase === 'wheel_turn' || game.phase === 'wheel_spin' ? 'wheel' : game.phase
+  const sceneKey = isWheelScene ? `${game.id}:${wheelScene}:${game.wheel?.turnId ?? ''}` : `${game.id}:${game.round}:${game.phase}:${game.phase.startsWith('bonus_') ? game.bonus?.runId ?? '' : game.question?.instanceId ?? game.powers.preparationId ?? ''}`
+  const interactionKey = `${sceneKey}:${game.phase === 'bonus_playing' ? game.bonus?.question?.instanceId ?? 'finished' : isWheelScene ? game.phase : ''}`
   const currentScene = useRef(interactionKey)
   currentScene.current = interactionKey
   const sendingScene = useRef<string | null>(null)
@@ -49,6 +56,9 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
   const scoreboard = useRef<HTMLDialogElement>(null)
   const leaveDialog = useRef<HTMLDialogElement>(null)
   const clock = useGameClock({ serverNow: game.serverNow, deadline: game.deadline, opensAt: game.opensAt, serverClockOffsetMs })
+  // Before the first clock sync, the snapshot's own time anchors the shared wheel.
+  const fallbackOffset = useRef(game.serverNow - Date.now())
+  const clockOffsetMs = serverClockOffsetMs ?? fallbackOffset.current
   const callback = useRef(onCommand)
   callback.current = onCommand
 
@@ -129,7 +139,7 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
   const powerFrom = game.players.find(player => player.id === effect?.fromId)
   const showCommentary = ['scoreboard', 'round_ready'].includes(game.phase) && game.commentary.length > 0
   const isReveal = game.phase === 'round_reveal'
-  const manualPhase = game.phase === 'intro' || game.phase === 'round_ready' || game.phase === 'bonus_intro' || game.phase === 'bonus_results' ? game.phase : null
+  const manualPhase = GAME_CONTINUE_PHASES.find(phase => phase === game.phase) ?? null
   const enoughPlayers = game.players.filter((player) => player.connected && !player.retired).length >= 2
   const isInteractive = isVoting || isQuestion
   const confirmed = isVoting ? game.selfVote : game.selfAnswer
@@ -140,7 +150,26 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
     : options
   const selectedOption = options.find(option => option.id === (confirmed ?? selection))
   const titles = TEXTS.game.titles
-  const sceneTitle = isVoting ? titles.category_vote
+  const wheelTitles = TEXTS.wheel.titles
+  const spinner = game.players.find(player => player.id === game.wheel?.spinnerId)
+  const flash = game.wheel?.flash
+  const flashOwner = game.players.find(player => player.id === flash?.playerId)
+  const wheelTitle = (): string => {
+    switch (game.phase) {
+      case 'phase1_summary': return wheelTitles.phase1_summary
+      case 'wheel_intro': return wheelTitles.wheel_intro
+      case 'wheel_summary': return wheelTitles.wheel_summary
+      case 'wheel_turn': return game.wheel?.spinnerId === selfId ? wheelTitles.wheel_turn_self : wheelTitles.wheel_turn(spinner?.nickname ?? '')
+      case 'wheel_spin': return wheelTitles.wheel_spin
+      case 'minigame_intro':
+      case 'minigame_playing': return game.wheel?.minigame ? TEXTS.wheel.minigames[game.wheel.minigame.kind].name : ''
+      case 'minigame_results': return wheelTitles.minigame_results
+      case 'wheel_effect': return game.wheel?.spin ? TEXTS.wheel.effectOf(game.players.find(player => player.id === game.wheel?.spin?.playerId)?.nickname ?? '') : ''
+      default: return flash?.scope === 'self' ? flash.playerId === selfId ? wheelTitles.flash_self_you : wheelTitles.flash_self(flashOwner?.nickname ?? '') : wheelTitles.flash_all
+    }
+  }
+  const finalPhase = game.phase === 'phase_complete' && Boolean(game.wheel)
+  const sceneTitle = isWheelScene ? wheelTitle() : finalPhase ? wheelTitles.phase_complete : isVoting ? titles.category_vote
     : isBonus ? titles.bonus
       : isQuestion ? titles.question
       : game.phase === 'countdown' ? titles.countdown
@@ -161,7 +190,7 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
       case 'round_ready': return <>{showCommentary ? game.commentary.slice(0, 2).map((line, index) => <p key={index}>{line}</p>) : <p>{TEXTS.jerry.roundReady}</p>}<p className={styles.smallCopy}>{TEXTS.jerry.roundReadyNote}</p></>
       case 'bonus_intro': return <><p>{TEXTS.jerry.bonusIntro}</p><ol className={styles.rules}>{TEXTS.jerry.bonusRules.map(rule => <li key={rule}>{rule}</li>)}</ol><p className={styles.smallCopy}>{TEXTS.jerry.bonusIntroNote}</p></>
       case 'bonus_results': return <><p>{game.bonus?.completedCount ? TEXTS.jerry.bonusResultsCompleted : TEXTS.jerry.bonusResultsNone}</p><p className={styles.smallCopy}>{TEXTS.jerry.bonusResultsNote}</p></>
-      case 'phase_complete': return <><p>{game.bonus?.results ? TEXTS.jerry.phaseCompleteBonus : TEXTS.jerry.phaseComplete(game.totalRounds)}</p><p className={styles.smallCopy}>{TEXTS.jerry.phaseCompleteNote}</p></>
+      case 'phase_complete': return finalPhase ? <><p>{TEXTS.wheel.summary}</p><p className={styles.smallCopy}>{TEXTS.wheel.finalNote}</p></> : <><p>{game.bonus?.results ? TEXTS.jerry.phaseCompleteBonus : TEXTS.jerry.phaseComplete(game.totalRounds)}</p><p className={styles.smallCopy}>{TEXTS.jerry.phaseCompleteNote}</p></>
       case 'suspended': return <><p>{TEXTS.jerry.suspended}</p><p className={styles.smallCopy}>{TEXTS.jerry.suspendedNote}</p></>
       case 'aborted': return <><p>{TEXTS.jerry.aborted}</p><p className={styles.smallCopy}>{TEXTS.jerry.abortedNote}</p></>
       default: return null
@@ -184,12 +213,12 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
         {error && <div role="alert" className={`daisy-alert ${styles.errorAlert}`}>{error}</div>}
 
         <section key={sceneKey} className={`${styles.scene} ${isInteractive || isBonusPlaying ? styles.interactiveScene : ''}`} aria-labelledby="game-scene-title">
-          <div className={styles.sceneMeta}><span className={`daisy-badge ${styles.phaseBadge}`}>{isBonus ? TEXTS.game.badgeBonus : game.phase === 'round_ready' ? TEXTS.game.badgeNextRound(game.round + 1, game.totalRounds) : game.round ? TEXTS.game.badgeRound(game.round, game.totalRounds) : TEXTS.game.badgeTrivia}</span><span className={styles.onAir}><Radio size={13} aria-hidden="true" /> {connected ? TEXTS.game.onAir : TEXTS.game.offAir}</span></div>
-          <h1 id="game-scene-title" ref={heading} tabIndex={-1} aria-describedby={isQuestion && game.question ? 'current-question-prompt' : undefined} className={styles.title}>{sceneTitle}</h1>
+          <div className={styles.sceneMeta}><span className={`daisy-badge ${styles.phaseBadge}`}>{isWheelScene || finalPhase ? (game.wheel && !manualPhase && !finalPhase ? TEXTS.wheel.badge(game.wheel.spinNumber, game.wheel.totalSpins) : TEXTS.wheel.badgeIntro) : isBonus ? TEXTS.game.badgeBonus : game.phase === 'round_ready' ? TEXTS.game.badgeNextRound(game.round + 1, game.totalRounds) : game.round ? TEXTS.game.badgeRound(game.round, game.totalRounds) : TEXTS.game.badgeTrivia}</span><span className={styles.onAir}><Radio size={13} aria-hidden="true" /> {connected ? TEXTS.game.onAir : TEXTS.game.offAir}</span></div>
+          <h1 id="game-scene-title" ref={heading} tabIndex={-1} aria-describedby={isQuestion && game.question ? 'current-question-prompt' : undefined} className={styles.title}>{isWheelScene ? <StaggerRise key={sceneTitle} text={sceneTitle} /> : sceneTitle}</h1>
 
-          {game.deadline !== null && game.phase !== 'countdown' && <div className={styles.timerBlock}><div className={styles.timerLabel}><span>{isVoting ? TEXTS.game.timer.vote : isQuestion ? TEXTS.game.timer.question : isBonusPlaying ? TEXTS.game.timer.bonus : game.phase === 'category_reveal' ? TEXTS.game.timer.powers : game.phase === 'suspended' ? TEXTS.game.timer.suspended : TEXTS.game.timer.other}</span><span className={styles.timerNumber}><Clock3 size={15} aria-hidden="true" /><span role="timer" aria-label={TEXTS.game.timer.secondsLeft(clock.seconds)} aria-live="off">{clock.seconds}<small>s</small></span></span></div><progress className={`daisy-progress ${styles.timerProgress}`} value={clock.remainingPercent} max={100} aria-label={TEXTS.game.timer.progressLabel} /></div>}
+          {game.deadline !== null && game.phase !== 'countdown' && (!isWheelScene || (WHEEL_TIMERS.includes(game.phase) && game.wheel?.minigame?.view?.kind !== 'timer')) && <div className={styles.timerBlock}><div className={styles.timerLabel}><span>{game.phase === 'wheel_turn' ? TEXTS.wheel.timerTurn : game.phase === 'minigame_playing' ? TEXTS.wheel.timerPlay : game.phase === 'flash_question' ? TEXTS.wheel.timerFlash : isVoting ? TEXTS.game.timer.vote : isQuestion ? TEXTS.game.timer.question : isBonusPlaying ? TEXTS.game.timer.bonus : game.phase === 'category_reveal' ? TEXTS.game.timer.powers : game.phase === 'suspended' ? TEXTS.game.timer.suspended : TEXTS.game.timer.other}</span><span className={styles.timerNumber}><Clock3 size={15} aria-hidden="true" /><span role="timer" aria-label={TEXTS.game.timer.secondsLeft(clock.seconds)} aria-live="off">{clock.seconds}<small>s</small></span></span></div><progress className={`daisy-progress ${styles.timerProgress}`} value={clock.remainingPercent} max={100} aria-label={TEXTS.game.timer.progressLabel} /></div>}
 
-          {isBonusPlaying && game.bonus ? <BonusPlay bonus={game.bonus} now={Math.max(clock.now, game.serverNow)} disabled={!connected || controlConflict || !clock.isOpen || !self || self.retired} pending={pending} onAnswer={(optionId, questionInstanceId) => void send('game:bonus-answer', { optionId, questionInstanceId, bonusRunId: game.bonus!.runId })} /> : isInteractive ? (
+          {isWheelScene ? <WheelStage game={game} selfId={selfId} now={Math.max(clock.now, game.serverNow)} clockOffsetMs={clockOffsetMs} connected={connected} controlConflict={controlConflict} pending={pending} send={send} /> : isBonusPlaying && game.bonus ? <BonusPlay bonus={game.bonus} now={Math.max(clock.now, game.serverNow)} disabled={!connected || controlConflict || !clock.isOpen || !self || self.retired} pending={pending} onAnswer={(optionId, questionInstanceId) => void send('game:bonus-answer', { optionId, questionInstanceId, bonusRunId: game.bonus!.runId })} /> : isInteractive ? (
             <form onSubmit={submitSelection} className={styles.selectionForm} aria-describedby={isVoting ? 'category-vote-rule' : undefined}>
               {isVoting ? <div id="category-vote-rule" className={styles.votingRule}>
                 <span className={`daisy-badge ${styles.votingBadge}`}>{TEXTS.game.voteBadge}</span>
@@ -235,14 +264,14 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
               {game.phase === 'category_reveal' && <PowerPreparation game={game} selfId={selfId} disabled={!connected || controlConflict || !clock.isOpen || !self || self.retired} pending={pending} onCommand={send} />}
               {game.phase === 'bonus_results' && game.bonus?.results && <BonusResults results={game.bonus.results} players={game.players} selfId={selfId} target={game.bonus.target} />}
               {isReveal && game.question && game.reveal && <div className={styles.resultCard}><span className={styles.eyebrow}>{TEXTS.game.correctAnswer}</span><p className={styles.correctAnswer}><CheckCircle2 size={23} aria-hidden="true" />{game.question.options.find((option) => option.id === game.reveal?.correctOptionId)?.text ?? TEXTS.game.solutionFallback}</p>{game.reveal.explanation && <p className={styles.explanation}>{game.reveal.explanation}</p>}<ScoreBurst active={Boolean(self?.roundPoints)} trigger={`${game.id}:${game.round}`}><p className={styles.roundGain}>+{numberFormatter.format(self?.roundPoints ?? 0)}<span>{TEXTS.game.pointsForYou}</span></p></ScoreBurst><p className={styles.answerFeedback}>{!game.selfAnswer ? TEXTS.game.noAnswer : game.selfAnswer === game.reveal.correctOptionId ? TEXTS.game.rightAnswer : TEXTS.game.wrongAnswer}</p><p className={styles.source}>{TEXTS.game.source} <a href={game.reveal.sourceUrl} target="_blank" rel="noopener noreferrer">{game.reveal.sourceName}</a> · {game.reveal.license}</p></div>}
-              {['intro', 'round_reveal', 'scoreboard', 'round_ready', 'phase_complete', 'suspended', 'aborted'].includes(game.phase) && <section className={styles.board} aria-labelledby="board-heading"><div className={styles.boardHeading}><Trophy size={20} aria-hidden="true" /><h2 id="board-heading">{game.phase === 'phase_complete' ? TEXTS.game.phaseLeaderboard : TEXTS.game.leaderboard}</h2></div><GameLeaderboard players={game.players} selfId={selfId} showGains={isReveal || game.phase === 'scoreboard' || game.phase === 'round_ready'} showBreakdown={game.phase === 'phase_complete' && Boolean(game.bonus?.results)} /></section>}
+              {['intro', 'round_reveal', 'scoreboard', 'round_ready', 'phase_complete', 'suspended', 'aborted'].includes(game.phase) && <section className={styles.board} aria-labelledby="board-heading"><div className={styles.boardHeading}><Trophy size={20} aria-hidden="true" /><h2 id="board-heading">{game.phase === 'phase_complete' ? TEXTS.game.phaseLeaderboard : TEXTS.game.leaderboard}</h2></div><GameLeaderboard players={game.players} selfId={selfId} showGains={isReveal || game.phase === 'scoreboard' || game.phase === 'round_ready'} showBreakdown={game.phase === 'phase_complete' && !finalPhase && Boolean(game.bonus?.results)} showWheelBreakdown={finalPhase} /></section>}
               {game.phase === 'round_ready' && <p className={powerStyles.inventory}><strong>{TEXTS.game.inventory(game.powers.inventory.length)}</strong> {game.powers.inventory.length ? game.powers.inventory.map(card => POWERS.find(item => item.kind === card.kind)?.name).join(', ') : TEXTS.game.inventoryEmpty}</p>}
               {game.message && <p className={styles.serverMessage} role="status">{game.message}</p>}
               {(game.phase === 'phase_complete' || game.phase === 'aborted') && <div className={styles.endActions}>{isHost ? <button type="button" className={`daisy-btn ${styles.confirmButton}`} disabled={pending || !connected || controlConflict} onClick={() => void send('game:return-lobby')}>{pending ? TEXTS.game.returning : TEXTS.game.returnToRoom}</button> : <p className={styles.smallCopy}>{TEXTS.game.hostCanReturn}</p>}</div>}
             </>
           )}
         </section>
-        <footer className={styles.footer}><span>{TEXTS.game.footerLeft}</span><span>{TEXTS.game.footerRight}</span></footer>
+        <footer className={styles.footer}><span>{isWheelScene || finalPhase ? TEXTS.wheel.footer : TEXTS.game.footerLeft}</span><span>{TEXTS.game.footerRight}</span></footer>
       </div>
 
       <dialog ref={scoreboard} className={`daisy-modal ${styles.dialog}`} aria-labelledby="scoreboard-dialog-title"><div className={`daisy-modal-box ${styles.dialogBox}`}><div className={styles.dialogHeading}><h2 id="scoreboard-dialog-title">{TEXTS.game.leaderboard}</h2><form method="dialog"><button className={`daisy-btn daisy-btn-ghost ${styles.dialogClose}`} aria-label={TEXTS.game.closeScoreboard}><X size={20} aria-hidden="true" /></button></form></div><p className={styles.smallCopy}>{manualPhase ? TEXTS.game.dialogManual : game.deadline !== null ? TEXTS.game.dialogTimed : TEXTS.game.dialogStatic}</p><GameLeaderboard players={game.players} selfId={selfId} /><form method="dialog" className="mt-4"><button className={`daisy-btn ${styles.dialogReturn}`}>{TEXTS.game.backToGame}</button></form></div><form method="dialog" className="daisy-modal-backdrop"><button aria-label={TEXTS.game.closeScoreboard}>{TEXTS.game.close}</button></form></dialog>

@@ -275,12 +275,70 @@ test('phase-one commands, snapshots and JSONB persistence share the lobby transa
       const saved = await savedGame(results.id)
       assert.equal(saved.rounds.length, 5)
       assert.deepEqual(saved.bonus!.results, results.bonus!.results)
-      const completed = game(await command(guest, 'game:continue', { matchId: results.id, roundId: 5, expectedPhase: 'bonus_results' }))
-      assert.equal(completed.phase, 'phase_complete')
-      assert.equal(completed.round, 5)
-      assert.equal(completed.deadline, null)
-      const winner = completed.bonus!.results!.find(result => result.playerId === created.selfId)!
+      const phaseOne = game(await command(guest, 'game:continue', { matchId: results.id, roundId: 5, expectedPhase: 'bonus_results' }))
+      assert.equal(phaseOne.phase, 'phase1_summary')
+      assert.equal(phaseOne.round, 5)
+      assert.equal(phaseOne.deadline, null)
+      const winner = phaseOne.bonus!.results!.find(result => result.playerId === created.selfId)!
       assert.deepEqual([winner.triviaPoints, winner.bonusPoints, winner.totalPoints], [5000, 3000, 8000])
+      assert.equal(errorCode(await command(host, 'game:return-lobby', { matchId: phaseOne.id })), 'GAME_NOT_FINISHED')
+
+      const wheelFields = { matchId: phaseOne.id, roundId: 5 }
+      assert.equal(game(await command(host, 'game:continue', { ...wheelFields, expectedPhase: 'phase1_summary' })).phase, 'wheel_intro')
+      let scene = game(await command(guest, 'game:continue', { ...wheelFields, expectedPhase: 'wheel_intro' }))
+      assert.equal(scene.phase, 'wheel_turn')
+      assert.equal(scene.wheel!.totalSpins, 8, 'due giocatori: quattro giri a testa')
+      const connectionOf = (id: string) => id === created.selfId ? host : guest
+      const otherOf = (id: string) => id === created.selfId ? guest : host
+      const refresh = async () => {
+        await service.sweep()
+        return game(await command(host, 'room:resume'))
+      }
+      let spins = 0
+      while (scene.phase !== 'wheel_summary') {
+        switch (scene.phase) {
+          case 'wheel_turn': {
+            const spinnerId = scene.wheel!.spinnerId!
+            assert.equal(errorCode(await command(otherOf(spinnerId), 'game:spin', { ...wheelFields, turnId: scene.wheel!.turnId, spinStrength: 1 })), 'NOT_YOUR_TURN')
+            const request = { ...wheelFields, requestId: randomUUID(), turnId: scene.wheel!.turnId, spinStrength: .4 }
+            const first = game(await service.command(connectionOf(spinnerId), 'game:spin', request, now))
+            const replay = game(await service.command(connectionOf(spinnerId), 'game:spin', request, now))
+            assert.equal(first.phase, 'wheel_spin')
+            assert.equal(replay.wheel!.spin!.id, first.wheel!.spin!.id, 'il reinvio non gira due volte')
+            spins++
+            now = first.deadline!
+            break
+          }
+          case 'minigame_intro': {
+            const run = scene.wheel!.minigame!
+            await command(host, 'game:minigame-confirm', { ...wheelFields, minigameRunId: run.runId })
+            assert.equal(game(await command(host, 'room:resume')).phase, 'minigame_intro', 'aspetta tutti')
+            await command(guest, 'game:minigame-confirm', { ...wheelFields, minigameRunId: run.runId })
+            break
+          }
+          case 'minigame_playing':
+            assert.ok(!JSON.stringify(scene.wheel!.minigame!.view).includes('limit'))
+            if (scene.wheel!.minigame!.kind === 'numbers') {
+              const finish = { ...wheelFields, minigameRunId: scene.wheel!.minigame!.runId, minigameAction: { type: 'finish' } }
+              const action = { ...finish, actionId: randomUUID() }
+              const done = game(await command(guest, 'game:minigame-action', action))
+              assert.equal(done.wheel!.minigame!.lastActionId, action.actionId)
+            }
+            now = scene.deadline!
+            break
+          case 'flash_question':
+            await command(connectionOf(scene.wheel!.flash!.playerId), 'game:flash-answer', { ...wheelFields, flashId: scene.wheel!.flash!.id, optionId: scene.wheel!.flash!.question!.options[0].id })
+            now = scene.deadline!
+            break
+          default:
+            now = scene.deadline ?? now
+        }
+        scene = await refresh()
+      }
+      assert.equal(spins, 8)
+      assert.ok(scene.players.every(player => player.points - player.wheelDelta! === phaseOne.players.find(entry => entry.id === player.id)!.points))
+      const completed = game(await command(guest, 'game:continue', { ...wheelFields, expectedPhase: 'wheel_summary' }))
+      assert.equal(completed.phase, 'phase_complete')
       assert.equal(errorCode(await command(guest, 'game:return-lobby', { matchId: completed.id })), 'HOST_REQUIRED')
       const returned = room(await command(host, 'game:return-lobby', { matchId: completed.id }))
       assert.equal(returned.status, 'waiting')
@@ -288,7 +346,6 @@ test('phase-one commands, snapshots and JSONB persistence share the lobby transa
       assert.equal(returned.members.length, 2)
       const oldMatch = await database.transaction(db => db.query<{ active: boolean; state: { players: { points: number }[] } }>('SELECT active,state FROM kb_matches WHERE id=$1', [completed.id]))
       assert.equal(oldMatch.rows[0].active, false)
-      assert.equal(oldMatch.rows[0].state.players.find(player => player.points === 8000)?.points, 8000)
     })
 
     await t.test('stale match, round, instance and exact deadline cannot submit or mutate points', async () => {

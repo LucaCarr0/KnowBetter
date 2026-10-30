@@ -14,6 +14,7 @@ Tutte le frasi che compaiono a schermo sono in un unico file: [`web/src/texts.ts
 | `jerry` | Battute fisse di Jerry sulla plancia |
 | `commentary` | Commenti di Jerry a fine round, una variante a rotazione per round |
 | `voteResult`, `powers`, `bonus`, `swipe` | Esito del voto, poteri, «21 al contrario», pulsante da trascinare |
+| `wheel` | Fase 2: ruota, anteprime e regole dei minigiochi, Domande lampo, battute di Jerry |
 | `serverMessages`, `errors` | Avvisi e messaggi di errore |
 
 ## Come si modifica

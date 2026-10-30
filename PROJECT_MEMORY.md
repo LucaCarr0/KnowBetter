@@ -1,7 +1,7 @@
 # Memoria di progetto — party game trivia multiplayer
 
-Ultimo aggiornamento: 29 ottobre 2026.
-Stato: home/lobby e Fase 1 implementate in `web/`, con avatar Kenney, Jerry, cinque round trivia sincronizzati e il bonus finale «21 al contrario»; cataloghi di domande importati da fonti internet e conservati nel database. Istruzioni e avvio dei round sono manuali con swipe. Il 27 ottobre 2026 sono stati implementati commenti personali di Jerry, quattro poteri per ostacolare gli avversari e un'attesa con rotellina nella lobby al posto del countdown visibile. Piano di riferimento: [docs/plans/02-fase-1-trivia.md](docs/plans/02-fase-1-trivia.md). Verifica visiva sui telefoni a cura dell'utente. Accesso HMR di Next.js configurato per rilevare automaticamente gli indirizzi IPv4 locali a ogni avvio in sviluppo.
+Ultimo aggiornamento: 30 ottobre 2026.
+Stato: Fase 2 con ruota dei minigiochi implementata il 30 ottobre 2026, da provare sui telefoni. Home/lobby e Fase 1 implementate in `web/`, con avatar Kenney, Jerry, cinque round trivia sincronizzati e il bonus finale «21 al contrario»; cataloghi di domande importati da fonti internet e conservati nel database. Istruzioni e avvio dei round sono manuali con swipe. Il 27 ottobre 2026 sono stati implementati commenti personali di Jerry, quattro poteri per ostacolare gli avversari e un'attesa con rotellina nella lobby al posto del countdown visibile. Piano di riferimento: [docs/plans/02-fase-1-trivia.md](docs/plans/02-fase-1-trivia.md). Verifica visiva sui telefoni a cura dell'utente. Accesso HMR di Next.js configurato per rilevare automaticamente gli indirizzi IPv4 locali a ogni avvio in sviluppo.
 Nome nel frontend esistente: Know Better; il nome definitivo non è stato confermato separatamente.
 
 ## Scopo e uso del documento
@@ -52,10 +52,10 @@ Sono confermate entrambe le modalità di partecipazione:
 | Fase | Durata confermata | Attività principale | Risultato |
 | --- | --- | --- | --- |
 | 1 — Trivia e bonus | 5 round + prova finale di massimo 60 secondi | Domande di cultura generale, poi «21 al contrario» | Punti trivia più premio del bonus |
-| 2 — Sfida e domanda | 5 round | Minisfida casuale che sblocca individualmente la domanda | Ulteriore accumulo di punti |
+| 2 — Ruota dei minigiochi | Da 8 a 16 giri, secondo il numero di giocatori | Ogni giocatore gira a turno: minigiochi per tutti, bonus e malus per chi ha girato, trivia come spicchio «Domanda lampo» | Ulteriore accumulo di punti |
 | 3 — Corsa finale | Fino al raggiungimento del traguardo; dettagli da definire | Sfide tutti contro tutti, tabellone e maledizioni | Vince chi arriva per primo al traguardo |
 
-I punti delle prime due fasi determinano il vantaggio iniziale nel finale. Essere primi nella classifica dei punti dopo dieci round non equivale ad avere già vinto la partita.
+I punti delle prime due fasi determinano il vantaggio iniziale nel finale. Essere primi nella classifica dei punti dopo le prime due fasi non equivale ad avere già vinto la partita.
 
 ## Fase 1 — Cinque round di trivia e bonus finale
 
@@ -136,36 +136,52 @@ Un riavvio durante la prova annulla soltanto l'esecuzione bonus incompleta: rito
 
 Il catalogo bonus viene importato al prossimo avvio del coordinatore, anche se l'importazione delle trivia ordinarie risulta già eseguita. Per provarlo occorre riavviare il coordinatore e creare una nuova partita; quelle precedenti conservano il percorso storico. Le prove sui telefoni restano al proprietario; ritmo, semplicità delle domande e peso dei premi richiedono una verifica giocata prima di considerarli bilanciati.
 
-## Fase 2 — Cinque round con sblocco individuale
+## Fase 2 — Ruota dei minigiochi
 
 ### Regole confermate
 
-- La fase comprende cinque round.
-- Ogni round prevede una minisfida estratta casualmente da un insieme di sfide disponibili.
-- Superare la minisfida permette di accedere alla domanda trivia del round.
-- **Ogni giocatore sblocca la propria possibilità di rispondere:** il primo a completare la sfida non esclude gli altri.
-- Nella minisfida sono ammessi tentativi illimitati.
-- La rapidità deve contribuire a ottenere più punti.
-- Riordinare un puzzle e indovinare una combinazione sono esempi indicati dal proprietario del progetto.
+**Confermato il 30 ottobre 2026.** La ruota dei minigiochi, ispirata alla ruota della fortuna di Wii Party, sostituisce la precedente regola della minisfida a tentativi illimitati che sblocca individualmente la domanda.
 
-La sequenza individuale è: affrontare la minisfida, riprovare se necessario, completarla, sbloccare la domanda e rispondere. Mentre un giocatore è già alla domanda, un altro può essere ancora impegnato nella minisfida.
+**Precisazione confermata il 30 ottobre 2026, che sostituisce i cinque round e l'obbligo di un minigioco a ogni round.**
 
-### Precisazioni e decisioni aperte
+- A ogni turno un giocatore gira la ruota, e tutti devono girarla lo stesso numero di volte. La scelta non ricade sempre sull'ultimo in classifica.
+- La durata è variabile: almeno 8 e al massimo 16 giri complessivi. Con 8 giocatori o più si gira una volta a testa; con 4 giocatori due volte a testa.
+- Giri a testa con N giocatori: `ceil(8 / N)`. Da questa regola derivano 2 giocatori: 4 giri a testa (8 totali); 3: 3 (9); 4: 2 (8); 5: 2 (10); 6: 2 (12); 7: 2 (14); 8: 1 (8); 9: 1 (9); 10: 1 (10).
+- Chi gira subisce l'effetto dello spicchio uscito.
+- Bonus e malus: +500 e −500 comuni; x2 e ÷2 molto rari. Il bonus non fa rigirare la ruota. Il jackpot, citato nella prima idea, è escluso.
+- I minigiochi occupano il 40–50% della ruota, così in media ne esce uno ogni due giri, e non sono obbligatori a ogni turno. Il resto della ruota è composto da bonus e malus.
+- I minigiochi coinvolgono tutti e assegnano direttamente i punti: non serve una domanda trivia dopo ogni minigioco.
+- La trivia resta con due spicchi distinti: «Domanda lampo per tutti» al 5% e «Domanda lampo personale», per la sola persona che ha girato, un po' più frequente.
+- La ruota ha più spicchi rispetto alla prima proposta da 20.
+- Animazioni fluide: la fase non deve ridursi a testo e cursori di swipe.
+- La ruota si gira con uno swipe direttamente sulla ruota, con la sensazione di una ruota vera.
+- Ogni minigioco è presentato da un'anteprima con le regole sotto, come in Wii Party; si parte quando tutti hanno confermato con uno swipe.
+- Per gli elementi React si usa anche Originkit.
+- «Stoppa il timer» è un minigioco indicato dal proprietario: bisogna contare un certo numero di secondi e fermare il timer; vince il più preciso.
 
-I tentativi illimitati sono confermati per la minisfida; non implicano tentativi illimitati sulla risposta trivia. Il loro numero non stabilisce da solo quanto possa durare un round.
+### Implementazione
 
-Restano da decidere:
+**Autorizzata il 30 ottobre 2026 con «Procedi».** Fase 2 implementata secondo [docs/plans/03-fase-2-ruota.md](docs/plans/03-fase-2-ruota.md): regole in `src/server/game/wheel.ts` e `src/server/game/minigames/`, condivise con il client in `src/features/game/wheel.ts`, interfaccia in `src/features/game/components/wheel-stage.tsx`, `fortune-wheel.tsx` e `minigame-play.tsx`. Nuova dipendenza `framer-motion`; nessuna migrazione SQL. Le partite salvate senza il campo `wheel` terminano ancora dopo il bonus. Dopo la Fase 2 la partita si chiude con il riepilogo: la Fase 3 non esiste ancora.
 
-- Tempo massimo del round e comportamento per chi non completa la minisfida.
-- Disponibilità di un tempo comune per tutti o di un intervallo personale dopo lo sblocco.
-- Momento in cui la domanda diventa visibile e presenza della stessa domanda per tutti.
-- Peso del tempo di completamento della minisfida, del tempo di risposta e della correttezza nel punteggio.
-- Assegnazione di eventuali punti per la sola minisfida, se la risposta trivia è errata.
-- Stessa sfida per tutti o varianti individuali di difficoltà equivalente.
-- Regole di estrazione, varietà e ripetizione delle minisfide.
-- Scelta delle sottocategorie in questa fase: votazione, risultato della sfida o altra modalità.
+**Verifiche.** Superati 146 test senza listener di rete (fasi complete simulate con 2, 4 e 10 giocatori nel motore, viaggio completo con 2 giocatori tramite `LobbyService`), controllo TypeScript e build di produzione. In una esecuzione su tre la suite si è interrotta con un errore fatale nativo di V8 (`jit_page_->allocations_`, allocazioni WebAssembly), senza test falliti; la causa non è stata indagata. Nessun server, browser o database reale aperto: gesto della ruota, fluidità, leggibilità dei 40 spicchi e bilanciamento restano alla prova del proprietario.
 
-**Proposta di equilibrio.** Le sfide dovrebbero essere brevi, comprensibili e adatte al tocco. Puzzle e combinazioni vanno progettati in modo che i tentativi illimitati non trasformino la competizione in una pressione casuale e continua dei comandi.
+### Default da valutare giocando
+
+Avanzati il 30 ottobre 2026 e applicati con l'implementazione, non richiesti singolarmente dal proprietario:
+
+- **Rotazione:** gira il giocatore di turno, in un ordine sorteggiato a inizio fase; esito deciso dal server, senza che la forza dello swipe lo influenzi, e animazione uguale su tutti i telefoni. Se chi deve girare è disconnesso, il server gira per lui dopo un'attesa.
+- **Composizione su 40 spicchi:** 17 minigiochi (42,5%), 2 Domande lampo per tutti (5%), 3 Domande lampo personali (7,5%), 9 da +500 (22,5%), 7 da −500 (17,5%), 1 da x2 e 1 da ÷2 (2,5% ciascuno).
+- **Effetti:** x2 e ÷2 si applicano al punteggio totale di chi ha girato; −500 non porta sotto zero.
+- **Minigiochi fuori dalla prima selezione:** il proprietario ha detto che «i giochi vanno bene» senza indicare se tutti e 15 o i 6 proposti. Prima selezione: Stoppa il timer, Numeri in ordine, Palloncino, Dividi il bottino, Il più alto unico e Bomba; gli ultimi tre sono da estrarre solo con almeno 3 giocatori. Altri candidati: Riempi il bicchiere, Barra impazzita, Colpo d'occhio, Acchiappa Jerry, Trova l'intruso, Mezzogiorno di fuoco, Jerry dice, Sequenza lampo e Asta al buio.
+
+### Decisioni aperte
+
+- Elenco dei minigiochi e composizione degli spicchi.
+- Punti assegnati dai minigiochi e dalla «Domanda lampo», e categoria di quest'ultima.
+- Regole di estrazione e ripetizione degli spicchi.
+- Misura dei tempi nelle partite a distanza, dove il ritardo di rete pesa sui minigiochi di reazione e precisione.
+
+**Proposta di equilibrio.** Le sfide dovrebbero essere brevi, comprensibili e adatte al tocco.
 
 ## Fase 3 — Corsa sul tabellone e maledizioni
 
@@ -188,7 +204,7 @@ Il termine “turno” indica qui un momento della gara con una sfida comune: no
 - Presenza eventuale di dadi, caselle speciali, arretramenti o altri eventi.
 - Raggiungimento o superamento del traguardo, eventuale arrivo esatto e risoluzione degli arrivi simultanei.
 
-**Proposta di equilibrio.** Il vantaggio iniziale dovrebbe rendere utili i primi dieci round, lasciando comunque una possibilità concreta di rimonta. Formula di conversione e movimento restano da discutere, senza fissare numeri arbitrari.
+**Proposta di equilibrio.** Il vantaggio iniziale dovrebbe rendere utili le prime due fasi, lasciando comunque una possibilità concreta di rimonta. Formula di conversione e movimento restano da discutere, senza fissare numeri arbitrari.
 
 ### Maledizioni
 
@@ -469,3 +485,11 @@ Riferimenti tecnici verificati il 25 ottobre 2026: [TypeScript](https://www.type
 | 28 ottobre 2026 | Generare il grafo Graphify del progetto e riprendere l’estrazione interrotta durante le immagini | Richiesta esplicita del proprietario e successivo «vai» |
 | 29 ottobre 2026 | Ogni categoria votabile deve avere almeno 300 domande estraibili; ampliati Animali (317), Cinema (314, non più concentrato su Le ali della libertà) e Sport (338) con OpenTDB e OpenTriviaQA tradotti in italiano; domande del «21 al contrario» sostituite con cultura generale da OpenTDB | Richiesta del proprietario: «se una categoria è sceglibile dai giocatori devono esserci almeno 300 domande di quella categoria», «in italiano devono essere» |
 | 28 ottobre 2026 | Aggiungere e implementare il bonus finale della Fase 1 «21 al contrario»: 21 scelte false consecutive in 60 secondi, timeout personale di 5 secondi, classifica sulla catena finale e premi da 3.000 a 500 punti; catalogo italiano dedicato e recupero persistente | Specifica completa allegata dal proprietario, seguita da «procedi con l’implementazione» |
+| 30 ottobre 2026 | Fase 2 con ruota di minigiochi e bonus: sostituisce le minisfide a tentativi illimitati che sbloccano la domanda; i minigiochi assegnano direttamente i punti e la trivia resta come spicchio «Domanda lampo» | Idea del proprietario sulla ruota di Wii Party e risposta «Sì, sostituiscila» |
+| 30 ottobre 2026 | Ruota: tutti girano a turno lo stesso numero di volte, da 8 a 16 giri totali (una volta a testa da 8 giocatori in su, due con 4); chi gira subisce l'effetto; +500 e −500 comuni, x2 e ÷2 molto rari; minigiochi sul 40–50% della ruota e non a ogni turno; i bonus non fanno rigirare; minigiochi proposti giudicati validi | Precisazione del proprietario: «i giochi vanno bene» e regole della ruota |
+| 30 ottobre 2026 | Jackpot tolto dalla ruota | Risposta del proprietario: «Toglilo» |
+| 30 ottobre 2026 | Richiesto il piano della Fase 2 partendo dai 6 minigiochi della prima selezione; implementazione non ancora autorizzata | Risposta del proprietario: «Sì, scrivilo» |
+| 30 ottobre 2026 | Ruota con più spicchi; Domanda lampo divisa in due spicchi: per tutti al 5% e personale per chi ha girato, un po' più frequente | Richiesta del proprietario dopo la lettura del piano |
+| 30 ottobre 2026 | Palloncino a classifica interna tra chi incassa, per numero di pompate, anziché 40 punti a pompata; in Stoppa il timer il timer parte da solo sul client, senza pulsante Via | Richiesta del proprietario dopo la prova: «da punti con una classifica interna», «fai startare tu il timer sul client» |
+| 30 ottobre 2026 | Autorizzata l'implementazione della Fase 2, inclusa la dipendenza `framer-motion`; richiesto di orientarsi nel progetto con Graphify | «Procedi» e «usa graphyfy per orientarti nel progetto chiaramente» |
+| 30 ottobre 2026 | Animazioni fluide e non solo testo e cursori; ruota girata con uno swipe diretto e sensazione da ruota vera; anteprima dei minigiochi con regole e conferma di tutti tramite swipe; uso anche di Originkit | Richiesta del proprietario sul piano, con riferimento a Wii Party |

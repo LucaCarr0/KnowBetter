@@ -15,3 +15,14 @@ breaks into four fixed CSS polygons and leaves the screen once. The adaptation
 uses no WebGL, physics simulation or new runtime dependency. It keeps a readable
 vote summary, respects `prefers-reduced-motion` and enters the animation at the
 current server phase time after reconnection.
+
+The wheel phase of Phase 2 adds three adaptations, retrieved on 30 October 2026
+through the OriginKit connector. `fireworks-burst.tsx` adapts the spark model of
+[Fireworks](https://www.originkit.dev/components/fireworks) to a transparent canvas
+with a few bursts that end on their own, replacing the endless 3D show.
+`stagger-rise.tsx` keeps the spring and per-letter stagger of
+[Stagger Text Rise](https://www.originkit.dev/components/stagger-text-rise) and adds
+word wrapping and accessible text. `features/game/components/swipe-up-card.tsx`
+draws on the flick and tilt of [Swipe Stack](https://www.originkit.dev/components/swipe-stack)
+for a single card confirmed upward. All respect `prefers-reduced-motion`; the first
+needs no dependency, the other two use `framer-motion`.

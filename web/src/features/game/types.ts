@@ -1,8 +1,11 @@
 import type { AvatarId } from '../rooms/data/avatars'
 import type { PowerCard, PowerEffect } from './powers'
+import type { WheelSnapshot } from './wheel'
 
-export type GameContinuePhase = 'intro' | 'round_ready' | 'bonus_intro' | 'bonus_results'
+export const GAME_CONTINUE_PHASES = ['intro', 'round_ready', 'bonus_intro', 'bonus_results', 'phase1_summary', 'wheel_intro', 'wheel_summary'] as const
+export type GameContinuePhase = typeof GAME_CONTINUE_PHASES[number]
 export type GamePhase = 'countdown' | GameContinuePhase | 'category_vote' | 'category_reveal' | 'question' | 'bonus_playing' | 'round_reveal' | 'scoreboard' | 'phase_complete' | 'suspended' | 'aborted'
+  | 'wheel_turn' | 'wheel_spin' | 'wheel_effect' | 'minigame_intro' | 'minigame_playing' | 'minigame_results' | 'flash_intro' | 'flash_question' | 'flash_reveal'
 
 export interface GameCategory { id: string; name: string; icon?: string }
 export interface GameOption { id: string; text: string }
@@ -14,6 +17,8 @@ export interface GamePlayer {
   roundPoints: number
   triviaPoints?: number
   bonusPoints?: number
+  /** Variazione della Fase 2, che può essere negativa. */
+  wheelDelta?: number
   rank: number
   connected: boolean
   retired: boolean
@@ -70,6 +75,7 @@ export interface GameSnapshot {
   message: string | null
   commentary: string[]
   bonus?: BonusSnapshot | null
+  wheel?: WheelSnapshot | null
   powers: {
     inventory: PowerCard[]
     effect: PowerEffect | null
@@ -81,7 +87,7 @@ export interface GameSnapshot {
   }
 }
 
-export type GameAction = 'game:start' | 'game:continue' | 'game:vote-category' | 'game:answer' | 'game:bonus-answer' | 'game:use-power' | 'game:ready-question' | 'game:clear-power' | 'game:resume' | 'game:return-lobby'
+export type GameAction = 'game:start' | 'game:continue' | 'game:vote-category' | 'game:answer' | 'game:bonus-answer' | 'game:spin' | 'game:minigame-confirm' | 'game:minigame-action' | 'game:flash-answer' | 'game:use-power' | 'game:ready-question' | 'game:clear-power' | 'game:resume' | 'game:return-lobby'
 export interface GameCommandFields {
   roomId?: string
   matchId?: string
@@ -89,6 +95,13 @@ export interface GameCommandFields {
   expectedPhase?: GameContinuePhase
   questionInstanceId?: string
   bonusRunId?: string
+  turnId?: string
+  /** Forza dello swipe, da 0 a 1: cambia l'animazione, mai lo spicchio. */
+  spinStrength?: number
+  minigameRunId?: string
+  actionId?: string
+  minigameAction?: Record<string, unknown>
+  flashId?: string
   categoryId?: string
   optionId?: string
   powerCardId?: string
@@ -108,6 +121,12 @@ export const GAME_DEFAULTS = {
   suspensionMs: 90_000,
   basePoints: 500,
   speedPoints: 500,
+  wheelTurnMs: 15_000,
+  wheelEffectMs: 5_000,
+  minigamePreviewMs: 45_000,
+  minigameResultsMs: 5_000,
+  flashIntroMs: 3_000,
+  flashRevealMs: 5_000,
 } as const
 
 export type GameConfig = { [K in keyof typeof GAME_DEFAULTS]: number }
