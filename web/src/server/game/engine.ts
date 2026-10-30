@@ -1,5 +1,5 @@
 import { randomInt, randomUUID } from 'node:crypto'
-import { GAME_CONTINUE_PHASES, GAME_DEFAULTS, type GameCategory, type GameConfig, type GameContinuePhase, type GameOption, type GamePhase, type GameSnapshot } from '../../features/game/types'
+import { GAME_CONTINUE_PHASES, GAME_DEFAULTS, type GameCategory, type GameConfig, type GameContinuePhase, type GameDevTarget, type GameOption, type GamePhase, type GameSnapshot } from '../../features/game/types'
 import type { AvatarId } from '../../features/rooms/data/avatars'
 import { MAX_POWER_CARDS, POWERS, powerDropProbability, type PowerCard, type PowerEffect } from '../../features/game/powers'
 import { buildJerryCommentary } from './commentary'
@@ -348,6 +348,21 @@ export function continueGame(game: GameState, playerId: string, content: GameCon
   } else if (expectedPhase === 'wheel_intro') {
     beginTurn(game, now)
   } else openRound(game, content, connectedIds, now)
+}
+
+/** Development shortcut: the first screen of a later stage, with a fresh run of it. */
+export function devSkip(game: GameState, target: GameDevTarget, now: number): void {
+  game.round = game.config.rounds
+  game.suspension = null
+  game.message = null
+  if (target === 'bonus') {
+    game.bonus = { ...(game.bonus ?? createBonus([])), runId: randomUUID(), questions: [], participantIds: [], startedAt: null, progress: {}, results: null }
+    enter(game, 'bonus_intro', now, null)
+  } else {
+    game.wheel = createWheel()
+    startWheel(game)
+    enter(game, 'wheel_intro', now, null)
+  }
 }
 
 /** Old persisted introductions and pending next-round checkpoints had timers. */

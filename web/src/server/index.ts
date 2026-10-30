@@ -9,7 +9,7 @@ import { importTrivia, loadTrivia } from './trivia'
 import { TEXTS } from '../texts'
 
 export const GUEST_COOKIE = 'kb_guest'
-const actions: RoomAction[] = ['room:create', 'room:join', 'room:resume', 'room:update', 'room:leave', 'game:start', 'game:continue', 'game:vote-category', 'game:answer', 'game:bonus-answer', 'game:spin', 'game:minigame-confirm', 'game:minigame-action', 'game:flash-answer', 'game:use-power', 'game:ready-question', 'game:clear-power', 'game:resume', 'game:return-lobby']
+const actions: RoomAction[] = ['room:create', 'room:join', 'room:resume', 'room:update', 'room:leave', 'game:start', 'game:continue', 'game:vote-category', 'game:answer', 'game:bonus-answer', 'game:spin', 'game:minigame-confirm', 'game:minigame-action', 'game:flash-answer', 'game:dev-skip', 'game:use-power', 'game:ready-question', 'game:clear-power', 'game:resume', 'game:return-lobby']
 const internalError = { ok: false, error: { code: 'SERVER_ERROR', message: TEXTS.errors.serverError } } as const
 const rateError = { ok: false, error: { code: 'RATE_LIMITED', message: TEXTS.errors.rateLimited } } as const
 
@@ -62,7 +62,7 @@ export async function createLobbyServer(options: LobbyServerOptions = {}) {
   // Idempotent catalog import happens before a room can start. Rounds only
   // read the local database, so public catalog services cannot stall play.
   if (!options.gameContent) await importTrivia(database)
-  const lobby = new LobbyService(database, { ...options, gameContent: options.gameContent ?? await loadTrivia(database) })
+  const lobby = new LobbyService(database, { ...options, devTools: dev, gameContent: options.gameContent ?? await loadTrivia(database) })
   await lobby.initialize()
   const limits = new RateLimit()
   const secure = options.secureCookies ?? !dev

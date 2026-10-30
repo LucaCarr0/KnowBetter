@@ -8,7 +8,7 @@ import {
 import type { PlayerIdentity, RoomAction, RoomCommand, RoomError, RoomPreview, RoomResponse, RoomSnapshot } from '../features/rooms/types'
 import type { LobbyDatabase, Queryable } from './database'
 import { GAME_CONTINUE_PHASES, type GameConfig } from '../features/game/types'
-import { createGame, continueGame, vote, answer, bonusAnswer, usePower, readyQuestion, clearPower, advance, snapshot as gameSnapshot, recoverGame, retire, GameRuleError, type GameContent, type GameState } from './game/engine'
+import { createGame, continueGame, devSkip, vote, answer, bonusAnswer, usePower, readyQuestion, clearPower, advance, snapshot as gameSnapshot, recoverGame, retire, GameRuleError, type GameContent, type GameState } from './game/engine'
 import { confirmMinigame, flashAnswer, minigameAction, spin } from './game/wheel'
 import { TEXTS } from '../texts'
 
@@ -25,7 +25,7 @@ interface ReceiptRow extends Record<string, unknown> {
 }
 
 export interface Connection { guestId: string; socketId: string }
-export interface LobbyOptions { guestTtlMs?: number; reservationMs?: number; roomTtlMs?: number; now?: () => number; gameContent?: GameContent; gameConfig?: Partial<GameConfig> }
+export interface LobbyOptions { guestTtlMs?: number; reservationMs?: number; roomTtlMs?: number; now?: () => number; gameContent?: GameContent; gameConfig?: Partial<GameConfig>; devTools?: boolean }
 export type PreviewResponse = { ok: true; preview: RoomPreview } | { ok: false; error: RoomError }
 
 function fail(code: string, message: string, field?: RoomError['field']): RoomResponse & { ok: false } {
@@ -49,6 +49,7 @@ export class LobbyService extends EventEmitter {
   private tail = Promise.resolve()
   private readonly content: GameContent
   private readonly gameConfig: Partial<GameConfig>
+  private readonly devTools: boolean
 
   constructor(readonly database: LobbyDatabase, options: LobbyOptions = {}) {
     super()
@@ -58,6 +59,7 @@ export class LobbyService extends EventEmitter {
     this.roomTtlMs = options.roomTtlMs ?? 60 * 60_000
     this.content = options.gameContent ?? { categories: [], questions: [] }
     this.gameConfig = options.gameConfig ?? {}
+    this.devTools = options.devTools ?? false
   }
 
   // Serialize memory ownership alongside database state; SQL transactions also
@@ -283,6 +285,13 @@ export class LobbyService extends EventEmitter {
     const game = await this.gameForRoom(db, room.id)
     if (!game || !game.players.some(player => player.id === member.id && !player.retired)) return fail('NOT_IN_GAME', TEXTS.errors.notInGame)
     if (command.matchId !== game.id) return fail('STALE_GAME', TEXTS.errors.staleGame)
+    if (action === 'game:dev-skip') {
+      if (!this.devTools) return fail('DEV_ONLY', TEXTS.errors.devOnly)
+      if (command.devTarget !== 'bonus' && command.devTarget !== 'wheel') return fail('INVALID_REQUEST', TEXTS.errors.devOnly)
+      devSkip(game, command.devTarget, receivedAt)
+      await this.saveGame(db, room.id, game)
+      return { ok: true, room: await this.snapshot(db, member) }
+    }
     if (action === 'game:return-lobby') {
       if (room.host_id !== member.id) return fail('HOST_REQUIRED', TEXTS.errors.hostRequiredReturn)
       if (!['phase_complete', 'aborted'].includes(game.phase)) return fail('GAME_NOT_FINISHED', TEXTS.errors.gameNotFinished)

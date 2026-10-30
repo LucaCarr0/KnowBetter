@@ -68,6 +68,10 @@ I minigiochi sono Stoppa il timer, Numeri in ordine, Palloncino, Dividi il botti
 
 Un riavvio del server non ripete un giro né il suo effetto; un minigioco o una Domanda lampo in corso riparte da capo. Le partite salvate prima della ruota finiscono ancora dopo il bonus. Dopo la Fase 2 la partita si chiude con il riepilogo: la corsa finale non esiste ancora. Dettagli in [`docs/plans/03-fase-2-ruota.md`](../docs/plans/03-fase-2-ruota.md).
 
+## Salti per le prove
+
+Con `pnpm dev`, nello studio compaiono due pulsanti in basso a destra: **Dev: vai al 21** e **Dev: vai alla Fase 2**. Portano tutti i telefoni della partita alla presentazione di quella prova; chiunque può premerli, in qualsiasi fase. Con `pnpm build` i pulsanti non vengono inclusi e il coordinatore avviato con `pnpm start` rifiuta il comando.
+
 ## Catalogo delle domande
 
 Le domande, le opzioni e le soluzioni sono conservate nel database in `kb_trivia_categories` e `kb_trivia_questions`. Il catalogo sorgente normalizzato, gli originali, le licenze e i criteri d'importazione si trovano in [src/server/content/](src/server/content/README.md). Ogni domanda mantiene fonte, licenza, lingua e identificativo originale; tali informazioni sono visibili insieme alla soluzione.

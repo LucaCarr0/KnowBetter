@@ -284,6 +284,7 @@ test('phase-one commands, snapshots and JSONB persistence share the lobby transa
       assert.equal(errorCode(await command(host, 'game:return-lobby', { matchId: phaseOne.id })), 'GAME_NOT_FINISHED')
 
       const wheelFields = { matchId: phaseOne.id, roundId: 5 }
+      assert.equal(errorCode(await command(host, 'game:dev-skip', { ...wheelFields, devTarget: 'wheel' })), 'DEV_ONLY')
       assert.equal(game(await command(host, 'game:continue', { ...wheelFields, expectedPhase: 'phase1_summary' })).phase, 'wheel_intro')
       let scene = game(await command(guest, 'game:continue', { ...wheelFields, expectedPhase: 'wheel_intro' }))
       assert.equal(scene.phase, 'wheel_turn')
@@ -714,6 +715,36 @@ test('phase-one commands, snapshots and JSONB persistence share the lobby transa
       const saved = await database.transaction(db => db.query<{ state: { rounds: unknown[] } }>('SELECT state FROM kb_matches WHERE id=$1', [ready.id]))
       assert.equal(saved.rows[0].state.rounds.length, 2)
     })
+  } finally {
+    await service.drain()
+    await database.close()
+  }
+})
+
+test('dev skip works through the lobby only when dev tools are on', async () => {
+  const database = await createDatabase({ dataDir: 'memory://' })
+  const now = 1_000_000
+  const service = new LobbyService(database, { now: () => now, gameContent: catalog(), gameConfig, devTools: true })
+  await service.initialize()
+  const join = async () => {
+    const guest = await service.guest()
+    const connection = { guestId: guest.guestId, socketId: randomUUID() }
+    assert.equal(await service.connect(connection), true)
+    return connection
+  }
+  const command = (connection: Connection, action: RoomAction, fields: Record<string, unknown> = {}) => service.command(connection, action, { requestId: randomUUID(), ...fields }, now)
+  try {
+    const host = await join()
+    const created = room(await command(host, 'room:create', { identity: identity('Host') }))
+    const guest = await join()
+    room(await command(guest, 'room:join', { code: created.code, identity: identity('Guest') }))
+    const started = game(await command(host, 'game:start', { roomId: created.id }))
+    assert.equal(errorCode(await command(guest, 'game:dev-skip', { matchId: started.id, devTarget: 'nope' })), 'INVALID_REQUEST')
+    const bonus = game(await command(guest, 'game:dev-skip', { matchId: started.id, devTarget: 'bonus' }))
+    assert.equal(bonus.phase, 'bonus_intro')
+    const wheel = game(await command(host, 'game:dev-skip', { matchId: started.id, devTarget: 'wheel' }))
+    assert.equal(wheel.phase, 'wheel_intro')
+    assert.equal(game(await command(guest, 'room:resume')).phase, 'wheel_intro')
   } finally {
     await service.drain()
     await database.close()

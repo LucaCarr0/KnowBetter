@@ -87,7 +87,8 @@ export interface GameSnapshot {
   }
 }
 
-export type GameAction = 'game:start' | 'game:continue' | 'game:vote-category' | 'game:answer' | 'game:bonus-answer' | 'game:spin' | 'game:minigame-confirm' | 'game:minigame-action' | 'game:flash-answer' | 'game:use-power' | 'game:ready-question' | 'game:clear-power' | 'game:resume' | 'game:return-lobby'
+export type GameDevTarget = 'bonus' | 'wheel'
+export type GameAction = 'game:start' | 'game:continue' | 'game:vote-category' | 'game:answer' | 'game:bonus-answer' | 'game:spin' | 'game:minigame-confirm' | 'game:minigame-action' | 'game:flash-answer' | 'game:dev-skip' | 'game:use-power' | 'game:ready-question' | 'game:clear-power' | 'game:resume' | 'game:return-lobby'
 export interface GameCommandFields {
   roomId?: string
   matchId?: string
@@ -102,6 +103,7 @@ export interface GameCommandFields {
   actionId?: string
   minigameAction?: Record<string, unknown>
   flashId?: string
+  devTarget?: GameDevTarget
   categoryId?: string
   optionId?: string
   powerCardId?: string

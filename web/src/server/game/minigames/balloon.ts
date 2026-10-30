@@ -31,10 +31,12 @@ export const balloonGame: MinigameDefinition<BalloonState> = {
   advance: () => false,
   isComplete: (state, context) => context.activeIds.every(id => state.entries[id] && state.entries[id].status !== 'pumping'),
   results(state, participantIds, retiredIds) {
-    // Whoever cashed in with the most pumps ranks first; a popped balloon scores nothing.
+    // Closest to the limit ranks first, even when time ran out before cashing in. A popped
+    // balloon's value (its pumps, above the limit) ranks behind every intact one, or popping would win.
     return standardResults(participantIds.map(playerId => {
       const entry = state.entries[playerId]
-      return { playerId, value: !retiredIds.has(playerId) && entry?.status === 'cashed' ? -entry.pumps : null, detail: entry?.pumps ?? 0 }
+      const played = !retiredIds.has(playerId) && entry && entry.pumps > 0
+      return { playerId, value: !played ? null : entry.status === 'popped' ? entry.pumps : state.limit - entry.pumps, detail: entry?.pumps ?? 0 }
     }), participantIds.length)
   },
   view(state, selfId) {

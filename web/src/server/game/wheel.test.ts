@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { getBonusCatalog } from '../content/bonus-catalog'
 import { SLICE_DEGREES, WHEEL_SLICES, sliceAtAngle, spinAngle, spinTrajectory, turnsPerPlayer, type WheelSliceKind } from '../../features/game/wheel'
-import { advance, continueGame, createGame, recoverGame, retire, snapshot, type GameContent, type GameState, type TriviaQuestion } from './engine'
+import { advance, continueGame, createGame, devSkip, recoverGame, retire, snapshot, type GameContent, type GameState, type TriviaQuestion } from './engine'
 import { MINIGAMES } from './minigames'
 import { applySpin, confirmMinigame, flashAnswer, minigameAction, spin } from './wheel'
 
@@ -270,7 +270,7 @@ test('Palloncino pops past the secret limit, which stays private until the end',
   assert.ok(!JSON.stringify(during.wheel).includes('"limit"'))
   assert.equal(during.wheel!.minigame!.revealValue, null)
   const rows = finishedRows(setup, setup.time + 15_000)
-  assert.deepEqual(rows.map(row => [row.playerId, row.points]), [['p0', 1000], ['p1', 0], ['p2', 0]])
+  assert.deepEqual(rows.map(row => [row.playerId, row.points]), [['p0', 1000], ['p1', 600], ['p2', 0]])
   assert.equal(snapshot(setup.game, 'p2', setup.connected, setup.time + 15_000).wheel!.minigame!.revealValue, 10)
 })
 
@@ -287,6 +287,19 @@ test('Palloncino ranks whoever cashed in by pumps, not by matching the limit', (
   act(setup, 'p3', { type: 'pump', count: 3 }, at)
   act(setup, 'p3', { type: 'cash' }, at)
   assert.deepEqual(finishedRows(setup, at).map(row => [row.playerId, row.rank, row.points, row.detail]), [['p0', 1, 1000, 12], ['p1', 2, 733, 8], ['p2', 2, 733, 8], ['p3', 4, 200, 3]])
+})
+
+test('Palloncino rewards players who ran out of time and ranks popped balloons last', () => {
+  const setup = startKind('balloon')
+  ;(setup.run.state as { limit: number }).limit = 20
+  const at = setup.time + 5_000
+  act(setup, 'p0', { type: 'pump', count: 20 }, at + 2_000)
+  act(setup, 'p0', { type: 'pump', count: 1 }, at + 4_000)
+  act(setup, 'p1', { type: 'pump', count: 4 }, at)
+  act(setup, 'p1', { type: 'cash' }, at)
+  act(setup, 'p2', { type: 'pump', count: 9 }, at)
+  const rows = finishedRows(setup, setup.time + 15_000)
+  assert.deepEqual(rows.map(row => [row.playerId, row.rank, row.points]), [['p2', 1, 1000], ['p1', 2, 733], ['p0', 3, 467], ['p3', 4, 0]])
 })
 
 test('Palloncino caps the pump rate against scripted batches', () => {
@@ -473,6 +486,27 @@ test('complete phases run for 2, 4 and 10 players and end in the final summary',
     continueGame(game, 'p0', content, connected, game.round, 'wheel_summary', time)
     assert.equal(game.phase, 'phase_complete')
   }
+})
+
+test('dev skip jumps to a fresh bonus or wheel from any stage', () => {
+  const players = ids(2).map(id => ({ id, nickname: id, avatarId: 'panda' as const }))
+  const connected = new Set(ids(2))
+  const game = createGame(players, content, 1_000)
+  devSkip(game, 'bonus', 2_000)
+  assert.equal(game.phase, 'bonus_intro')
+  continueGame(game, 'p0', content, connected, game.round, 'bonus_intro', 3_000)
+  assert.equal(game.phase, 'bonus_playing')
+  assert.equal(game.bonus!.questions.length, 21)
+  devSkip(game, 'wheel', 4_000)
+  assert.equal(game.phase, 'wheel_intro')
+  assert.equal(game.wheel!.schedule.length, 8)
+  continueGame(game, 'p1', content, connected, game.round, 'wheel_intro', 5_000)
+  assert.equal(game.phase, 'wheel_turn')
+  advance(game, content, connected, 5_001)
+  assert.equal(game.phase, 'wheel_turn')
+  devSkip(game, 'bonus', 6_000)
+  assert.equal(game.bonus!.results, null)
+  assert.equal(snapshot(game, 'p0', connected, 6_000).bonus!.chain, 0)
 })
 
 test('matches saved before the wheel keep ending after the bonus', () => {

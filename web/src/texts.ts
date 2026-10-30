@@ -284,6 +284,12 @@ export const TEXTS = {
     abortedNote: 'I risultati già confermati restano nel riepilogo.',
   },
 
+  // ── Solo con pnpm dev: salti rapidi per le prove ────────────────────
+  dev: {
+    skipBonus: 'Dev: vai al 21',
+    skipWheel: 'Dev: vai alla Fase 2',
+  },
+
   // ── Fase 2: ruota, anteprime e minigiochi ──────────────────────────
   wheel: {
     badge: (spin: number, total: number) => `FASE 2 · GIRO ${spin} / ${total}`,
@@ -383,7 +389,7 @@ export const TEXTS = {
       },
       balloon: {
         name: 'Palloncino',
-        rules: ['Ogni tocco lo gonfia. Incassa quando vuoi: più pompate hai, più sali in classifica.', 'Se scoppia oltre il limite segreto, fai zero.'],
+        rules: ['Ogni tocco lo gonfia. Incassa quando vuoi: chi si avvicina di più al limite segreto vince.', 'Se scoppia, finisci dietro a chi non l\'ha fatto scoppiare.'],
         pump: 'Gonfia!',
         cash: (pumps: number) => `Incassa a ${pumps} pompate`,
         popped: 'BOOM! Scoppiato.',
@@ -553,6 +559,7 @@ export const TEXTS = {
 
   // ── Messaggi di errore ──────────────────────────────────────────────
   errors: {
+    devOnly: 'Questo comando esiste solo in sviluppo.',
     invalidSpin: 'Giro della ruota non valido.',
     staleTurn: 'Questo turno della ruota è già passato.',
     notYourTurn: 'Non è il tuo turno.',
