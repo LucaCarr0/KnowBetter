@@ -2,7 +2,12 @@
 
 Party game multiplayer per smartphone, con nickname e avatar, stanze private e una prima fase di cinque round trivia sincronizzati.
 
-Il [repository GitHub privato](https://github.com/LucaCarr0/KnowBetter) conserva l'intero progetto: applicazione, sorgenti dei cataloghi, asset, licenze e documentazione. Il codice dell'applicazione si trova in [`web/`](web/README.md).
+Progetto sviluppato in collaborazione da [Luca](https://github.com/LucaCarr0) e [Marco](https://github.com/MarcoCanonico). Il [repository GitHub](https://github.com/LucaCarr0/KnowBetter) conserva l'intero progetto: applicazione, sorgenti dei cataloghi, asset, licenze e documentazione. Il codice dell'applicazione si trova in [`web/`](web/README.md).
+
+## Autori
+
+- **Luca** ([@LucaCarr0](https://github.com/LucaCarr0))
+- **Marco** ([@TUO-USERNAME](https://github.com/MarcoCanonico))
 
 ## Struttura del repository
 
@@ -49,7 +54,7 @@ Aprire [localhost:3000](http://localhost:3000). La configurazione facoltativa è
 
 ## Versionamento
 
-Il repository GitHub deve rimanere **privato**. Il branch iniziale è `main`.
+Il repository è pubblico. Il branch iniziale è `main`.
 
 Dipendenze, build, cache, file `.env` personali e database locali con i relativi backup sono esclusi da Git. Il catalogo sorgente delle domande è incluso per consentire la ricostruzione del database. Le sessioni e le partite locali richiedono backup separati.
 
