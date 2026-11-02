@@ -7,7 +7,7 @@ Progetto sviluppato in collaborazione da [Luca](https://github.com/LucaCarr0) e 
 ## Autori
 
 - **Luca** ([@LucaCarr0](https://github.com/LucaCarr0))
-- **Marco** ([@TUO-USERNAME](https://github.com/MarcoCanonico))
+- **Marco** ([@MarcoCanonico](https://github.com/MarcoCanonico))
 
 ## Struttura del repository
 
