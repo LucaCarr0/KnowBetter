@@ -126,6 +126,8 @@ export const TEXTS = {
     badgeTrivia: 'FASE 1 · TRIVIA',
     onAir: 'IN ONDA',
     offAir: 'OFFLINE',
+    muteAudio: 'Disattiva musica e suoni',
+    unmuteAudio: 'Attiva musica e suoni',
     footerLeft: 'FASE 1 · CULTURA GENERALE',
     footerRight: 'Uno studio, tutta la crew.',
     sending: 'Invio in corso…',

@@ -33,8 +33,11 @@
 .interactiveScene { animation: none; }
 .sceneMeta { justify-content: space-between; gap: .6rem; }
 .phaseBadge { min-height: 1.65rem; padding: .3rem .65rem; background: var(--studio-ink); color: var(--studio-cream); border: none; border-radius: .4rem; letter-spacing: .09em; font-size: .6rem; font-weight: 850; }
-.onAir { display: inline-flex; align-items: center; gap: .3rem; font-size: .6rem; font-weight: 850; letter-spacing: .05em; }
+.onAir { display: inline-flex; margin-left: auto; align-items: center; gap: .3rem; font-size: .6rem; font-weight: 850; letter-spacing: .05em; }
 .onAir > svg { color: #a42c3b; }
+.soundToggle { display: inline-grid; place-items: center; width: 2.25rem; height: 2.25rem; margin: -.4rem -.5rem -.4rem 0; border-radius: 50%; color: var(--studio-ink); cursor: pointer; }
+.soundToggle:hover { background: rgb(16 20 47 / .08); }
+.soundToggle:focus-visible { outline: 3px solid var(--studio-ink); outline-offset: 1px; }
 .title { margin: 1.1rem 0; max-width: 42rem; font-size: clamp(1.7rem, 6.5vw, 3rem); line-height: 1.08; letter-spacing: -.055em; font-weight: 950; text-wrap: balance; outline: none; }
 .timerBlock { margin: 0 0 1.25rem; }
 .timerLabel { justify-content: space-between; gap: 1rem; margin-bottom: .35rem; font-size: .66rem; font-weight: 750; color: #515570; }

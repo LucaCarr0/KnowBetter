@@ -1,12 +1,13 @@
 'use client'
 
-import { ArrowLeft, ArrowRight, Check, CheckCircle2, Clock3, EyeOff, LogOut, Radio, Send, Trophy, WandSparkles, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, CheckCircle2, Clock3, EyeOff, LogOut, Radio, Send, Trophy, Volume2, VolumeX, WandSparkles, X } from 'lucide-react'
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { ScoreBurst } from '../../../components/originkit/score-burst'
 import { StaggerRise } from '../../../components/originkit/stagger-rise'
 import type { RoomResponse } from '../../rooms/types'
 import { PlayerAvatar } from '../../rooms/components/player-avatar'
 import { useGameClock } from '../hooks/use-game-clock'
+import { useSoundtrack } from '../hooks/use-soundtrack'
 import { POWERS, shuffleAnswerOptions } from '../powers'
 import { GAME_CONTINUE_PHASES, type GameAction, type GameCommandFields, type GamePhase, type GameSnapshot } from '../types'
 import { BonusPlay } from './bonus-play'
@@ -59,6 +60,13 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
   // Before the first clock sync, the snapshot's own time anchors the shared wheel.
   const fallbackOffset = useRef(game.serverNow - Date.now())
   const clockOffsetMs = serverClockOffsetMs ?? fallbackOffset.current
+  const sound = useSoundtrack({
+    phase: game.phase,
+    minigameKind: game.wheel?.minigame?.kind,
+    // In the bonus the clock that matters is the single question's.
+    deadline: game.phase === 'bonus_playing' ? game.bonus?.questionDeadline ?? null : game.deadline,
+    clockOffsetMs,
+  })
   const callback = useRef(onCommand)
   callback.current = onCommand
 
@@ -213,7 +221,7 @@ export function GameStage({ game, selfId, roomCode, isHost, connected, controlCo
         {error && <div role="alert" className={`daisy-alert ${styles.errorAlert}`}>{error}</div>}
 
         <section key={sceneKey} className={`${styles.scene} ${isInteractive || isBonusPlaying ? styles.interactiveScene : ''}`} aria-labelledby="game-scene-title">
-          <div className={styles.sceneMeta}><span className={`daisy-badge ${styles.phaseBadge}`}>{isWheelScene || finalPhase ? (game.wheel && !manualPhase && !finalPhase ? TEXTS.wheel.badge(game.wheel.spinNumber, game.wheel.totalSpins) : TEXTS.wheel.badgeIntro) : isBonus ? TEXTS.game.badgeBonus : game.phase === 'round_ready' ? TEXTS.game.badgeNextRound(game.round + 1, game.totalRounds) : game.round ? TEXTS.game.badgeRound(game.round, game.totalRounds) : TEXTS.game.badgeTrivia}</span><span className={styles.onAir}><Radio size={13} aria-hidden="true" /> {connected ? TEXTS.game.onAir : TEXTS.game.offAir}</span></div>
+          <div className={styles.sceneMeta}><span className={`daisy-badge ${styles.phaseBadge}`}>{isWheelScene || finalPhase ? (game.wheel && !manualPhase && !finalPhase ? TEXTS.wheel.badge(game.wheel.spinNumber, game.wheel.totalSpins) : TEXTS.wheel.badgeIntro) : isBonus ? TEXTS.game.badgeBonus : game.phase === 'round_ready' ? TEXTS.game.badgeNextRound(game.round + 1, game.totalRounds) : game.round ? TEXTS.game.badgeRound(game.round, game.totalRounds) : TEXTS.game.badgeTrivia}</span><span className={styles.onAir}><Radio size={13} aria-hidden="true" /> {connected ? TEXTS.game.onAir : TEXTS.game.offAir}</span><button type="button" className={styles.soundToggle} aria-pressed={!sound.enabled} aria-label={sound.enabled ? TEXTS.game.muteAudio : TEXTS.game.unmuteAudio} title={sound.enabled ? TEXTS.game.muteAudio : TEXTS.game.unmuteAudio} onClick={sound.toggle}>{sound.enabled ? <Volume2 size={15} aria-hidden="true" /> : <VolumeX size={15} aria-hidden="true" />}</button></div>
           <h1 id="game-scene-title" ref={heading} tabIndex={-1} aria-describedby={isQuestion && game.question ? 'current-question-prompt' : undefined} className={styles.title}>{isWheelScene ? <StaggerRise key={sceneTitle} text={sceneTitle} /> : sceneTitle}</h1>
 
           {game.deadline !== null && game.phase !== 'countdown' && (!isWheelScene || (WHEEL_TIMERS.includes(game.phase) && game.wheel?.minigame?.view?.kind !== 'timer')) && <div className={styles.timerBlock}><div className={styles.timerLabel}><span>{game.phase === 'wheel_turn' ? TEXTS.wheel.timerTurn : game.phase === 'minigame_playing' ? TEXTS.wheel.timerPlay : game.phase === 'flash_question' ? TEXTS.wheel.timerFlash : isVoting ? TEXTS.game.timer.vote : isQuestion ? TEXTS.game.timer.question : isBonusPlaying ? TEXTS.game.timer.bonus : game.phase === 'category_reveal' ? TEXTS.game.timer.powers : game.phase === 'suspended' ? TEXTS.game.timer.suspended : TEXTS.game.timer.other}</span><span className={styles.timerNumber}><Clock3 size={15} aria-hidden="true" /><span role="timer" aria-label={TEXTS.game.timer.secondsLeft(clock.seconds)} aria-live="off">{clock.seconds}<small>s</small></span></span></div><progress className={`daisy-progress ${styles.timerProgress}`} value={clock.remainingPercent} max={100} aria-label={TEXTS.game.timer.progressLabel} /></div>}
