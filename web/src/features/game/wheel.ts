@@ -1,3 +1,5 @@
+import type { MarbleBet, MarbleRaceReveal, RaceCourse } from './marble-race'
+
 /** Rules and trajectory shared by the coordinator and every phone. */
 export type WheelSliceKind = 'minigame' | 'flash_all' | 'flash_self' | 'plus' | 'minus' | 'double' | 'half'
 
@@ -48,7 +50,7 @@ export function sliceAtAngle(angle: number): number {
   return Math.floor(normalized / SLICE_DEGREES) % WHEEL_SLICES.length
 }
 
-export type MinigameKind = 'timer' | 'numbers' | 'balloon' | 'chests' | 'highest' | 'bomb' | 'steal' | 'duel' | 'tug' | 'split'
+export type MinigameKind = 'timer' | 'numbers' | 'balloon' | 'chests' | 'highest' | 'bomb' | 'steal' | 'duel' | 'tug' | 'split' | 'bet'
 
 export type MinigameView =
   | { kind: 'timer'; targetMs: number; hideAfterMs: number; selfElapsedMs: number | null; stoppedCount: number }
@@ -61,12 +63,14 @@ export type MinigameView =
   | { kind: 'duel'; signalOffsetMs: number; opponentIds: string[]; selfReactionMs: number | null; selfEarly: boolean; shotCount: number }
   | { kind: 'tug'; teams: string[][]; scores: number[]; selfTeam: number; selfTugs: number }
   | { kind: 'split'; opponentId: string | null; selfPick: 'split' | 'steal' | null; pickedCount: number }
+  /** Crazy Bet: `race` stays null, with slots and outcome, until the bets close. */
+  | { kind: 'bet'; course: RaceCourse; marbleIds: string[]; betsCloseOffsetMs: number; betCount: number; selfBet: MarbleBet | null; selfPassed: boolean; race: MarbleRaceReveal | null }
 
 export interface MinigameResult {
   playerId: string
   rank: number
   points: number
-  /** Scarto, tempo, pompate, valore del forziere, numero, esplosioni, punti di gioco, reazione, tocchi, o 0 dividi / 1 rubi, secondo il minigioco. */
+  /** Scarto, tempo, pompate, valore del forziere, numero, esplosioni, punti di gioco, reazione, tocchi, 0 dividi / 1 rubi, o posizione della biglia scelta, secondo il minigioco. */
   detail: number | null
 }
 

@@ -287,7 +287,7 @@ export class LobbyService extends EventEmitter {
     if (command.matchId !== game.id) return fail('STALE_GAME', TEXTS.errors.staleGame)
     if (action === 'game:dev-skip') {
       if (!this.devTools) return fail('DEV_ONLY', TEXTS.errors.devOnly)
-      if (command.devTarget !== 'bonus' && command.devTarget !== 'wheel') return fail('INVALID_REQUEST', TEXTS.errors.devOnly)
+      if (command.devTarget !== 'bonus' && command.devTarget !== 'wheel' && command.devTarget !== 'bet') return fail('INVALID_REQUEST', TEXTS.errors.devOnly)
       devSkip(game, command.devTarget, receivedAt)
       await this.saveGame(db, room.id, game)
       return { ok: true, room: await this.snapshot(db, member) }

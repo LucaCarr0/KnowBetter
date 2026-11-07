@@ -111,6 +111,51 @@
 .bombToken { position: absolute; top: -.4rem; right: .15rem; font-size: 1.6rem; filter: drop-shadow(0 2px 0 #10142f); }
 .blastFlash { position: fixed; inset: 0; z-index: 30; background: #fff3c4; pointer-events: none; }
 
+/* Crazy Bet */
+.betScene, .raceScene { display: grid; justify-items: center; gap: .7rem; user-select: none; -webkit-user-select: none; }
+.betPreview { position: relative; width: 100%; height: 7.5rem; overflow: hidden; border: 3px solid #10142f; border-radius: 1rem; background: #10142f; }
+.betTimer { position: absolute; top: .45rem; right: .5rem; display: inline-flex; align-items: baseline; gap: .1rem; padding: .05rem .6rem; border: 2px solid #10142f; border-radius: 99rem; background: #ffd166; color: #10142f; font-size: 1.15rem; font-weight: 950; box-shadow: 0 .15rem 0 #10142f; }
+.raceCanvas { display: block; width: 100%; height: 100%; }
+.betActions { display: grid; justify-items: center; gap: .3rem; }
+.marblePicker { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .35rem; width: 100%; max-width: 24rem; }
+.marbleChoice { display: grid; justify-items: center; gap: .2rem; min-width: 0; padding: .35rem .1rem; border: 3px solid transparent; border-radius: .9rem; background: transparent; color: #10142f; touch-action: manipulation; transition: transform 150ms, background-color 150ms; }
+.marbleChoice:disabled { cursor: default; }
+.marbleChoiceOn { border-color: #10142f; background: #ffd166; box-shadow: 0 .25rem 0 #10142f; transform: translateY(-.15rem); }
+.marbleGlass, .stripMarble { position: relative; display: grid; place-items: center; overflow: hidden; border: 3px solid #10142f; border-radius: 50%; background: radial-gradient(circle at 32% 28%, #fff 0 10%, var(--marble) 42%, color-mix(in srgb, var(--marble) 45%, #10142f) 100%); }
+.marbleGlass { width: 3.1rem; height: 3.1rem; }
+.marbleGlass img, .stripMarble img { width: 74%; height: 74%; object-fit: contain; }
+.marbleGlass::after, .stripMarble::after { content: ''; position: absolute; top: 12%; left: 18%; width: 34%; height: 18%; border-radius: 50%; background: #ffffff8c; transform: rotate(-28deg); }
+.marbleName { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .7rem; font-weight: 850; }
+.stakeBox { display: grid; justify-items: center; gap: .55rem; width: 100%; max-width: 22rem; }
+.stakeBox input[type='range'] { width: 100%; }
+.stakeNote { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .35rem; margin: 0; color: #515570; font-size: .78rem; font-weight: 750; text-align: center; }
+.stakeOutcome { border: 2px solid #10142f; background: #fff8ec; color: #10142f; font-weight: 900; font-variant-numeric: tabular-nums; }
+.rankStrip { display: flex; flex-wrap: wrap; justify-content: center; gap: .25rem; width: 100%; margin: 0; padding: 0; list-style: none; }
+.rankButton { display: grid; justify-items: center; gap: .1rem; padding: .2rem; border: 2px solid transparent; border-radius: .7rem; background: transparent; color: #10142f; font-size: .68rem; font-weight: 950; font-variant-numeric: tabular-nums; touch-action: manipulation; }
+.rankButton > span:last-child { display: inline-flex; align-items: center; gap: .1rem; }
+.rankFollowed { border-color: #10142f; background: #fff8ec; }
+.stripMarble { width: 2.3rem; height: 2.3rem; border-width: 2px; }
+.rankMine .stripMarble { box-shadow: 0 0 0 3px #ff7657; }
+.rankBets { border: 2px solid #10142f; background: #ffd166; color: #10142f; font-weight: 950; }
+.raceFrame { position: relative; width: 100%; height: min(54vh, 30rem); overflow: hidden; border: 3px solid #10142f; border-radius: 1rem; background: #10142f; box-shadow: 0 .3rem 0 #10142f; }
+.raceStill { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: #f8f1e6; font-weight: 900; }
+.raceCountdown { position: absolute; inset: 0; display: grid; place-items: center; color: #ffd166; font-size: clamp(4rem, 22vw, 7rem); font-weight: 950; letter-spacing: -.04em; text-shadow: 0 .35rem 0 #10142f, 0 0 1.5rem #10142f; pointer-events: none; }
+.racePodium { position: absolute; left: 50%; bottom: .8rem; display: flex; align-items: flex-end; gap: .7rem; margin: 0; padding: .5rem .8rem; border: 3px solid #10142f; border-radius: 1rem; background: #fff8ec; box-shadow: 0 .3rem 0 #10142f; list-style: none; transform: translateX(-50%); }
+.podiumStep { display: grid; justify-items: center; gap: .15rem; max-width: 5rem; color: #10142f; font-size: .68rem; font-weight: 950; text-align: center; overflow-wrap: anywhere; }
+.podiumStep[data-place='1'] { order: 2; }
+.podiumStep[data-place='1'] .stripMarble { width: 3rem; height: 3rem; box-shadow: 0 0 0 3px #ffd166; }
+.podiumStep[data-place='2'] { order: 1; }
+.podiumStep[data-place='3'] { order: 3; }
+.raceFireworks { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.betBanner { display: grid; justify-items: center; gap: .1rem; width: 100%; max-width: 22rem; padding: .5rem .8rem; border: 3px solid #10142f; border-radius: 1rem; background: #fff8ec; box-shadow: 0 .3rem 0 #10142f; text-align: center; }
+.betBanner > span { color: #515570; font-size: .72rem; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }
+.betBanner strong { color: #2c7a3d; font-size: 2.2rem; line-height: 1.1; font-weight: 950; letter-spacing: -.03em; }
+.betBanner strong.betLoss { color: #a42c3b; }
+.betBanner small { color: #515570; font-size: .75rem; font-weight: 700; }
+.demoPegs { background: radial-gradient(circle, #f8f1e6 0 2px, transparent 3px) .6rem .4rem / 2.2rem 1.6rem; }
+.demoMarble { position: absolute; top: -1.2rem; font-size: 1.9rem; animation: demo-drop 2.8s cubic-bezier(.45, 0, .6, 1) infinite; }
+.demoChip { position: absolute; right: .8rem; bottom: .7rem; padding: .15rem .6rem; border: 2px solid #10142f; border-radius: 99rem; background: #ffd166; color: #10142f; font-size: .8rem; font-weight: 950; animation: demo-press 2.8s ease-in-out infinite; }
+
 /* Risultati */
 .resultKind { margin: 0 0 .4rem; font-size: .8rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; color: #515570; }
 .resultReveal { margin: 0 0 .6rem; font-size: 1.05rem; font-weight: 900; }
@@ -145,10 +190,11 @@
 @keyframes demo-rope { 0%, 100% { transform: translateX(-1.6rem); } 50% { transform: translateX(1.6rem); } }
 @keyframes demo-hop { 50% { transform: translateY(-.35rem); } }
 @keyframes demo-win { 50% { transform: scale(1.25); background: #ffd166; } }
+@keyframes demo-drop { 0% { transform: translate(0, 0); opacity: 0; } 8% { opacity: 1; } 25% { transform: translate(.8rem, 3rem); } 45% { transform: translate(-.6rem, 5.4rem); } 65% { transform: translate(.5rem, 7.8rem); } 88% { transform: translate(0, 10.2rem); opacity: 1; } 100% { transform: translate(0, 10.8rem); opacity: 0; } }
 @keyframes demo-bomb { 0%, 100% { transform: translateX(calc(-50% - 5.2rem)); } 33% { transform: translateX(-50%); } 66% { transform: translateX(calc(-50% + 5.2rem)); } }
 
 @media (prefers-reduced-motion: reduce) {
   .swipeArrow, .numberGridFrozen, .bombDanger, .bombSeatTarget, .tooSlow,
-  .demoDigits, .demoStop, .demoTile, .demoBalloon, .demoPop, .demoChest, .demoNumber, .demoNumberWin, .demoBomb, .demoRope, .fallingCoins span, .halfFall { animation: none; }
+  .demoDigits, .demoStop, .demoTile, .demoBalloon, .demoPop, .demoChest, .demoNumber, .demoNumberWin, .demoBomb, .demoRope, .demoMarble, .demoChip, .fallingCoins span, .halfFall { animation: none; }
   .demoPop { display: none; }
 }

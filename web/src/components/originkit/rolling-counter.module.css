@@ -1,0 +1,19 @@
+/* Contatore a rulli: CELL in rolling-counter.tsx vale 46px */
+.counter { display: inline-flex; align-items: center; gap: .15rem; height: 3.6rem; padding: .25rem; border: 3px solid #10142f; border-radius: 1rem; background: #fff8ec; box-shadow: 0 .3rem 0 #10142f; user-select: none; -webkit-user-select: none; }
+.counterOff { opacity: .55; }
+.key { display: grid; place-items: center; width: 2.6rem; height: 2.75rem; flex: none; padding: 0; border: 2px solid #10142f; border-radius: .7rem; background: #ffd166; color: #10142f; cursor: pointer; touch-action: manipulation; transition: transform .12s; }
+.key:active:not(:disabled) { transform: scale(.94); }
+.key:disabled { opacity: .4; cursor: default; }
+.key:focus-visible, .number:focus-visible { outline: 3px solid #ff7657; outline-offset: 2px; }
+.number { display: flex; align-items: center; justify-content: center; width: calc(6ch + .32em + 1.2rem); height: 46px; border-radius: .6rem; color: #10142f; font-size: 30px; font-weight: 950; letter-spacing: -.01em; font-variant-numeric: tabular-nums; cursor: ns-resize; touch-action: none; }
+.column { display: inline-block; width: 1ch; height: 46px; overflow: hidden; transition: width .28s cubic-bezier(.3, .7, .3, 1), opacity .2s ease;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent); mask-image: linear-gradient(to bottom, transparent, #000 22%, #000 78%, transparent); }
+.column:not([data-on]) { width: 0; opacity: 0; }
+.strip { display: flex; flex-direction: column; will-change: transform; }
+.strip > span { display: block; height: 46px; line-height: 46px; text-align: center; }
+.separator { display: inline-block; width: .32em; height: 46px; overflow: hidden; line-height: 46px; transition: width .28s cubic-bezier(.3, .7, .3, 1), opacity .2s ease; }
+.separator:not([data-on]) { width: 0; opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .column, .separator { transition: none; }
+}

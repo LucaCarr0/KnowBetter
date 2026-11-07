@@ -42,7 +42,7 @@ export function confirmsCommand(operation: PendingCommand, snapshot: RoomSnapsho
     if (operation.action === 'game:continue') return snapshot.version > operation.previousVersion && (game.round !== command.roundId || game.phase !== command.expectedPhase)
     if (operation.action === 'game:vote-category') return game.round === command.roundId && game.selfVote === command.categoryId
     if (operation.action === 'game:bonus-answer') return Boolean(game.bonus && game.bonus.runId === command.bonusRunId && game.bonus.lastConsumedInstanceId === command.questionInstanceId)
-    if (operation.action === 'game:dev-skip') return snapshot.version > operation.previousVersion && game.phase === (command.devTarget === 'bonus' ? 'bonus_intro' : 'wheel_intro')
+    if (operation.action === 'game:dev-skip') return snapshot.version > operation.previousVersion && game.phase === (command.devTarget === 'bonus' ? 'bonus_intro' : command.devTarget === 'bet' ? 'minigame_intro' : 'wheel_intro')
     if (operation.action === 'game:spin') return Boolean(game.wheel && game.wheel.turnId === command.turnId && game.wheel.spin)
     if (operation.action === 'game:minigame-confirm') return Boolean(game.wheel?.minigame && (game.wheel.minigame.runId !== command.minigameRunId || game.phase !== 'minigame_intro' || game.wheel.minigame.confirmedIds.includes(snapshot.selfId)))
     if (operation.action === 'game:minigame-action') return game.wheel?.minigame?.runId === command.minigameRunId && game.wheel?.minigame?.lastActionId === command.actionId

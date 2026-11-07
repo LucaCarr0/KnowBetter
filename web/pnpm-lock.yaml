@@ -38,6 +38,9 @@ importers:
       pg:
         specifier: ^8.23.1
         version: 8.23.1
+      planck:
+        specifier: ^1.5.1
+        version: 1.5.1(stage-js@1.0.2)
       qrcode.react:
         specifier: ^4.2.0
         version: 4.2.0(react@19.2.4)
@@ -1797,6 +1800,12 @@ packages:
     resolution: {integrity: sha512-wQ0b/W4Fr01qtpHlqSqspcj3EhBvimsdh0KlHhH8HRZnMsEa0ea2fTULOXOS9ccQr3om+GcGRk4e+isrZWV8qQ==}
     engines: {node: '>=16.20.0'}
 
+  planck@1.5.1:
+    resolution: {integrity: sha512-x3nHPSyoNTAxN0v8UXrSwP0XVTG0e7JCENBVZljZ8PZOjbOo7aRHq2+fy+DOREDhfW52aq5GiwgIm+m8kIErKQ==}
+    engines: {node: '>=24.0'}
+    peerDependencies:
+      stage-js: ^1.0.0-alpha.12
+
   postcss-selector-parser@7.1.1:
     resolution: {integrity: sha512-orRsuYpJVw8LdAwqqLykBj9ecS5/cRHlI5+nvTo8LcCKmzDmqVORXtOIYEEQuL9D4BxtA1lm5isAqzQZCoQ6Eg==}
     engines: {node: '>=4'}
@@ -2016,6 +2025,10 @@ packages:
   split2@4.2.0:
     resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
     engines: {node: '>= 10.x'}
+
+  stage-js@1.0.2:
+    resolution: {integrity: sha512-EWTRBYlg7Qv9wGUao99/PfRe3KaiQqWmgSvTOXvaWnu1Jk/q/vV8yJVu6bi/3EqDZeMVnCPAjheba6OFc5k1GQ==}
+    engines: {node: '>=24.0'}
 
   statuses@2.0.2:
     resolution: {integrity: sha512-DvEy55V3DB7uknRo+4iOGT5fP1slR8wQohVdknigZPMpMstaKJQWhwiYBACJE3Ul2pTnATihhBYnRhZQHGBiRw==}
@@ -3706,6 +3719,10 @@ snapshots:
 
   pkce-challenge@5.0.1: {}
 
+  planck@1.5.1(stage-js@1.0.2):
+    dependencies:
+      stage-js: 1.0.2
+
   postcss-selector-parser@7.1.1:
     dependencies:
       cssesc: 3.0.0
@@ -4021,6 +4038,8 @@ snapshots:
   source-map@0.6.1: {}
 
   split2@4.2.0: {}
+
+  stage-js@1.0.2: {}
 
   statuses@2.0.2: {}
 

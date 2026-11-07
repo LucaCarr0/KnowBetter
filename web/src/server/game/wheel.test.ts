@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { getBonusCatalog } from '../content/bonus-catalog'
-import { SLICE_DEGREES, WHEEL_SLICES, sliceAtAngle, spinAngle, spinTrajectory, turnsPerPlayer, type WheelSliceKind } from '../../features/game/wheel'
+import { BET_MS, GATE_MS, OUTRO_MS, betPayout } from '../../features/game/marble-race'
+import { SLICE_DEGREES, WHEEL_SLICES, sliceAtAngle, spinAngle, spinTrajectory, turnsPerPlayer, type MinigameView, type WheelSliceKind } from '../../features/game/wheel'
 import { advance, continueGame, createGame, devSkip, recoverGame, retire, snapshot, type GameContent, type GameState, type TriviaQuestion } from './engine'
 import { MINIGAMES } from './minigames'
 import { applySpin, confirmMinigame, flashAnswer, minigameAction, spin } from './wheel'
@@ -460,6 +461,98 @@ test('Dividi o rubi pays by the pair of hidden choices, and Jerry takes the odd 
   assert.equal(rows.find(row => row.playerId === solo)!.points, 1000)
 })
 
+const betView = (setup: ReturnType<typeof startKind>, playerId: string, at = setup.time) =>
+  snapshot(setup.game, playerId, setup.connected, at).wheel!.minigame!.view as Extract<MinigameView, { kind: 'bet' }>
+
+test('Crazy Bet takes one bet per player within the stake, and keeps lanes and bets hidden until the close', () => {
+  const setup = startKind('bet')
+  setup.game.players.forEach((player, index) => { player.points = [3_000, 0, 1_000, 100][index] })
+  for (const [playerId, action] of [
+    ['p0', { type: 'bet', marbleId: 'nobody', amount: 100 }], ['p0', { type: 'bet', marbleId: 'p1', amount: 49 }],
+    ['p0', { type: 'bet', marbleId: 'p1', amount: 3_001 }], ['p0', { type: 'bet', marbleId: 'p1', amount: 100.5 }],
+    ['p1', { type: 'bet', marbleId: 'p2', amount: 201 }], ['p0', { type: 'pick', marbleId: 'p1', amount: 100 }],
+  ] as const) assert.throws(() => act(setup, playerId, action), { code: 'INVALID_MINIGAME_ACTION' })
+  act(setup, 'p0', { type: 'bet', marbleId: 'p0', amount: 3_000 })
+  assert.throws(() => act(setup, 'p0', { type: 'bet', marbleId: 'p1', amount: 100 }), { code: 'MINIGAME_ALREADY_PLAYED' })
+  act(setup, 'p1', { type: 'bet', marbleId: 'p2', amount: 200 })
+  act(setup, 'p2', { type: 'bet', marbleId: 'p3', amount: 1_000 })
+
+  const open = betView(setup, 'p3')
+  assert.equal(open.race, null)
+  assert.equal(open.selfBet, null)
+  assert.equal(open.betCount, 3)
+  assert.deepEqual(open.marbleIds, ids(4))
+  assert.deepEqual(betView(setup, 'p0').selfBet, { marbleId: 'p0', amount: 3_000 })
+  assert.deepEqual(Object.keys(open).sort(), ['betCount', 'betsCloseOffsetMs', 'course', 'kind', 'marbleIds', 'race', 'selfBet', 'selfPassed'], 'start lanes, bets and outcome stay on the server')
+  advance(setup.game, content, setup.connected, setup.time + 1_500)
+  assert.equal(betView(setup, 'p3').race, null, 'one player is still choosing')
+
+  act(setup, 'p3', { type: 'pass' }, setup.time + 2_000)
+  assert.throws(() => act(setup, 'p3', { type: 'bet', marbleId: 'p0', amount: 100 }, setup.time + 2_000), { code: 'MINIGAME_ALREADY_PLAYED' })
+  assert.equal(betView(setup, 'p3', setup.time + 2_000).selfPassed, true)
+  advance(setup.game, content, setup.connected, setup.time + 2_000)
+  const race = betView(setup, 'p3', setup.time + 2_000).race!
+  assert.equal(race.startOffsetMs, 2_000 + GATE_MS)
+  assert.deepEqual([...race.slots].sort(), ids(4))
+  assert.deepEqual(race.bets.p1, { marbleId: 'p2', amount: 200 })
+  assert.throws(() => act(setup, 'p3', { type: 'bet', marbleId: 'p0', amount: 100 }, setup.time + 2_100), { code: 'ACTION_TOO_LATE' })
+
+  const end = setup.time + race.startOffsetMs + race.durationMs + OUTRO_MS
+  advance(setup.game, content, setup.connected, end - 1)
+  assert.equal(setup.game.phase, 'minigame_playing', 'the arrival stays on screen')
+  const rows = finishedRows(setup, end)
+  const position = (marbleId: string) => race.order.indexOf(marbleId) + 1
+  const expected = { p0: betPayout(3_000, position('p0'), 4), p1: Math.max(0, betPayout(200, position('p2'), 4)), p2: betPayout(1_000, position('p3'), 4), p3: 0 }
+  assert.deepEqual(Object.fromEntries(rows.map(row => [row.playerId, row.points])), expected)
+  assert.equal(rows.find(row => row.playerId === 'p2')!.detail, position('p3'))
+  assert.equal(setup.game.players[1].points, Math.max(0, betPayout(200, position('p2'), 4)), 'the house stake never goes below zero')
+})
+
+test('Crazy Bet waits for a first bet, closes on time, and pays nothing to who did not bet or retired', () => {
+  const setup = startKind('bet', 3)
+  advance(setup.game, content, setup.connected, setup.time + 5_000)
+  assert.equal(betView(setup, 'p0').race, null, 'no bets: the close waits for the clock')
+  setup.game.players[0].points = 500
+  act(setup, 'p0', { type: 'bet', marbleId: 'p1', amount: 500 })
+  retire(setup.game, 'p0', setup.time + 6_000)
+  advance(setup.game, content, setup.connected, setup.time + BET_MS)
+  const race = betView(setup, 'p1', setup.time + BET_MS).race!
+  assert.equal(race.startOffsetMs, BET_MS + GATE_MS)
+  const rows = finishedRows(setup, setup.time + race.startOffsetMs + race.durationMs + OUTRO_MS)
+  assert.ok(rows.every(row => row.points === 0 && row.detail === null))
+  assert.equal(setup.game.players[0].points, 500)
+})
+
+test('Crazy Bet closes early when everyone passes', () => {
+  const setup = startKind('bet', 2)
+  for (const id of ['p0', 'p1']) act(setup, id, { type: 'pass' })
+  advance(setup.game, content, setup.connected, setup.time + 1_500)
+  const race = betView(setup, 'p0', setup.time + 1_500).race!
+  assert.equal(race.startOffsetMs, 1_500 + GATE_MS)
+  assert.ok(finishedRows(setup, setup.time + race.startOffsetMs + race.durationMs + OUTRO_MS).every(row => row.points === 0))
+})
+
+test('Crazy Bet payouts go from plus to minus the stake in proportion to the arrival', () => {
+  const table = (marbles: number) => Array.from({ length: marbles }, (_, index) => betPayout(1_000, index + 1, marbles))
+  assert.deepEqual(table(2), [1_000, -1_000])
+  assert.deepEqual(table(4), [1_000, 333, -333, -1_000])
+  assert.deepEqual(table(5), [1_000, 500, 0, -500, -1_000])
+  assert.deepEqual(table(10), [1_000, 778, 556, 333, 111, -111, -333, -556, -778, -1_000])
+})
+
+test('a restart during Crazy Bet goes back to the preview and moves no points', () => {
+  const setup = startKind('bet', 2)
+  setup.game.players[0].points = 1_000
+  act(setup, 'p0', { type: 'bet', marbleId: 'p1', amount: 1_000 })
+  act(setup, 'p1', { type: 'bet', marbleId: 'p1', amount: 200 })
+  advance(setup.game, content, setup.connected, setup.time + 1_000)
+  assert.notEqual(betView(setup, 'p0').race, null)
+  assert.equal(recoverGame(setup.game, setup.time + 10_000, content), true)
+  assert.equal(setup.game.phase, 'minigame_intro')
+  assert.equal(setup.game.wheel!.minigame!.state, null)
+  assert.deepEqual(setup.game.players.map(player => player.points), [1_000, 0])
+})
+
 test('flash for everyone scores all; personal flash accepts only the spinner', () => {
   const all = wheelGame(4)
   let time = land(all.game, all.connected, 'flash_all', all.now)
@@ -557,7 +650,7 @@ test('complete phases run for 2, 4 and 10 players and end in the final summary',
         for (const id of connected) confirmMinigame(game, id, game.wheel!.minigame!.runId)
         advance(game, content, connected, time)
         assert.equal(game.phase as string, 'minigame_playing')
-        advance(game, content, connected, time += 30_000)
+        advance(game, content, connected, time += Math.max(...Object.values(MINIGAMES).map(minigame => minigame.durationMs)))
         assert.equal(game.phase as string, 'minigame_results')
         advance(game, content, connected, time += 5_000)
       } else if (scene === 'flash_intro') {
@@ -597,6 +690,9 @@ test('dev skip jumps to a fresh bonus or wheel from any stage', () => {
   devSkip(game, 'bonus', 6_000)
   assert.equal(game.bonus!.results, null)
   assert.equal(snapshot(game, 'p0', connected, 6_000).bonus!.chain, 0)
+  devSkip(game, 'bet', 7_000)
+  assert.equal(game.phase, 'minigame_intro')
+  assert.equal(game.wheel!.minigame!.kind, 'bet')
 })
 
 test('matches saved before the wheel keep ending after the bonus', () => {

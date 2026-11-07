@@ -26,3 +26,12 @@ word wrapping and accessible text. `features/game/components/swipe-up-card.tsx`
 draws on the flick and tilt of [Swipe Stack](https://www.originkit.dev/components/swipe-stack)
 for a single card confirmed upward. All respect `prefers-reduced-motion`; the first
 needs no dependency, the other two use `framer-motion`.
+
+Crazy Bet, the Phase 2 betting race, adds `rolling-counter.tsx`, retrieved on 6 November
+2026 through the OriginKit endpoint from
+[Rolling counter](https://www.originkit.dev/functional?c=rolling-counter). It keeps the
+odometer columns that count instead of jumping, the carry rippling up the number, hold to
+repeat with acceleration and dragging the number. The adaptation is controlled from outside,
+moves in steps of the stake, uses the game's colours and the Italian thousands separator, and
+drops the sound cue. It respects `prefers-reduced-motion` and uses `framer-motion` only for
+that check.

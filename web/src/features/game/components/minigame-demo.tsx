@@ -16,5 +16,6 @@ export function MinigameDemo({ kind }: { kind: MinigameKind }) {
     case 'duel': return <div className={styles.demoStage}><span className={styles.demoPlayer}>🤠</span><span className={styles.demoStop}>FUOCO!</span><span className={styles.demoPlayer}>🐸</span></div>
     case 'tug': return <div className={styles.demoStage}><span className={styles.demoPlayer}>🐼</span><span className={styles.demoRope}>🚩</span><span className={styles.demoPlayer}>🦊</span></div>
     case 'split': return <div className={styles.demoStage}>{['🤝', '🗡️'].map((icon, index) => <span key={icon} className={styles.demoChest} style={{ animationDelay: `${index * .5}s` }}>{icon}</span>)}</div>
+    case 'bet': return <div className={`${styles.demoStage} ${styles.demoPegs}`}>{['🐼', '🦊', '🐸'].map((face, index) => <span key={face} className={styles.demoMarble} style={{ left: `${28 + index * 18}%`, animationDelay: `${index * .5}s` }}>{face}</span>)}<span className={styles.demoChip}>💰 1.000</span></div>
   }
 }

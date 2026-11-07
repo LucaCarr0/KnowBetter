@@ -1,7 +1,7 @@
 # Memoria di progetto — party game trivia multiplayer
 
-Ultimo aggiornamento: 30 ottobre 2026.
-Stato: Fase 2 con ruota e dieci minigiochi implementata il 30 ottobre 2026, da provare sui telefoni. Home/lobby e Fase 1 implementate in `web/`, con avatar Kenney, Jerry, cinque round trivia sincronizzati e il bonus finale «21 al contrario»; cataloghi di domande importati da fonti internet e conservati nel database. Istruzioni e avvio dei round sono manuali con swipe. Il 27 ottobre 2026 sono stati implementati commenti personali di Jerry, quattro poteri per ostacolare gli avversari e un'attesa con rotellina nella lobby al posto del countdown visibile. Piano di riferimento: [docs/plans/02-fase-1-trivia.md](docs/plans/02-fase-1-trivia.md). Verifica visiva sui telefoni a cura dell'utente. Accesso HMR di Next.js configurato per rilevare automaticamente gli indirizzi IPv4 locali a ogni avvio in sviluppo.
+Ultimo aggiornamento: 6 novembre 2026.
+Stato: Fase 2 con ruota e dieci minigiochi implementata il 30 ottobre 2026, da provare sui telefoni; il 6 novembre 2026 si aggiunge Crazy Bet, gara di biglie con puntate, anch'essa da provare. Home/lobby e Fase 1 implementate in `web/`, con avatar Kenney, Jerry, cinque round trivia sincronizzati e il bonus finale «21 al contrario»; cataloghi di domande importati da fonti internet e conservati nel database. Istruzioni e avvio dei round sono manuali con swipe. Il 27 ottobre 2026 sono stati implementati commenti personali di Jerry, quattro poteri per ostacolare gli avversari e un'attesa con rotellina nella lobby al posto del countdown visibile. Piano di riferimento: [docs/plans/02-fase-1-trivia.md](docs/plans/02-fase-1-trivia.md). Verifica visiva sui telefoni a cura dell'utente. Accesso HMR di Next.js configurato per rilevare automaticamente gli indirizzi IPv4 locali a ogni avvio in sviluppo.
 Nome nel frontend esistente: Know Better; il nome definitivo non è stato confermato separatamente.
 
 ## Scopo e uso del documento
@@ -175,6 +175,25 @@ Avanzati il 30 ottobre 2026 e applicati con l'implementazione, non richiesti sin
 - **Minigiochi fuori dalla prima selezione:** il proprietario ha detto che «i giochi vanno bene» senza indicare se tutti e 15 o i 6 proposti. Prima selezione: Stoppa il timer, Numeri in ordine, Palloncino, Dividi il bottino, Il più alto unico e Bomba; gli ultimi tre sono da estrarre solo con almeno 3 giocatori. Altri candidati: Riempi il bicchiere, Barra impazzita, Colpo d'occhio, Acchiappa Jerry, Trova l'intruso, Mezzogiorno di fuoco, Jerry dice, Sequenza lampo e Asta al buio. Il 30 ottobre 2026 il proprietario ha scelto e fatto implementare un secondo gruppo, con regole proposte in [docs/plans/03-fase-2-ruota.md](docs/plans/03-fase-2-ruota.md) §7: Rubapunti, Duello a sorpresa (al posto di Mezzogiorno di fuoco), Tiro alla fune e Dividi o rubi. Ultimo in piedi, scelto e implementato nello stesso gruppo, è stato tolto dopo la prova; il rimpiazzo è da decidere. Restano candidati Riempi il bicchiere, Barra impazzita, Colpo d'occhio, Acchiappa Jerry, Trova l'intruso, Jerry dice, Sequenza lampo e Asta al buio; Jerry dice ha lo stesso formato del gioco appena tolto.
 
 **Verifiche del secondo gruppo di minigiochi, 30 ottobre 2026.** Dopo la rimozione di Ultimo in piedi, superati 153 test con `pnpm test:unit`, controllo TypeScript e build Next.js/Webpack in una copia temporanea, per non toccare `.next` del `pnpm dev` acceso. Coperti punteggi, gruppi dispari, assenti, confini temporali e privacy delle scelte. Nessun browser aperto: tocchi, animazioni e bilanciamento restano alla prova del proprietario. Per provarli occorre riavviare `pnpm dev` e creare una nuova partita.
+
+**Crazy Bet, richiesto il 6 novembre 2026.** Nuovo minigioco della Fase 2. Corre una biglia per ogni giocatore in un percorso con ostacoli, come nelle gare di biglie dei video TikTok e Instagram, e vince la prima che arriva in fondo. L'esito deve essere imprevedibile e la gara entusiasmante, con begli ostacoli. Ogni giocatore punta quanto vuole su una biglia e vince o perde punti in proporzione alla posizione d'arrivo. Il proprietario ha prima chiesto soltanto il piano, [docs/plans/05-crazy-bet.md](docs/plans/05-crazy-bet.md), poi lo ha autorizzato con «procedi, usa originkit per ui migliore e daisy ui, poi testo io la parte da interfaccia». Valgono quindi i default del piano:
+
+- premio da +1× a −1× della puntata, in proporzione alla posizione d'arrivo;
+- puntata da 50 punti fino al proprio punteggio, con almeno 200 puntabili anche da chi ne ha meno;
+- puntate nascoste fino al via;
+- da 2 giocatori in su;
+- 30 s per puntare (portati da 20 a 30 dopo la prima prova, il 7 novembre 2026), 3 s di via, gara di 20–30 s con un tetto di 45 s e 4 s sull'arrivo;
+- un pulsante esplicito «Non punto», richiesto dopo la prima prova.
+
+**Implementazione di Crazy Bet, 6 novembre 2026.**
+
+- **Gara:** il coordinatore la simula con `planck` (Box2D) alla chiusura delle puntate e invia ai telefoni la traiettoria registrata, riprodotta sullo stesso orologio come la ruota. `planck` è una nuova dipendenza, usata solo dal server.
+- **Percorso:** diverso a ogni gara, con 4 sezioni su 6 (chiodi, mulini, zig-zag, imbuto con agitatore, respingenti, botola), poi rettilineo con traguardo e vasca.
+- **Stato salvato:** il JSONB conserva solo seme, puntate e chiusura. Percorso e traccia si rigenerano dal seme, in una cache in memoria.
+- **Interfaccia:** contatore a rulli adattato da Originkit, componenti daisyUI, canvas 2D con telecamera che segue la testa, striscia della classifica dal vivo e «Se finisse ora». Con `pnpm dev` c'è il pulsante «Dev: Crazy Bet».
+- **Verifiche:** 161 test, controllo TypeScript e build superati. Nessun server o browser aperto.
+
+Differenze dal piano e misure sono nel §9 del piano. Per provarlo occorre riavviare `pnpm dev` e creare una nuova partita.
 
 ### Decisioni aperte
 
@@ -503,3 +522,6 @@ Riferimenti tecnici verificati il 25 ottobre 2026: [TypeScript](https://www.type
 | 30 ottobre 2026 | Secondo gruppo di minigiochi scelto fra le proposte: Rubapunti, Duello a sorpresa, Tiro alla fune, Dividi o rubi e Ultimo in piedi; implementazione autorizzata con le regole proposte nel piano | Risposta del proprietario: «1,2, 6, 3, 10», poi «una volta implementati i giochini aggiorna doc e graphify» |
 | 30 ottobre 2026 | Tolto Ultimo in piedi dopo la prova; il proprietario penserà a come rimpiazzarlo | «il gioco in cui devi fare l'azione che ti dice lo schermo è davvero brutto, toglilo al momento poi penserò come rimpiazzarlo» |
 | 3 novembre 2026 | Colonna sonora «Elevator Synth» nella partita, con volume adattato per fase, ticchettio che accelera al posto della musica in domande, domande lampo e «21 al contrario», e niente musica in home e lobby | Brano creato dal proprietario con Suno; «fallo accelerare il ticchettio negli ultimi secondi, per il resto va bene procedi» |
+| 6 novembre 2026 | Nuovo minigioco della Fase 2 «Crazy Bet»: puntata libera su una delle biglie, una per giocatore, in una gara a ostacoli imprevedibile; premio proporzionale alla posizione d'arrivo, con vincite o perdite. Richiesto soltanto il piano, da validare | Richiesta del proprietario: «scrivi solo il piano d'implementazione che poi ti valido io» |
+| 6 novembre 2026 | Autorizzata l'implementazione di Crazy Bet con i default del piano, usando Originkit e daisyUI per l'interfaccia; prove da interfaccia a cura del proprietario | «procedi, usa originkit per ui migliore e daisy ui, poi testo io la parte da interfaccia» |
+| 7 novembre 2026 | Crazy Bet: 30 s per puntare invece di 20 e pulsante esplicito «Non punto»; corretti contatore della puntata fermo a 000 e mappa poco visibile su PC | «vorrei più tempo per fare la puntata. e ci deve essere un bottone esplicito per non bettare», «da pc non si vede bene tutta la mappa» |

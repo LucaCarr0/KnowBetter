@@ -141,9 +141,10 @@ function nextMinigameKind(game: GameState): MinigameKind {
   return kind
 }
 
-function openMinigame(game: GameState, now: number): void {
+/** The kind is forced only by the development shortcut. */
+export function openMinigame(game: GameState, now: number, kind = nextMinigameKind(game)): void {
   const wheel = game.wheel!
-  wheel.minigame = { runId: randomUUID(), kind: nextMinigameKind(game), participantIds: activeIds(game), confirmedIds: [], startedAt: null, state: null, results: null, lastActionIds: {} }
+  wheel.minigame = { runId: randomUUID(), kind, participantIds: activeIds(game), confirmedIds: [], startedAt: null, state: null, results: null, lastActionIds: {} }
   enter(game, 'minigame_intro', now, game.config.minigamePreviewMs)
 }
 
@@ -199,7 +200,7 @@ function startMinigame(game: GameState, now: number): void {
 
 function contextFor(game: GameState, run: MinigameRun, connectedIds: Set<string>): MinigameContext {
   const active = activeIds(game)
-  return { activeIds: run.participantIds.filter(id => active.includes(id)), connectedIds, startedAt: run.startedAt! }
+  return { activeIds: run.participantIds.filter(id => active.includes(id)), connectedIds, startedAt: run.startedAt!, points: Object.fromEntries(game.players.map(player => [player.id, player.points])) }
 }
 
 /** Prizes are clamped at zero and stored as really applied, so the show matches the board. */

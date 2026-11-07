@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { PlayerAvatar } from '../../rooms/components/player-avatar'
 import type { GamePlayer } from '../types'
 import type { MinigameView } from '../wheel'
+import { BetPlay } from './bet-play'
 import { TEXTS } from '../../../texts'
 import styles from '../styles/wheel.module.css'
 
@@ -352,5 +353,6 @@ export function MinigamePlay(props: MinigamePlayProps) {
     case 'duel': return <DuelPlay {...props} view={view} />
     case 'tug': return <TugPlay {...props} view={view} />
     case 'split': return <SplitPlay {...props} view={view} />
+    case 'bet': return <BetPlay {...props} view={view} />
   }
 }

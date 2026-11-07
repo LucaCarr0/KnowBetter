@@ -5,7 +5,7 @@ import { MAX_POWER_CARDS, POWERS, powerDropProbability, type PowerCard, type Pow
 import { buildJerryCommentary } from './commentary'
 import type { BonusQuestion } from '../content/bonus-catalog'
 import { advanceBonus, bonusSnapshot, consumeBonusAnswer, createBonus, selectBonusQuestions, startBonus, validBonusQuestions, type BonusState } from './bonus'
-import { advanceWheel, beginTurn, createWheel, isWheelPhase, recoverWheel, startWheel, wheelSnapshot, type WheelState } from './wheel'
+import { advanceWheel, beginTurn, createWheel, isWheelPhase, openMinigame, recoverWheel, startWheel, wheelSnapshot, type WheelState } from './wheel'
 import { GameRuleError } from './errors'
 import { TEXTS } from '../../texts'
 
@@ -361,7 +361,8 @@ export function devSkip(game: GameState, target: GameDevTarget, now: number): vo
   } else {
     game.wheel = createWheel()
     startWheel(game)
-    enter(game, 'wheel_intro', now, null)
+    if (target === 'bet') openMinigame(game, now, 'bet')
+    else enter(game, 'wheel_intro', now, null)
   }
 }
 

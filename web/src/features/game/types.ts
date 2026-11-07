@@ -87,7 +87,7 @@ export interface GameSnapshot {
   }
 }
 
-export type GameDevTarget = 'bonus' | 'wheel'
+export type GameDevTarget = 'bonus' | 'wheel' | 'bet'
 export type GameAction = 'game:start' | 'game:continue' | 'game:vote-category' | 'game:answer' | 'game:bonus-answer' | 'game:spin' | 'game:minigame-confirm' | 'game:minigame-action' | 'game:flash-answer' | 'game:dev-skip' | 'game:use-power' | 'game:ready-question' | 'game:clear-power' | 'game:resume' | 'game:return-lobby'
 export interface GameCommandFields {
   roomId?: string

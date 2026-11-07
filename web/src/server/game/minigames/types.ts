@@ -8,6 +8,8 @@ export interface MinigameContext {
   activeIds: string[]
   connectedIds: Set<string>
   startedAt: number
+  /** Board points, for the games that stake them. */
+  points: Record<string, number>
 }
 
 /** Pure rules over JSON serializable state; timing and prizes stay in the wheel. */

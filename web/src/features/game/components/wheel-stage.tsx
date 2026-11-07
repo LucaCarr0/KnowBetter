@@ -225,6 +225,7 @@ function resultDetail(kind: MinigameKind, row: MinigameResult): string {
     case 'duel': return W.minigames.duel.detail((row.detail / 1000).toFixed(3).replace('.', ','))
     case 'tug': return W.minigames.tug.detail(row.detail)
     case 'split': return row.detail ? W.minigames.split.stole : W.minigames.split.shared
+    case 'bet': return W.minigames.bet.detail(row.detail)
   }
 }
 
